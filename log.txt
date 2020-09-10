@@ -1,0 +1,126 @@
+13.04 15:30-16:30
+Teraz cel to zrobić wstępny plan badania. Zacząłbym od wyszukania customer segmentation po słowach kluczowych w scholarze i sprawdzenia ogólnej dostępnej teorii/metod itd. 
+
+Traktować ten zbiór jako symulacja prawdziwego e-commerce i nie przejmować się specyficzną strukturą - udawać że to jest zwykły sklep internetowy.
+
+Notatki z kotlera:
+- Segmentacja geograficzna
+- Segmentacja demograficzna (wiek, płeć, dochód itd.)
+- Gender
+- Income
+-social class, lifestyle
+
+Do brazylii jest sporo danych demograficznych spatial - sprawdzić czy są jakieś interesujące, na pewno płci, analfabetyzm, jakieś zbinowane dane o wieku. Chyba nie ma zarobków.
+
+17.04 18:30 - 19:30
+market  segmentation - Dividing  a market  into distinct groups of buyers with different needs,characteristics  or behaviour, who might require  separate produces or marketing mixes
+
+STP 
+
+Local marketing - targetowanie po geografii
+
+ACORN   (A Classification Of Residential Neighbourhoods) - po population census, często wykorzystywane w segmentacji
+
+Multistage segmentation - drzewko
+
+Wymienione podejścia: conjoint analysis, Automatic Interaction Detection
+
+Kryteria dobrej segmentacji:
+Measurability
+Accessibility
+
+O klastrowaniu był jakiś syf
+
+
+29.04
+feature selection pomysły:
+- Train test split, zrobienie klastrowania na train, predykcja te teście, sprawdzenie ile pokrywa się ze wcześniejszym sposobem
+- jakaś miara dobroci klastrowania - silhouette na przykład. Jest niewrażliwa na ilość klastrów i też na ilość wymiarów
+- po prostu PCA - ale to brzydkie, bo zostają wszystkie zmienne
+- entropy based - tu: http://www.public.asu.edu/~huanliu/papers/pakdd00clu.pdf
+Nie czaję tej metody jeszcze ale ma spoko wytłumaczenie teoretyczne dlaczego feature selection jest ważne
+
+- jest złoto papier z tego roku
+
+
+Znaleziska:
+- silohouette jest średnie, bo ze zwiększaniem ilości zmiennych zwiększa się wariancja do złapania
+- convex kmeans - dla każdego itema jest kilka setów features (prawie jak to co chcę). 
+- Feature weighting - jest papier o gradient descent 
+- fajnie wykorzystać k modes do categorical
+- ogólne wrażenie że kmeans to syf z większą ilością zmiennych
+- poszukać metod klastrowania które są bardziej elastyczne
+- oparte na modelu ml - losowo przypisz labele do danych, puść svm, części źle zakwalifikowanych zmień labele, puść jeszcze raz
+
+
+- interpretowalność w jakiś sposób
+- dbscan brzmi dobrze, bo można zdefiniować minimalną ilość klientów
+- z drugiej strony hierarchical brzmi dobrze bo jest trochę interpretowalne
+
+
+01.05
+Jest 95% one-timerów. Z prespekywy zarabiania można powiedzież że to 1 segment. Pomysł:
+Ograniczyć stałych klientów do 1 zamówienia i zrobić predykcję co sprawia że decydują się na ponowne zakupy. A segmentację taką z algorytmu zrobić tylko na tych którzy już zrobili więcej zakupów.
+
+Zrobiłem wstępne klastrowanie. Obserwacje:
+- po wyskalowaniu danych wychodzi o wiele gorzej
+- Część features jest taka sama w każdym klastrze
+- silhouette spada po dodaniu całkowicie nieistotnej zmiennej - random
+- ale rośnie (mocno) jeżeli doda się nieistotną zmienną niewyskalowaną - pewnie szuka błędnego klastrowania
+
+Co przetestować dalej:
+- Zrobić klastrowanie na 2 zmiennych i porysować
+- Sprawdzić k-medians (wyeliminować problem zmiennych = 1)
+- Sprawdzić metody z drzewem - wydaje się że zmienne binarne powinny ładnie siadać
+- Zaimplementować feature weights - znormalizować wagi do 1 i zrobić grid search 
+- Sprawdzić paczkę do feature importance 
+- Zrobić stability analysis - puścić na kilku podzbiorach albo bootstrap
+- Potestować dbscan - jest trochę pewniejszy pod względem łapania klastrów niż kmeans 
+- feature weight self-adjustment mechanism
+
+
+03.05
+Sprawdziłem klastrowanie na 2 zmiennych. Wychodzi ładna kulka - żadnych klastrów nie widać. Co z tym zrobić?
+1. Zostawić na razie klastrowanie, skupić się na ocenie czynników które wpływają na różnice pomiędzy oosbami które kupiły więcej niż raz i one timerami
+2. Olać zejście do customera - pójść w stronę rynków geograficznych
+
+06.09 
+Zaczynam znowu prace nad magisterką. Co jest do zrobienia przed wysłaniem?
+
+Porządna EDA
+Przetestować na podstawie RFM - wybrać dobre okna czasowe
+Przetestować ant colony 
+Jeżeli oba powyższe nie wyjdą to iść w stronę rynków geograficznych - przetestować basic
+
+
+
+Jaki jest cel segmentacji klientów?
+Dopasowanie asortymentu i reklam pod dany segment
+Dopasowanie strategii pod dany segment
+
+cel rfm?
+wybranie klientów z dużym potencjałem do dalszego inwestowania w tą grupę
+
+Znaleziska:
+Lokalizacja klientów jest bardzo dobrze klastrowalna - silhouette > 0.7 dla 2 klastrów
+RFM jest w ogóle nie klastrowalne - rozkład monetary value jest skośny i tyle, a rozkład czasu od ostatniego kupna jednostajny - żadnych więcej regularności
+
+RFM nie powinno być używane do klastrowania - to jest bez sensu. To jest zupełnie inny rodzaj rozdziału klientów na grupy. 
+
+08.09
+Sprawdziłem jeszcze klastrowanie danych RFM po zlogarytmowaniu zmiennych - i w końcu osiągam dobre wartości silhouette. W związku z tym zostawiam na tą chwilę sprytniejsze algorytmy do klastrowania. 
+
+Cel pracy to zwiększenie profitów z klientów. 2 sposoby:
+- jest bardzo mało klientów kupujących więcej niż raz. Można zbadać tych, którzy kupują więcej, znaleźć ich charakterystyki po 1 zakupie, a następnie klastrować klientów już po 1 kupnie, żeby zogniskować działania marketingowe. 
+- po prostu przeanalizować klientów którzy już są i zobaczyć ich charakterystyki - w celu lepszego zrozumienia klientów i dopasowania oferty/promocji pod najbardziej dochodowych klientów.
+
+Co jest do zrobienia:
+- opisanie podejścia RFM (rezultaty klastrowania, według którego papera)
+- 
+
+
+Segmentacja tych którzy kupili wielokrotnie, 
+
+
+
+
