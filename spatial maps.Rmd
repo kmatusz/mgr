@@ -1,3 +1,17 @@
+---
+title: "Basic spatial analysis of customers dataset"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = F, warning = F)
+```
+
+
+In this notebook basic exploratory analysis of spatial distribution of the dataset is presented. First, basic data cleaning:
+
+```{r }
 library(readr)
 library(tidyverse)
 library("leaflet")
@@ -5,9 +19,11 @@ library(sf)
 library(tmap)
 
 geolocation <- read_csv("data/olist_geolocation_dataset.csv")
+```
 
-#' Cleaning outside of bounding box
+Removal of the points outside the bounding box:
 
+```{r }
 #Brazils most Northern spot is at 5 deg 16′ 27.8″ N latitude.;
 geolocation = geolocation[geolocation$geolocation_lat <= 5.27438888,]
 #it’s most Western spot is at 73 deg, 58′ 58.19″W Long.
@@ -16,10 +32,11 @@ geolocation = geolocation[geolocation$geolocation_lng >= -73.98283055,]
 geolocation = geolocation[geolocation$geolocation_lat >= -33.75116944,]
 #It’s most Eastern spot is 34 deg, 47′ 35.33″ W Long.
 geolocation = geolocation[geolocation$geolocation_lng <=  -34.79314722,]
+```
 
-#' Only a few removed
+Create variables for different levels of aggregation. In zip code, every digit added gives bigger detail. There are 5 digits (levels of aggregation) present, but for summary data (and not individual customers) 3rd level of aggregation is the lowest possible to obtain sensible groupings of customers.
 
-#' Get levels of aggregation
+```{r }
 geolocation$zip_code_1 <- str_sub(geolocation$geolocation_zip_code_prefix, 1, 1)
 geolocation$zip_code_2 <- str_sub(geolocation$geolocation_zip_code_prefix, 1, 2)
 geolocation$zip_code_3 <- str_sub(geolocation$geolocation_zip_code_prefix, 1, 3)
@@ -30,8 +47,11 @@ geolocation %>%
   arrange(-n) -> no_of_coords_per_prefix
 
 no_of_coords_per_prefix %>% summary()
-#' Most of the prefixes have more than one geolocation assigned. 
-#' Using pam with 1 center to replace
+```
+
+Most of the zip codes have more than one geolocation assigned. It is sensible to select the most central point. PAM clustering with one center can be used to achieve that. For every zip code, algorithm is run and cluster center is saved as a proper zip code location. This takes a long time, so the results are cached.
+
+```{r }
 no_of_coords_per_prefix %>% 
   filter(n != 1) %>%
   .$geolocation_zip_code_prefix -> prefixes_with_more_coords
@@ -69,17 +89,29 @@ geolocation %>%
 
 
 load('data/map_sampled_zipcodes.Rdata')
-#' Get map for brazil (also less aggregation is avaliable)
-#' this package is avaliable only from cran archive to install locally
+```
+
+
+Next, we can obtain contour map of Brazil using brazilmaps package. Other maps, like microregions are also present there. This package is avaliable only from cran archive to install locally - it was removed from official cran repo.
+
+```{r }
 brazil_map <- brazilmaps::get_brmap("Brazil")
 # m_2 <- brazilmaps::get_brmap("MicroRegion")
 
 df <- sf::st_as_sf(sampled_zipcodes, coords = c(3,2))
-#' WGS84 is ok
-#' WARNING! Downsampling temporarly to get workflow going - drawing maps is very resource expensive
-df_small <- df %>% sample_frac(1)
+```
 
-#' Basic map of zipcodes - places in which customers placed orders 
+
+
+Here I downsample the dataset to facilitate plotting - drawing maps is very resource expensive
+
+```{r }
+df_small <- df %>% sample_frac(1)
+```
+
+Basic map of zipcodes - places in which customers placed orders 
+
+```{r }
 # tmap_mode("view")
 tmap_mode("plot")
 
@@ -90,15 +122,18 @@ tm_shape(brazil_map) +
              col = "zip_code_1",
              border.lwd = NA,
              alpha = 0.5)
+```
 
+Adding information about orders:
 
-
-#' Adding information about orders 
+```{r }
 orders <- read_csv("data/olist_orders_dataset.csv")
 customers <- read_csv("data/olist_customers_dataset.csv")
+```
 
+Number of orders per zip code:
 
-#' Number of orders per zip code
+```{r }
 orders %>%
   left_join(
 customers %>% 
@@ -125,14 +160,14 @@ tm_shape(brazil_map) +
              border.lwd = NA,
              size = 0.1,
              alpha = 0.9)
+```
 
-#' For some of the zipcodes there is not even one order placed. 
-#' This database has full range of zipcodes 
-#' - even if there are no customers in particular area
+For some of the zipcodes there is not even one order placed. 
+This database has full range of zipcodes 
+- even if there are no customers in particular area.
+Number of orders per zip code (second level of aggregation):
 
-
-
-#' Number of orders per zip code (second level of aggregation)
+```{r }
 no_orders_per_zip_2 <- no_orders_per_zip %>%
   mutate(zip_code_2 = str_sub(customer_zip_code_prefix, 1, 2)) %>%
   group_by(zip_code_2) %>%
@@ -156,9 +191,11 @@ tm_shape(brazil_map) +
     palette = "Reds",
     size = 1,
     alpha = 0.7)
+```
 
+Number of orders per zip code (third level of aggregation):
 
-#' Number of orders per zip code (third level of aggregation)
+```{r }
 no_orders_per_zip_3 <- no_orders_per_zip %>%
   mutate(zip_code_3 = str_sub(customer_zip_code_prefix, 1, 3)) %>%
   group_by(zip_code_3) %>%
@@ -182,22 +219,17 @@ tm_shape(brazil_map) +
     palette = "Reds",
     size = 0.3,
     alpha = 0.7)
+```
 
-#' Bigger concentration of orders is visible in southern part of 
-#' Brazil - this is more urban area. 
+Bigger concentration of orders is visible in southern part of 
+Brazil - this is more urban area. 
+Joinig information about loyal customers - from other notebook. After that, plotting loyal customers on the map to check spatial distribution.
 
-
-#' Joinig information about loyal customers and  
+```{r }
 orders_loyal <- new.env()
 load(file ='data/05_orders_enhanced.Rdata', env = orders_loyal)
 orders_master <- orders_loyal$orders_master
 first_orders <- orders_loyal$first_orders
-orders_master
-first_orders
-
-first_orders %>%
-  mutate(zip_code_3=str_sub(customer_zip_code_prefix, 1,3)) %>%
-  right_join(df)
 
 df %>%
   left_join(first_orders, 
@@ -212,8 +244,7 @@ leaflet(temp_customer %>% filter(if_second_order=='1')) %>%
     color = ~pal(if_second_order),
     stroke = FALSE, fillOpacity = 0.5
   )
+```
 
-#' it looks like the spatial distribution of customers placing second order 
-#' is more or less the same as other customers
-
-
+It looks like the spatial distribution of customers placing second order 
+is more or less the same as other customers.
