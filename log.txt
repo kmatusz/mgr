@@ -121,6 +121,80 @@ Co jest do zrobienia:
 
 Segmentacja tych którzy kupili wielokrotnie, 
 
+21.10
+DONE:
+Pobranie danych z SIBRA 
+Spatial join tych danych z ZIP-codes 
+Testy z PCA - wygląda obiecująco
+
+#' Avaliable information:
+#' - microregion code - to join with other datasets
+#' - total_pop - population
+#' - age_... - percentage of people in given age
+#' - perc_rural, perc_urban - percentage of people living in urban and rural areas
+#' - inc... - percentage of people having income at least ... times the minimum wage
+#' - no_immigrants - percentage of immigrants
+
+EDA of Market Basket
+Research about clustering/dimension reduction of market basket data
+couple of options possible, UMAP, MDS (it's bad because of the complexity), t-SNE, PCA on correlation matrix (SVD)
+
+
+TODO:
+Research o metrykach (categorical/mixed)
+analiza koszyka
+	- EDA produktów w koszyku ok 
+	- research o Market Basket ok
+	- Klastrowanie jak klastrowanie dokumentów
+doklejenie geo danych 
+	- pobranie ok
+	- przekształcenie do postaci mikororegionu ok
+	- wykminienie joina ok
+	- analiza tych danych ok
+	- join w jakiś sposób ok
+	- wybranie sposobu na dołączenie danych - PCA? ile komponentów? I czy w ogóle? Czy rotated? Do dogadania jak będzie już benchmark
+
+Analiza reviews
+	- Kurs o NLP - analiza sentymentu, topic modeling
+	- Odpalić chmurę - do deep learningu ok
+	- Przetłumaczyć recenzje (google api?)
+	
+
+
+Na ten tydzień - basket analysis:
+Cel - zredukowanie wymiarowości do kilku wymiarów
+Metody do przetestowania:
+k-modes - powinno być straightforward, ale potencjalnie może dać dużo klastrów (później one-hot encoding)
+UMAP - w pythonie jest zaimplementowana odległość dla danych kategorycznych, w R nie ma
+t-SNE - tak samo, w pythonie
+PCA proste
+
+Setting:
+1. Oddzielnie 1 produkt i więcej
+2. Różne wagi macierzy - wartość produktów w koszyku, 0/1
+
+
+
+Pytania:
+jakie wybrać metryki binarne?
+klastrowanie danych z wieloma zerami 
+
+Podsumowanie seminarium 23.10:
+Olać customera, skupić się na spatial cechach - PCA, wizualizacje
+
+TODO:
+- EDA 
+- sPCA
+
+EDA założenia:
+Pominąć wymiar customera - traktować każde zamówienie jako oddzielnego
+Zagregować rzeczy do zip code 3-cyfrowego
+
+Ustalenia:
+- do danych geo nie da się wiele dokleić - tylko średnie zamówienie, liczba zamówień - trochę mało ciekawe
+- nie ma sensu robić pca na 4 zmiennych ^^
+- patterny są widoczne - ale w sumie nic to nie zmienia, prawdopodobnie odpowiadają zamożności klienta - jest więcej zamówień w bogatszych dzielnicach
+- 
 
 
 

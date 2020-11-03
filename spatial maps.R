@@ -72,12 +72,15 @@ load('data/map_sampled_zipcodes.Rdata')
 #' Get map for brazil (also less aggregation is avaliable)
 #' this package is avaliable only from cran archive to install locally
 brazil_map <- brazilmaps::get_brmap("Brazil")
-# m_2 <- brazilmaps::get_brmap("MicroRegion")
+m2 <- brazilmaps::get_brmap("City")
 
 df <- sf::st_as_sf(sampled_zipcodes, coords = c(3,2))
 #' WGS84 is ok
 #' WARNING! Downsampling temporarly to get workflow going - drawing maps is very resource expensive
 df_small <- df %>% sample_frac(1)
+
+tm_shape(m2) +
+  tm_polygons(col = "white")
 
 #' Basic map of zipcodes - places in which customers placed orders 
 # tmap_mode("view")
@@ -168,18 +171,21 @@ df %>%
   left_join(no_orders_per_zip_3) %>%
   group_by(zip_code_3) %>%
   filter(row_number()==1) %>%
-  ungroup()-> temp2
+  ungroup() %>%
+  mutate(no_orders_log = log(no_orders))-> temp2
 
+temp2
 
+# use log to make more color palette more visible
 tm_shape(brazil_map) +
-  tm_polygons(col = "black") +
+  tm_polygons() +
   tm_shape(temp2) +
   tm_symbols(
     # size = "no_orders", 
-    col = "no_orders",
+    col = "no_orders_log",
     # n = 5,
     border.lwd = NA,
-    palette = "Reds",
+    palette = "viridis",
     size = 0.3,
     alpha = 0.7)
 

@@ -49,34 +49,47 @@ order_items %>%
 order_items2 %>%
   distinct()
 
-#' Number of orders:
+# If particular item is present in the basket more than one time the observation
+# Is doubled - adding variable number of items and total price
+
 order_items2 %>%
+  group_by(order_id, product_id, product_category_name_english) %>%
+  summarise(
+    qty = n(),
+    unit_price = min(price),
+    total_price =  qty*unit_price
+  ) %>%
+  ungroup() -> order_items3
+
+#' Number of orders:
+order_items3 %>%
   select(1) %>%
   distinct() %>%
   nrow()
 
 #' Number of items per order
-order_items2 %>%
+order_items3 %>%
   group_by(order_id) %>%
-  tally(sort=T) %>%
+  summarise(n = sum(qty)) %>%
+  arrange(-n) %>%
   group_by(n) %>%
   tally() %>%
-  mutate(nn = nn/sum(nn)) -> no_items_per_order
+  mutate(nnn = nn/sum(nn)) -> no_items_per_order
 
 no_items_per_order
 #' Great majority of items has less than 4 items in basket. 
 #' Checking the price of the order by number of items bought:
 
-order_items2 %>%
+order_items3 %>%
   group_by(order_id) %>%
   summarise(
-    no_items = n(),
-    price = sum(price)
+    no_items = sum(qty),
+    price = sum(total_price)
   ) -> a
 
 ggplot(a, aes(x = no_items, group=no_items, y = price)) +
   geom_boxplot() ->  pl
-  plotly::ggplotly(pl)
+plotly::ggplotly(pl)
 # After 10 items there are only couple of orders present in the dataset - very noisy
   
 a %>%
@@ -90,21 +103,40 @@ a %>%
 
 #' What item categories are the most popular?
 
-order_items2 %>%
+order_items3 %>%
   group_by(product_category_name_english) %>%
   tally(sort = T) %>%
   View()
 
 
-order_items %>%
-  group_by(order_id) %>%
-  filter(order_item_id == max(order_item_id)) %>%
-  ungroup() %>%
-  group_by(order_item_id) %>%
-  tally(sort = T) %>%
-  mutate(nn = n/sum(n))
 
-order_items %>%
-  filter(order_id == '1b15974a0141d54e36626dca3fdc731a')
-  group_by(order_id, product_id) %>%
-  tally(sort = T) 
+order_items3
+
+
+order_items3 %>%
+  select(1,3) %>%
+  distinct() %>%
+  mutate(a=1) %>%
+  pivot_wider(names_from = product_category_name_english, 
+              values_from = a, values_fill = 0) -> order_matrix
+
+options(scipen = 999)
+order_matrix %>%
+  summarise_if(is.numeric, sum) %>%
+  pivot_longer(everything()) %>%
+  arrange(-value) %>%
+  View()
+
+#' Clustering
+#' 
+#' Options:
+#' - clustering without dim. reduction - k-modes or other for categorical data
+#' - first dim. reduction then standard clustering with euc. metric
+#' Dim reduction:
+#' - UMAP - it has categorical metrics: https://umap-learn.readthedocs.io/en/latest/parameters.html#metric
+#'   Implementation in R is worse - no distance metrics. Better than t-sne and MDS as it is way faster
+#' - first correlation matrix, then SVD (the same as PCA but correlation matrix insteado of covariance)
+#' - standard PCA - don't care about categorical vars
+#' 
+#'   
+#'   
