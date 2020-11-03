@@ -6,7 +6,7 @@ library(tmap)
 
 geolocation <- read_csv("data/olist_geolocation_dataset.csv")
 
-#' Cleaning outside of bounding box
+# Cleaning outside of bounding box ----
 
 #Brazils most Northern spot is at 5 deg 16′ 27.8″ N latitude.;
 geolocation = geolocation[geolocation$geolocation_lat <= 5.27438888,]
@@ -19,7 +19,7 @@ geolocation = geolocation[geolocation$geolocation_lng <=  -34.79314722,]
 
 #' Only a few removed
 
-#' Get levels of aggregation
+# Get levels of aggregation -----
 geolocation$zip_code_1 <- str_sub(geolocation$geolocation_zip_code_prefix, 1, 1)
 geolocation$zip_code_2 <- str_sub(geolocation$geolocation_zip_code_prefix, 1, 2)
 geolocation$zip_code_3 <- str_sub(geolocation$geolocation_zip_code_prefix, 1, 3)
@@ -31,7 +31,7 @@ geolocation %>%
 
 no_of_coords_per_prefix %>% summary()
 
-
+# Get most central geolocation for each zip code ----
 #' Most of the prefixes have more than one geolocation assigned. 
 #' Using pam with 1 center to replace
 no_of_coords_per_prefix %>% 
@@ -71,20 +71,23 @@ geolocation %>%
 
 
 load('data/map_sampled_zipcodes.Rdata')
-#' Get map for brazil (also less aggregation is avaliable)
+
+
+# Get microregions map, change formats and projections ----
 #' this package is avaliable only from cran archive to install locally
-brazil_map <- brazilmaps::get_brmap("Brazil")
-m2 <- brazilmaps::get_brmap("City")
+microregion_map <- brazilmaps::get_brmap("City")
 
 df <- sf::st_as_sf(sampled_zipcodes, coords = c(3,2))
-#' WGS84 is ok
-#' WARNING! Downsampling temporarly to get workflow going - drawing maps is very resource expensive
-df_small <- df %>% sample_frac(1)
+# WGS84 is proper
 
+# change full geolocation data to sf, set projections for both zipcodes and microregions
+geolocation %>% 
+  sf::st_as_sf(coords = c(3,2)) -> zips
 
+st_crs(zips) = 4326
+microregion_map = st_transform(microregion_map, 4326)
 
-
-# Load data from sidra website - population
+# Load data from sidra website ----
 sidra <- read_csv("data/sidra/test_microregions.csv", na = c('-', '...'))
 
 # set names to english
@@ -94,6 +97,8 @@ sidra %>%
 
 sidra2
 
+load('data/preprocessed/spatial_all.Rdata')
+spatial_all
 # Tables worth checking:
 # tabela 200 - basic
 # 2098 - aktywność zawodowa wg rasy
@@ -102,15 +107,8 @@ sidra2
 # 2094 - religia i rasa
 # 631 - liczba imigrantów
 
-# change full geolocation data to sf, set projections for both zipcodes and microregions
-geolocation %>% 
-  sf::st_as_sf(coords = c(3,2)) -> zips
-
-st_crs(zips) = 4326
-m2 = st_transform(m2, 4326)
-
-# To each zipcode, add information in which region is it
-zips_with_join <- as_tibble(st_join(zips, m2 %>% select(MicroRegion), join = st_within))
+# To each zipcode from olist, add information in which microregion is it
+zips_with_join <- as_tibble(st_join(zips, microregion_map %>% select(MicroRegion), join = st_within))
 
 # To each zipcode, add information from sidra
 sidra3 <- sidra2 %>%
@@ -122,8 +120,13 @@ zips_with_join %>%
   left_join(sidra3, by = c('MicroRegion' = 'microregion_code')) %>%
   rename(microregion_code = MicroRegion) -> zips_with_join2
 
+zips_with_join %>%
+  select(-geometry) %>%
+  left_join(spatial_all, by = c('MicroRegion' = 'microregion_code')) %>%
+  rename(microregion_code = MicroRegion) -> zips_with_join2
 
-# Aggregate - if one zipcode spans for more than 2 microregions - weigh the value by count of points
+
+# Aggregate - if one zipcode spans for more than 2 microregions - weigh the value by count of points. 
 zips_with_join2 %>%
   # filter(geolocation_zip_code_prefix == '28450') %>%
   select(1, 7,9) %>%
@@ -133,27 +136,27 @@ zips_with_join2 %>%
             a = cnt*population) %>%
   summarise(b = sum(a)/sum(cnt)) -> values_weighted
 
-
-# Tests of correctness
-zips %>%
-  sample_frac(0.1) %>%
-  left_join(values_weighted) -> b
-
 zips_with_join2 %>%
-  select(1,7) %>%
-  group_by(geolocation_zip_code_prefix) %>%
-  distinct() %>%
-  summarise(a = n()) %>% 
-  arrange(a)
+  mutate(microregion_code = as.character(microregion_code)) %>% # to correct summarise
+  filter(geolocation_zip_code_prefix == '28450') %>%
+  # select(1, 7,9) %>%
+  group_by(geolocation_zip_code_prefix, microregion_code) %>%
+  summarise(cnt = n(),
+            population = min(population),
+            a = cnt*population) #%>%
+  summarise(b = sum(a)/sum(cnt)) -> values_weighted
 
-zips_with_join2 %>%
-  filter(geolocation_zip_code_prefix=='01001')
+  zips_with_join2 %>%
+    mutate(microregion_code = as.character(microregion_code)) %>% # to correct summarise
+    # filter(geolocation_zip_code_prefix == '28450') %>%
+    group_by(geolocation_zip_code_prefix) %>%
+    summarise_if(is.numeric, mean, na.rm=T) -> values_weighted
 
-
+  
 # Show points on the map - option view for leaflet
 # tmap_mode("view")
 tmap_mode("plot")
-tm_shape(m2) +
+tm_shape(microregion_map) +
   tm_polygons(col = "white") +
   tm_shape(b) +
   tm_symbols(size = 1, 
