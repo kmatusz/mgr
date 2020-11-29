@@ -196,5 +196,34 @@ Ustalenia:
 - patterny są widoczne - ale w sumie nic to nie zmienia, prawdopodobnie odpowiadają zamożności klienta - jest więcej zamówień w bogatszych dzielnicach
 - 
 
+Podsumowanie modelowania 03.11
+Podstawowy model na łatwo dostępnych danych:
+    payment_value,
+    review_score,
+    if_second_order,
+    geolocation_lat,
+    geolocation_lng,
+    no_items,
+    sum_freight.
+Do tego upsampling (1% jedynek), metoda GBM. Na podstawie pierwszego zamówienia stara się przewidzieć czy dojdzie do kolejnego. Daje AUC w granicach 0.6 na zbiorze testowym.
+
+To wygląda na dobry trop. Mimo że performance nie jest jakiś super, to nawet nie chodzi o dobre przewidzenie, bo to ma być tylko input do strategii marketingowej. I chodzi o określenie top x% klientów. Pytanie czy wysyłać do top x, czy do takich w połowie rankingu? Pytanie czy ci z p=0.99 i tak kupią. Do tego trzeba by było się dowiedzieć jak działają klienci na reklamę - raczej nie do sprawdzenia. 
+Strategię można przygotować na podstawie rezultatów klastrowania. 
+
+11.11
+Zrobiłem rolling predictions - bardzo słabo wypada dla tylko 1 miesiąca. Testuję jeszcze dodawanie kolejnego okresu, aby zasymulować comiesięczne dodawanie danych tak jak normalnie w firmie. GBM zaczyna mieć sens dopiero od pewnej liczby obserwacji. Kiedy uruchamiam dla całego datasetu to zdecydowanie lepiej wypada niż LR, ale kiedy datastet to tylko 1 miesiąc to overfituje i LR jest lepsze. Może ciekawą rzeczą w pracy byłoby switching models/sprawdzanie od którego momentu bardziej elastyczne modele zaczynają wygrywać nad basic podejściem
+
+Poza tym zrobiłem resampling/bootstrap - spójne rezultaty dla całego datasetu, bardzo niespójne dla pojedynczych okresów - auc czasami nawet spadało poniżej 50%
+
+Z papera o evolutionary algos in CRM sensownie pasuje do danych to co zacząłem robić, czyli churn prediction i segmentacja. 
+Co do segmentacji to spoko wygląda "incremental ant colony clustering" - inna metoda niż kmeans, bardziej density-based. Poza tym umożliwia inkrementalne klastrowanie - czyli fajna rzecz na tych danych. Problem jest że nie ma implementacji w R a w pythonie jest biedna - na pewno nie jest zrobiona jako estymator w sklearn
+
+
+13.11 Spotkanie ustalenia
+- Pocisnąć klastrowanie tym mrówkowym żeby dostać kod w pythonie
+- Po pierwszych wynikach zorbić konspektt
+
+
+
 
 

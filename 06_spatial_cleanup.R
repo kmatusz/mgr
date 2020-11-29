@@ -1,3 +1,5 @@
+
+
 library(readr)
 library(tidyverse)
 #' General information - age, total population, percentage in rural and urban areas
@@ -44,14 +46,6 @@ tabela200_general_3 %>%
 tabela200_general_4 
 
 tabela200_general_4 %>%
-  summary()
-
-# PCA - first test
-a <-prcomp(tabela200_general_4%>%select(-microregion_code),scale. = T, center = T)
-summary(a)
-
-predict(a, tabela200_general_4%>%select(-microregion_code)) %>%
-  as_tibble() %>%
   summary()
 
 #' Number of immigrants
@@ -119,6 +113,7 @@ tabela200_general_4 %>%
   left_join(tabela3548_earnings3_wide) %>%
   left_join(tabela631_immigrants2) -> spatial_all
 
+spatial_all
 #' Avaliable information:
 #' - microregion code - to join with other datasets
 #' - total_pop - population
@@ -127,20 +122,7 @@ tabela200_general_4 %>%
 #' - inc... - percentage of people having income at least ... times the minimum wage
 #' - no_immigrants - percentage of immigrants
 
+save(spatial_all, file = 'data/preprocessed/spatial_all.Rdata')
 
-
-
-
-#' quick tests with PCA
-a <-prcomp(spatial_all%>%select(-microregion_code),scale. = T, center = T)
-summary(a)
-# first 9 components - 95% of variation. Reduction from 35 variables!
-a$rotation[,'PC1']
-
-
-spatial_all%>%
-  select(-microregion_code) %>%
-  cor() %>%
-  View()
 
 

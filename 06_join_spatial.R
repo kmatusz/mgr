@@ -82,84 +82,46 @@ df <- sf::st_as_sf(sampled_zipcodes, coords = c(3,2))
 
 # change full geolocation data to sf, set projections for both zipcodes and microregions
 geolocation %>% 
+  distinct() %>%
   sf::st_as_sf(coords = c(3,2)) -> zips
 
 st_crs(zips) = 4326
 microregion_map = st_transform(microregion_map, 4326)
 
-# Load data from sidra website ----
-sidra <- read_csv("data/sidra/test_microregions.csv", na = c('-', '...'))
-
-# set names to english
-sidra %>%
-  select(6,7,8) %>%
-  setNames(c('microregion_code', 'microregion', 'value')) -> sidra2
-
-sidra2
+# Load data to join ----
+# Data should have column microregion_code, and only numeric features
 
 load('data/preprocessed/spatial_all.Rdata')
 spatial_all
-# Tables worth checking:
-# tabela 200 - basic
-# 2098 - aktywność zawodowa wg rasy
-# 3548 - dochód względem płacy minimalnej
-# 3741 - wskaźnik analfabetyzmu
-# 2094 - religia i rasa
-# 631 - liczba imigrantów
 
-# To each zipcode from olist, add information in which microregion is it
+# To each zipcode from olist, add information in which microregion is it ----
 zips_with_join <- as_tibble(st_join(zips, microregion_map %>% select(MicroRegion), join = st_within))
 
-# To each zipcode, add information from sidra
-sidra3 <- sidra2 %>%
-  # select(1,3) %>%
-  rename(population = value)
-
-zips_with_join %>%
-  select(-geometry) %>%
-  left_join(sidra3, by = c('MicroRegion' = 'microregion_code')) %>%
-  rename(microregion_code = MicroRegion) -> zips_with_join2
-
+# To each zipcode, add information from sidra ----
 zips_with_join %>%
   select(-geometry) %>%
   left_join(spatial_all, by = c('MicroRegion' = 'microregion_code')) %>%
   rename(microregion_code = MicroRegion) -> zips_with_join2
 
 
-# Aggregate - if one zipcode spans for more than 2 microregions - weigh the value by count of points. 
-zips_with_join2 %>%
-  # filter(geolocation_zip_code_prefix == '28450') %>%
-  select(1, 7,9) %>%
-  group_by(geolocation_zip_code_prefix, microregion_code) %>%
-  summarise(cnt = n(),
-            population = min(population),
-            a = cnt*population) %>%
-  summarise(b = sum(a)/sum(cnt)) -> values_weighted
-
+# !!!! Aggregate - if one zipcode spans for more than 2 microregions - weigh the value by count of points. ----
 zips_with_join2 %>%
   mutate(microregion_code = as.character(microregion_code)) %>% # to correct summarise
-  filter(geolocation_zip_code_prefix == '28450') %>%
-  # select(1, 7,9) %>%
-  group_by(geolocation_zip_code_prefix, microregion_code) %>%
-  summarise(cnt = n(),
-            population = min(population),
-            a = cnt*population) #%>%
-  summarise(b = sum(a)/sum(cnt)) -> values_weighted
+  # filter(geolocation_zip_code_prefix == '28450') %>%
+  group_by(geolocation_zip_code_prefix) %>%
+  summarise_if(is.numeric, mean, na.rm=T) -> spatial_all_by_zip
 
-  zips_with_join2 %>%
-    mutate(microregion_code = as.character(microregion_code)) %>% # to correct summarise
-    # filter(geolocation_zip_code_prefix == '28450') %>%
-    group_by(geolocation_zip_code_prefix) %>%
-    summarise_if(is.numeric, mean, na.rm=T) -> values_weighted
+save(spatial_all_by_zip, file = 'data/preprocessed/spatial_all_by_zip.Rdata')
 
-  
+
+
 # Show points on the map - option view for leaflet
 # tmap_mode("view")
-tmap_mode("plot")
-tm_shape(microregion_map) +
-  tm_polygons(col = "white") +
-  tm_shape(b) +
-  tm_symbols(size = 1, 
-             col = "b",
-             border.lwd = NA,
-             alpha = 0.5)
+# tmap_mode("plot")
+# tm_shape(microregion_map) +
+#   tm_polygons(col = "white") +
+#   tm_shape(b) +
+#   tm_symbols(size = 1,
+#              col = "b",
+#              border.lwd = NA,
+#              alpha = 0.5)

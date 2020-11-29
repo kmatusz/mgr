@@ -137,6 +137,4 @@ order_matrix %>%
 #'   Implementation in R is worse - no distance metrics. Better than t-sne and MDS as it is way faster
 #' - first correlation matrix, then SVD (the same as PCA but correlation matrix insteado of covariance)
 #' - standard PCA - don't care about categorical vars
-#' 
-#'   
 #'   
