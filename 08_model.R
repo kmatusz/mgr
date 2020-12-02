@@ -577,7 +577,7 @@ first_orders %>%
   mutate(if_second_order = as.factor(if_second_order))  -> to_model_cohort
 
 
-to_model %>%
+to_model_cohort %>%
   mutate(no_items = ifelse(is.na(no_items), 1, no_items),
          if_second_order = ifelse(as.character(if_second_order) == '1', 'yes', 'no')
   ) %>%
@@ -853,7 +853,7 @@ for (i in 1:(length(cohorts_ordered)-1)){
   
 }
 
-for (roc in roc_list1){
+for (roc in roc_list2){
   print(roc)
 }
 # Very variable outputs - from 0.5 to 0.67 - not consistent

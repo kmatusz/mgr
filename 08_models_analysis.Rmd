@@ -1,0 +1,206 @@
+---
+title: "Modeling resuls"
+author: "Kamil Matuszelański"
+date: "02.12.2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+```
+
+
+```{r include=FALSE}
+library(readr)
+library(tidyverse)
+library("leaflet")
+library(psych)
+library(lubridate)
+library(cluster)
+library(factoextra)
+library(caret)
+library(rpart)
+
+bootstrap_auc <- function(model, test_set, no_resamples){
+  out_roc <- vector('numeric', no_resamples)
+  
+  len_test <- nrow(test_set)
+  for (i in 1:no_resamples){
+    idxes <- sample(1:len_test, size = len_test, replace = T)
+    temp_test <- test_set[idxes,]
+    
+    predictions_temp = predict(model, temp_test,type = 'prob')
+    roc_temp  <- pROC::roc(as.numeric(temp_test$if_second_order == "yes"), 
+                           predictions_temp[, 1])
+    out_roc[i] <- roc_temp$auc
+    i <- i+1
+    
+  }
+  out_roc
+}
+
+bootstrap_summary<- function(out_roc){
+  
+  tibble(auc =out_roc) %>%
+    summary %>%
+    print
+  
+  mean_auc <- mean(out_roc)
+  tibble(auc =out_roc, y=0) %>%
+    ggplot(aes(x=auc)) +
+    geom_density() +
+    geom_jitter(aes(y=y), alpha=0.5) +
+    geom_vline(xintercept = mean_auc, color = 'red')
+  
+}
+
+
+calc_metrics <- function(model, to_model_test, run_confusion_matrix = F){
+  predictions1 <- predict(model, to_model_test,type = 'prob')
+  roc_test1  <- pROC::roc(as.numeric(to_model_test$if_second_order == "yes"), 
+                          predictions1[, 1])
+  
+  plot(roc_test1) 
+  title('ROC curve on test set \n')
+  print('Calc AUC on test set:')
+  print(roc_test1)
+  
+  if(run_confusion_matrix){
+    confusionMatrix(data = as.factor(as.numeric(predictions1[, 2] > 0.5)), # probability of yes was more than
+                    reference = as.factor(as.numeric(to_model_test$if_second_order == "yes")),
+                    # definitions of the "success" label
+                    positive = '1') 
+  }
+  # print('Quantiles of predicted responses:')
+  # print('-----')
+  # predictions1[,2] %>%
+  #   quantile(seq(0.8,1, 0.01))
+}
+
+calc_roc <- function(model, to_model_test, run_confusion_matrix = F){
+  predictions1 <- predict(model, to_model_test,type = 'prob')
+  roc_test1  <- pROC::roc(as.numeric(to_model_test$if_second_order == "yes"), 
+                          predictions1[, 1])
+  return(roc_test1)
+}
+
+```
+
+
+
+```{r}
+load('models_cache/08_all_models.Rdata')
+
+```
+
+
+## Dataset preparation
+
+Ways of joining different types of information to the main dataset:
+
+1. Basic features
+
+  - Order value, review 1-5 etc. 
+  - no special preparation - this is main table of the dataset
+  
+2. Geographic info
+
+  - Demographic data from sttistical office
+  - Different resolution than main dataset - description of data transformation
+  - TODO - opis jakie dane dokładnie
+
+3. Transaction data - items in the orders
+
+Transformations used on the joined dataset from the previous spot:
+
+- On demographic data - lots of features (30), can be mapped into way smaller no. of features as proxies (eg. rich vs. poor regions). Use PCA with number of components to catch.
+
+
+
+## Methods:
+
+- Train-test 70/30 split of the dataset 
+- Hyperparameter search using 3-fold Cross-validation on training dataset, grid search of possible combinations
+- Used models: XGBoost, GBM, Logistic Regression
+- Upsampling for handling class imbalance (97/3) - only on training dataset
+- Metric used - AUC, as there is class imbalance
+- Bootstrap of test set with 100 replcations to get standard errors of AUC estimation
+- Relative variable importance of variables in each model
+
+TODO yet:
+- Explainable artificial intelligence - cateris paribus plots and others (DALEX package)
+- some features selection methods - to do on the most enhanced dataset with all possible features - now it doesn't make sense
+
+## Results:
+
+Models tried:
+
+Models on 6 basic variables:
+
+- Model 1 - GBM on standard hyperparameters with upsampling (AUC test 0.5921)     
+- Model 2 - GBM on standard hyperparameters without upsampling (Auc test 0.5899)  
+- Model 3 - Logistic with upsampling (Auc test 0.5575)                            
+- Model 4 - Logistic without upsampling (Auc test 0.5563)                         
+- **Model 5 - XGB extensive hyperparameters search with upsampling (Auc test 0.6159 - best)**
+
+Models on 6 basic variables + demographic data:
+
+- **Model geo 1-  XGB extensive hyperparameters search with upsampling on geo data (Auc test 0.5546 - worse than model without demographic info but still good)**
+- Model geo 2 - XGB extensive hyperparameters search with upsampling on geo data and with PCA on 8 components (Auc test 0.5289)
+
+TODO: - create table and better summmary of above, list variables, table with tested hyperparameters for all (best?) models
+
+ROC comparison of XGB models with and without geo features:
+
+```{r}
+list(
+  'XGB on 6 basic features \n(Auc test 0.6159)\n'   = calc_roc(model5, to_model_test),
+  'XGB with added geo features \n(Auc test 0.5546)' = calc_roc(model_geo1, to_model_test_geo)) %>%
+  pROC::ggroc(alpha = 0.5, linetype = 1, size = 1) +
+  geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), 
+               color = "grey", 
+               linetype = "dashed") +
+  theme_bw() + 
+  coord_fixed() +
+  scale_color_brewer(palette = "Set2")
+```
+
+
+Comparison of bootstraped AUC distribution on test set for best model for geo data included and not:
+
+```{r}
+
+rbind(
+  tibble(AUC = out_roc5, model = 'XGB on basic information', mean_auc = mean(out_roc5)),
+  tibble(AUC = out_roc_geo1, model = 'XGB with added \nall demographic variables', mean_auc = mean(out_roc_geo1))
+) %>%
+  ggplot(aes(x = AUC, color = model)) +
+  geom_density() +
+  geom_vline(aes(xintercept = mean_auc, color = model)) +
+  scale_x_continuous(breaks = seq(0.5, 0.65, 0.01))
+
+
+```
+
+Most important features in XGB model - best model of all tested:
+
+```{r}
+plot(varImp(model5))
+```
+
+
+Most important features in XGB model on geo data - demmographic features are less important than these connected with demography:
+
+```{r}
+plot(varImp(model_geo1))
+```
+
+
+Most important features in Logistic Regression model - most simple one:
+
+```{r}
+plot(varImp(model3))
+```
+
+
+
