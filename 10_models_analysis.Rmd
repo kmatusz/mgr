@@ -90,6 +90,53 @@ load('models_cache/08_all_models.Rdata')
 
 ```
 
+
+
+```{r}
+library(stringr)
+files_cache <- list.files('run_all_models_cache/')
+files_names_models <- files_cache[str_starts(files_cache, 'saved_model')]
+
+load('run_all_models_cache/to_model_train.Rdata')
+load('run_all_models_cache/to_model_test.Rdata')
+
+models_list <- vector('list', length(files_names_models))
+
+for (i in 1:length(files_names_models)){
+  name <- files_names_models[i]
+  temp_env <- new.env()
+  load(paste0('run_all_models_cache/',name),envir = temp_env)
+  models_list[[i]] <- temp_env$model_spec
+}
+
+models_names <- c()
+for (i in models_list){
+  models_names <- c(models_names, i$model_name)
+}
+
+
+names(models_list) <- models_names
+
+
+for (i in models_names){
+  models_list[[i]]$auc_test <- calc_roc(models_list[[i]]$model, to_model_test)$auc
+  models_list[[i]]$auc_train <- calc_roc(models_list[[i]]$model, to_model_train)$auc
+}
+
+models_list %>% purrr::map(~.x$auc_test)
+
+a <- bootstrap_auc(models_list[[i]]$model,to_model_test, 100)
+
+
+plot(varImp(models_list$basic_info$model))
+plot(varImp(models_list$topics$model))
+plot(varImp(models_list$demographics$model))
+
+
+
+```
+
+
 ### Dataset preparation
 
 Ways of joining different types of information to the main dataset:

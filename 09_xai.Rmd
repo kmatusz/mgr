@@ -1,0 +1,742 @@
+---
+title: "Analysis of model results"
+# output: html_document
+output: word_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = F, warning = F, echo=F, fig.width = 6, fig.height = 4)
+```
+
+```{r }
+library(readr)
+library(tidyverse)
+library("leaflet")
+library(psych)
+library(lubridate)
+library(cluster)
+library(factoextra)
+library(caret)
+library(rpart)
+library(DALEX)
+library(stringr)
+```
+
+
+```{r cache=T}
+# Create functions for calculating AUC etc.
+bootstrap_auc <- function(model, test_set, no_resamples){
+  out_roc <- vector('numeric', no_resamples)
+  
+  len_test <- nrow(test_set)
+  for (i in 1:no_resamples){
+    idxes <- sample(1:len_test, size = len_test, replace = T)
+    temp_test <- test_set[idxes,]
+    
+    predictions_temp = predict(model, temp_test,type = 'prob')
+    roc_temp  <- pROC::roc(as.numeric(temp_test$if_second_order == "yes"), 
+                           predictions_temp[, 1])
+    out_roc[i] <- roc_temp$auc
+    i <- i+1
+    
+  }
+  out_roc
+}
+
+bootstrap_summary<- function(out_roc){
+  
+  tibble(auc =out_roc) %>%
+    summary %>%
+    print
+  
+  mean_auc <- mean(out_roc)
+  tibble(auc =out_roc, y=0) %>%
+    ggplot(aes(x=auc)) +
+    geom_density() +
+    geom_jitter(aes(y=y), alpha=0.5) +
+    geom_vline(xintercept = mean_auc, color = 'red')
+  
+}
+
+
+calc_metrics <- function(model, to_model_test, run_confusion_matrix = F){
+  predictions1 <- predict(model, to_model_test,type = 'prob')
+  roc_test1  <- pROC::roc(as.numeric(to_model_test$if_second_order == "yes"), 
+                          predictions1[, 1])
+  
+  plot(roc_test1) 
+  title('ROC curve on test set \n')
+  print('Calc AUC on test set:')
+  print(roc_test1)
+  
+  if(run_confusion_matrix){
+    confusionMatrix(data = as.factor(as.numeric(predictions1[, 2] > 0.5)), # probability of yes was more than
+                    reference = as.factor(as.numeric(to_model_test$if_second_order == "yes")),
+                    # definitions of the "success" label
+                    positive = '1') 
+  }
+  # print('Quantiles of predicted responses:')
+  # print('-----')
+  # predictions1[,2] %>%
+  #   quantile(seq(0.8,1, 0.01))
+}
+
+calc_roc <- function(model, to_model_test, run_confusion_matrix = F){
+  predictions1 <- predict(model, to_model_test,type = 'prob')
+  roc_test1  <- pROC::roc(as.numeric(to_model_test$if_second_order == "yes"), 
+                          predictions1[, 1])
+  return(roc_test1)
+}
+```
+
+
+```{r }
+# Load the models and training data - only XGB, LR is too big for now
+
+files_cache <- list.files('run_all_models_cache/')
+files_names_models <- files_cache[str_starts(files_cache, 'saved_model')]
+files_names_models <- files_names_models[!str_starts(files_names_models, 'saved_model_lr')]
+files_names_models <- files_names_models[!str_starts(files_names_models, 'saved_model_boruta_all_with_pca')]
+# files_names_models
+
+
+load('run_all_models_cache/to_model_train.Rdata')
+load('run_all_models_cache/to_model_test.Rdata')
+
+models_list <- vector('list', length(files_names_models))
+
+for (i in 1:length(files_names_models)){
+  # print(i)
+  name <- files_names_models[i]
+  temp_env <- new.env()
+  load(paste0('run_all_models_cache/',name),envir = temp_env)
+  models_list[[i]] <- temp_env$model_spec
+}
+
+models_names <- c()
+for (i in models_list){
+  models_names <- c(models_names, i$model_name)
+}
+
+names(models_list) <- models_names
+```
+
+
+## Modeling description (docelowo o wiele bardziej rozbudowane, tutaj tylko zalążek potrzebny do opisu rezultatów)
+
+### Description 
+
+Sets of features:
+
+- basic information - value of the purchase, geolocation in raw format lat/lng, value of the package, number of items in the package, review score (6 variables)
+- demographic features for the region from which the customer is - age structure, percentage of population in urban area, income structure (35 variables)
+- demographic features transformed using PCA - (10 variables/components)
+- indicator whether the customer is in an agglomeration area obtained from DBSCAN on location data (1 variable)
+- product categories that the customer has bought in the purchase (15 dummy variables)
+- main topic that the customer has mentioned in the review (15 dummy variables)
+
+Models tested:
+
+- basic features
+- demographic + basic
+- demographic with PCA + basic
+- agglomeration + basic
+- product categories + basic
+- review topic + basic
+- all variables - demographic features transformed with PCA
+
+I have not run the model containing all variables with demographic features without PCA preprocessing. There are 2 reasons for that - one is that number of variables in this set is very big, what poses performance reasons - model training simply would take a very long time. Assuming that the PCA set of features would give better score can be also supported by the fact that the model with only included PCA demographic variables is performing better than the full set of variables.  
+
+### Boruta
+
+#### Methods (do przeklejenia do rozdziału methods description)
+
+To remove the human judgement about which predictors should be used, I have also used a Boruta algorithm for feature selection. It is widely popular among machine learning practitioners (??? TODO: znaleźć cytowania oryginalnej pracy). The algorithm belongs to category of wrapper feature selection algorithms, and Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. In this way one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and Random Forest model is trained. 
+
+Random Forest model have a built in feature importance measure, that is usually Mean Decrease Impurity. After running random forest model, for each original features MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of shadow features, the variable gets a "hit". 
+
+Above procedure is repeated for preassigned number of iterations. Finally, important features that should make it to the final model are the ones that obtain less hits than preassigned n. 
+
+After gaining knowledge about the variables that should make it to the model, I have trained XGBoost classifier using these features. The rest of the fitting procedure (cross-validation, up-sampling, hyper-parameters etc.) stayed the same as in the rest of the approaches.  
+
+One should have in mind that Boruta algorithm is very time-consuming. The minimal number of runs recommended by the method authors is 100, and one run consists of fitting a Random Forest model to the whole dataset with doubled number of features (because of added shadow features). In the case of this analysis, model computation took about 12 hours on a medium-class modern laptop. Although other wrapper algorithms also require an iterative fitting the model, they usually start with fitting the model to one variable, in the next iteration to 2, and so on up to k features. On the other hand Boruta algorithm in each iteration fits the model to 2*k features (original and shadow features).
+
+#### Results
+
+The Boruta algorithm concluded that from all 47 variables only the 14 variables indicating topics are non-relevant. One should notice that even using automatic feature selection, the algorithm has dropped the whole category of variables, meaning that the approach of manually setting sets of variables to include in the model is also "recommended" by the algorithm. 
+
+To assess the performance of Boruta algorithm one should however also look at the final accuracy of the model. The score using AUC on the test set is 0.646 - less than the model including all variables. This means that using Boruta algorithm did not bring an additional predictive power to the model. At the same time, this means that the variables indicating reviews topics are relevant for the model performance. 
+
+## Performance analysis
+
+### Introduction (TODO)
+
+
+### AUC performance tables (XGB, LR)
+
+```{r }
+# Create auc-roc tables
+for (i in models_names){
+  # print(i)
+  models_list[[i]]$auc_test <- calc_roc(models_list[[i]]$model, to_model_test)$auc
+  models_list[[i]]$auc_train <- calc_roc(models_list[[i]]$model, to_model_train)$auc
+}
+
+models_list %>% 
+  purrr::map_df(~as.numeric(.x$auc_test)) %>%
+  pivot_longer(cols=everything(),values_to = 'AUC_test') -> auc_test_table
+
+models_list %>% 
+  purrr::map_df(~as.numeric(.x$auc_train)) %>%
+  pivot_longer(cols=everything(),values_to = 'AUC_train') -> auc_train_table
+```
+
+
+
+```{r }
+auc_test_table %>%
+  left_join(auc_train_table) %>%
+  arrange(-AUC_test) %>%
+  mutate(AUC_perc_performance_drop = (AUC_test-max(AUC_test))/max(AUC_test)) %>%
+  knitr::kable()
+
+```
+
+Table .. shows the performance of the XGB models using various sets of variables. The best AUC score on the test set is obtained by the model containing basic features combined with dummies indicating product categories that the customer has bought during the first purchase. AUC is greater than 0.5, which means that the model has predictive power better than random guessing. 
+
+Second best model is the one containing all variables, with demographic variables transformed with PCA. It is worth noticing that this model also contains the features containing product categories information, so similar performance is not a surprise. The percentage drop in AUC is very small (0.6%). The model with only basic information is worse for about 2.5%. 
+
+Another thing worth noticing is the fact that AUC on the train set is almost 1 in every model. These values are worrying because this means that the models are highly over-fitted, and that generalization problems can be present. The XGBoost model has some built-in parameters that can be used as a regularization strategies, like ... and ... (TODO: dopisać czym manipulowałem w CV). In search for a less over-fitted model I have tweaked these parameters in cross-validation. However, although in some cases I was able to make the model overfit less, the performance in 2-fold cross-validation was still the best with a highly over-fitted models.
+
+I have also created a table .. containing similar information, but this time for Logistic Regression model. Main finding is that even the best LR model (containing product categories and basic features) is worse than the worst XGBoost model (0.586 vs. 0.625, respectively). This means that linear modeling is in general very poorly suited for this prediction task. 
+
+```{r }
+# Zapis LR tabeli do pliku
+# auc_test_table %>%
+#   left_join(auc_train_table) %>%
+#   arrange(-AUC_test) %>%
+#   mutate(AUC_perc_performance_drop = (AUC_test-max(AUC_test))/max(AUC_test)) -> auc_table_for_lr
+#   
+# save(auc_table_for_lr, file='run_all_models_cache/auc_table_for_lr.Rdata')
+
+load(file='run_all_models_cache/auc_table_for_lr.Rdata')
+
+auc_table_for_lr %>%
+  knitr::kable()
+```
+
+AUC values for the test set oscillating below 0.6 mean that the model is very poorly fitting to the data. For the worst model containing only agglomeration feature it is at the value of 0.546. It is that close to the level of random classifier (0.5), that one could wonder if this model has any predictive power at all.
+
+Interesting remark is that judging my AUC values, both LR and XGBoost select the same 2 models as the best ones - namely the one with product categories and with all variables. From the fact that 2 such different models arrived to the same conclusion in terms of which variables should be included, this means that these variables simply provide the biggest predictive power, regardless of the model used.
+
+Comparison of performance for *agglomeration* set of features is particularly interesting. In XGBoost model this feature is rated as the 3rd best one (after excluding Boruta set to compare meaningfully with LR table). In LR case it is scored as the worst one. One possible explanation is that it's because of inherent ability of XGBoost to create interactions between variables, while these interactions should be included in LR model manually. 
+
+
+#### Bootstraping AUC values
+
+The AUC test value in the above table is shown for the whole test set. However, these point estimates cannot tell whether the performance would still be the same for sightly different test set. This is especially crucial in the case of the 2 best models - as the difference in AUC values is so small that it is not clear if it is reproducible, or just obtained by random chance. 
+
+A standard way to compare the models performance is using bootstrap technique to obtain different test sets. I have sampled with replacement observations from the test set and calculated AUC measure for the models of choice. Specifically, I have done 100 re-sample rounds, and the models chosen were the best one (product categories + basic information), second best (all variables), and the one with only basic information. The picture .. shows density estimates of these 3 empirical AUC score distributions. 
+
+```{r cache=T}
+bootstrap_auc_best = bootstrap_auc(models_list$product_categories$model, to_model_test,no_resamples = 100)
+bootstrap_auc_2nd_best = bootstrap_auc(models_list$all_with_pca$model, to_model_test,no_resamples = 100)
+bootstrap_auc_basic = bootstrap_auc(models_list$basic_info$model, to_model_test,no_resamples = 100)
+
+rbind(
+  tibble(AUC = bootstrap_auc_best, model = '1st best - product categories', mean_auc = mean(bootstrap_auc_best)),
+  tibble(AUC = bootstrap_auc_2nd_best, model = '2nd best - all features', mean_auc = mean(bootstrap_auc_2nd_best)),
+  tibble(AUC = bootstrap_auc_basic, model = 'Baseline - basic information', mean_auc = mean(bootstrap_auc_2nd_best))
+) %>%
+  ggplot(aes(x = AUC, fill = model)) +
+  geom_density(alpha=0.5) +
+  scale_x_continuous(breaks = seq(0.5, 0.7, 0.01)) +
+  theme_minimal()
+
+```
+
+The curve for the model with basic features is standing out of the others. However, the difference between 1st best and 2nd best models is not as clear - it looks like the better model has slightly better AUC, but this should be investigated more thoroughly. That is why I have used Kolmorogov-Smirnov test to check if the empirical distributions can come from the same probability distribution. I have run the test twice using 2 alternative hypotheses. First one with `H1: auc_best =/= auc_2nd_best`, and the second one: `H1: auc_best > auc_2nd_best`.  (TODO: rezultaty opisane w tekście i z kodu się rozjechały, sprawdzić dlaczego i czy zmienia konkluzje)
+
+```{r}
+ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best)
+ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best,alternative = 'less')
+```
+
+The p-value for the first hypothesis is 0.0541. This means that with the level of significance 0.05 the performance of the models is indistinguishable. Using a more liberal level of significance of 0.1 one can say that the performance of the models is different.
+
+P-value with 'greater' hypothesis is 0.02705. This means that at the levels of significance 0.1, 0.05 one can say that the performance of the first model is better than of the second one.
+
+These two tests show that the results are ambiguous. Although there is some evidence that the performance of the product categories model is better, it cannot be said with a great certainty. One heuristic can come into help in deciding which model should be used in production setting is Occam's razor. The model with product categories has 21 variables, while the one with all variables included - 47. If there is no an important reason why the more complex approach should be used, the simpler is usually better. In this case, using simpler approach has the following advantages:
+
+- Faster inference about the new customers
+- The predictions are easier to interpret. Not only the amount of factors taken into account is lower, but also the predictions are made only on the basis of the features that can be directly obtained from the purchase data. On the contrary - variables containing topic information or demographic features are somehow biased and uncertain. In the case of the review topic data it is because of the model imperfections, and in the case of demographic data because of too big generalization
+- Easier model retraining and serving the final model in the IT infrastructure of the company.
+
+
+```{r}
+# ECDF - wybrać czy lepsze niż density
+# rbind(
+#   tibble(AUC = bootstrap_auc_best, model = '1st best - product categories', mean_auc = mean(bootstrap_auc_best)),
+#   tibble(AUC = bootstrap_auc_2nd_best, model = '2nd best - all features', mean_auc = mean(bootstrap_auc_2nd_best)),
+#   tibble(AUC = bootstrap_auc_basic, model = 'Baseline - basic information', mean_auc = mean(bootstrap_auc_2nd_best))
+# ) %>%
+#   ggplot(aes(x = AUC, fill = model, color=model)) +
+#   stat_ecdf()
+```
+
+#### ROC curve (TODO: opisać)
+
+
+```{r}
+roc_best_model <- calc_roc(models_list$product_categories$model, to_model_test)
+
+tibble(
+thre= roc_best_model$thresholds,
+sens = roc_best_model$sensitivities,
+spec = roc_best_model$specificities
+) -> roc_tibble
+
+roc_tibble %>%
+  mutate(thre= round(thre,1)) %>%
+  filter(thre %in% round(seq(0,1,0.1),1)) %>%
+  group_by(thre) %>%
+  slice_head(n=1) %>%
+  ungroup() -> thresholds
+
+roc_tibble %>%
+  sample_frac(0.1) %>%
+  ggplot(aes(x = spec, y=sens))+ 
+  geom_line() +
+  geom_point(data=thresholds, aes(x = spec, y = sens), color='red')+
+  ggrepel::geom_text_repel(data=thresholds, aes(x = spec, y = sens, label=thre),hjust=0)+
+  scale_x_continuous(trans='reverse') +
+  geom_abline(slope=1, intercept=1, linetype='longdash') +
+  labs(x = 'Specifity', y = 'Sensitivity') +
+  theme_minimal()
+
+```
+
+
+
+## Analysis of potential revenue - lift etc. 
+
+### Lift analysis - introduction (TODO: na tą chwilę skrawki tekstu, do poukładania)
+
+Lift analysis is one of the ways to measure performance of marketing campaigns. Typically it is used in the scenario of A/B testing. In the case of churn prediction, a control group would not be given any encouragement to repeat the purchase, while testing group would receive some - for example an email containing discount code.
+
+Later, churn rates of both groups should be compared. *Lift* is defined as test group performance divided by control group performance. 
+
+A/B testing is undoubtedly the most optimal way to test the performance of any machine learning model, at first the performance should be tested in an offline setting. This is because if the model performs particularly bad, the company is 
+
+- co to lift
+- normalne używanie - A/B testing
+- dlaczego istotne dla marketingu
+  - można targetować odpowiedni segment - tych którzy nie są oczywiści ale też tych którzy są prawdopodobni
+  - można zestawić to z danemi z prowizji i zobaczyć który segment jest najbardziej zyskowny
+  - cost analysis dla poszczególnych "segmentów" (kwantyli)
+
+Lift is a typical measure of model performance. Typically it is calculated as a true positive rate obtained from a Machine Learning model on given threshold, divided by a proportion of the samples that are positive.
+
+1. Calculate proportion of the customers that have bought for the second time (share_second)
+1. Split the dataset into 100 sub-datasets. The split is done on the basis of quantile of the response from the model y_hat.
+2. Calculate true response rate for each subset i(share_second_model_i)
+3. Calculate lift value for each subset i (share_second_model_i/share_second)
+
+This information can be very valuable for the marketing campaigns led by the company. It can be used to enhance the performance of already existing marketing tools.
+
+- For example, one can decide to not target the customers with the highest probability of buying the second time, as they would buy anyway. Another interesting insight that can be obtained from a well designed A/B testing experiment is the how the conversion rate of each of the customers group changes after performing some action, for example sending an encouraging email or giving a discount for the next purchase. 
+
+- One strategy of marketing targeting based on lift information is targeting the customers that are the most susceptible to buying second time. This strategy can however generate unnecessary cost.
+- A/B testing of each marketing strategy on each segment
+- serves as a other baseline for marketing tools - instead of compute lift test group vs. control, compute lift test group vs. probability from the model
+- select cutoffs for different types of targeting - for example don't do anything with top 1%, send encouraging email to top 10%, send discount to top 20%. Way to optimize costs of expensive targeting campaigns
+
+The way to approach the customers is however in the hands of company's marketing experts. Only information about the ranking of customers probabilities to buy second time is not enough to add value for the company. To this, know-how about effectiveness of various marketing tools and cost analysis of each channels that the company can influence customer's choices is needed. Such information is often already available in the marketing departments, if not based on previous market research, then coming from the intuition of the experienced marketing department employees.
+
+### Lift analysis (TODO: opisać wykres i tabelkę)
+
+```{r}
+preds <- to_model_test
+preds['prob'] <- predict(models_list$product_categories$model, to_model_test%>% select(-if_second_order), type='prob')['yes']
+
+preds %>% 
+  mutate(if_second_order = ifelse(if_second_order=='yes', 1, 0)) %>%
+  select(if_second_order, prob) -> preds2
+
+```
+
+
+```{r }
+score_randomly <- mean(preds2$if_second_order)
+# score_randomly
+```
+
+0.033 of people have second order. This means that if we would send out the encouragement randomly, we would hit 0.033 percent of people that truly would do second order.
+
+
+```{r }
+# preds2 %>%
+#   filter(prob>quantile(prob, 0.99)) %>%
+#   summarise(score=mean(if_second_order),
+#             score_randomly = score_randomly,
+#             lift_over_randomly = (score-score_randomly)/score_randomly
+#   )
+
+output_lifts <- data.frame()
+
+for (quant in seq(0.99, 0.01, -0.01)){
+  # print(1-quant)
+  
+  preds2 %>%
+    filter(prob>quantile(prob, quant)) %>%
+    summarise(
+      fraction_of_customers = 1-quant,
+      no_customers_in_bin = n(),
+      prob_cutoff = min(prob),
+      score=mean(if_second_order),
+      score_randomly = score_randomly,
+      performance_gain_over_randomly = (score-score_randomly)/score_randomly,
+      lift_over_randomly = score/score_randomly
+    ) -> tmp
+  
+  output_lifts <- rbind(output_lifts, tmp)
+  
+}
+```
+
+#### Table with selected quantiles
+
+```{r }
+quantiles_to_show <- c(0.99, 0.98, 0.97, 0.96, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5)
+output_lifts %>% 
+  filter(fraction_of_customers %in% (1-quantiles_to_show)) %>%
+  knitr::kable()
+```
+
+#### Lift curve
+
+```{r }
+
+output_lifts %>%
+  ggplot(aes(x = fraction_of_customers, y= lift_over_randomly)) +
+  geom_line() +
+  geom_hline(yintercept = 1, color = 'red') +
+  labs(title = 'Lift curve') +
+  theme_minimal() + geom_point(data = output_lifts %>%
+                                 filter(fraction_of_customers>0.08 & fraction_of_customers<0.089), 
+                               
+                               color = 'red', size = 3
+  ) +
+  ggrepel::geom_text_repel(data = output_lifts %>%
+               filter(fraction_of_customers>0.08 & fraction_of_customers<0.089) %>%
+               mutate(label = paste0('Lift:', round(lift_over_randomly,2))),aes(label=label))
+
+```
+
+## Model explanations
+
+### Introduction 
+
+Despite superior performance in lots of machine learning tasks, the biggest drawback of Extreme Gradient Boosting models is its black-box nature, meaning lack of interpretability of predictions and parameters. This problem can be mitigated by usage of Explainable AI tools. One of such tools is ceteris-paribus analysis. The idea is to set all variables except the variable(s) of interest as constants, and create a new set of observations by manipulating only one or to variables. Such analysis can give a similar information to the values of coefficients in Logistic Regression models. 
+
+(TODO: opisać trochę więcej)
+
+#### Variable importances
+
+```{r }
+plot(varImp(models_list$basic_info$model))
+```
+
+On the plot .. the variables importances from XGB model for basic variables are presented. The best one is the value of the payment. Also, high importance scores are obtained by vanilla geolocation variables and the transportation cost for the value. Surprisingly, the review score of the purchase is not very important variable. Number of items bought has the smallest variable importance. One should remember that although the shown variable importance is equal to 0, this doesn't mean that the variable was not used in growing trees in XGB model. Rather, the variable importances are simply scaled to the range 0-100 on the plot.
+
+```{r }
+plot(varImp(models_list$product_categories$model))
+```
+
+
+```{r}
+var_imp_cat <- varImp(models_list$product_categories$model, scale=F)
+
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
+
+var_imp_cat$importance %>%
+  as_tibble(rownames = 'var') %>%
+  mutate(var2 = ifelse(str_starts(var, 'prod_cat_'), 'prod_categories', var)) %>%
+  group_by(var2) %>%
+  summarise(Overall = sum(Overall)) %>%
+  mutate(Overall = range01(Overall)*100) %>%
+  as.data.frame() -> temp_df_imp
+
+
+rownames(temp_df_imp) <- temp_df_imp$var2
+temp_df_imp$var2 <- NULL
+var_imp_cat$importance <- temp_df_imp
+plot(var_imp_cat)
+
+```
+
+Second variable importance plot contains importances for the best model - with included product categories. Top 6 best predictors are the basic information, while the variables indicating product categories are the least important ones. Just from this information one could wonder, why despite product categories are relatively unimportant variables, they lead to 2.5% gain in AUC compared to the model without them. The reason is that all product categories variables in reality encode one variable. That is why variable importances of these variables should be treated jointly, which can be done simply by summing up the importances and scaling all importances to 0-100 range. This is presented on the plot .. . Now, product categories has become 5th most important variable, with importance bigger than review score. 
+
+
+#### Cateris paribus plots
+
+In my analysis I have decided to obtain the ceteris paribus profiles for mean values of each variable. Unfortunately this method is not able to meaningfully analyse dummy variables, that is why I have excluded the variables indicating product categories. Another variables requiring special treatment are the ones indicating geographic location. For them, I have created a 2-way ceteris paribus estimates and plotted them over the Brazil map. This way it is possible to see if it is correlated with presence of bigger cities or small population density (as in the Amazonia area).
+
+```{r cache=T}
+  explain <- DALEX::explain(model = models_list$product_categories$model,  
+                          data = to_model_test %>% select(-if_second_order),
+                          y = to_model_test$if_second_order == "yes", 
+                          label = "Product categories",verbose = F)
+
+
+to_model_test %>%
+  select_if(is.numeric) %>%
+  summarise_all(mean) -> mean_values
+
+preds %>%
+  filter(prob > quantile(prob, 0.9)) %>%
+  select(-if_second_order, -prob) %>%
+  summarise_all(mean) -> mean_values_top_decile
+
+```
+
+```{r }
+# plot(varImp(models_list$product_categories$model))
+predict_profile(explainer = explain, 
+                new_observation = mean_values) -> profile_all
+
+```
+
+```{r }
+plot(profile_all, variables = c("review_score")) + ggtitle("Ceteris-paribus profile", "") 
+```
+
+The shape of the ceteris paribus profile for the review score variable for the mean observations has an expected shape. The better the review, the it is probable for the client to purchase for the second time. What is also worth noticing is the fact that the probability increase is non-linear with respect to review score. The biggest probability increase is visible from the score 4 to 5. It is often the case in the customer reviews setting, observed also in the area of recommendation engines [(TODO: znaleźć lepsze cytowanie niż xkcd, z wykładu o recommenders)](https://xkcd.com/1098/). 
+
+```{r }
+ingredients::ceteris_paribus(explain,
+                             new_observation = mean_values,variables = c('payment_value')) -> profile_payment
+
+plot(profile_payment, variables = c("payment_value")) + ggtitle("Ceteris-paribus profile", "") +
+  scale_x_continuous(n.breaks=10,limits = c(0,500)) + geom_smooth(alpha=0)
+
+```
+
+Model response for ceteris paribus profile is non-monotonous. To facilitate drawing conclusions I have included smoothing line used *loess* technique. From analysis of this smoothed model response one can say that the model response is increasing to the point of around 100. This value is a median payment value in the whole dataset. After this threshold the probability to buy second time is falling up to the level of around 175, and then rise a little bit again. 
+
+
+```{r }
+plot(profile_all, variables = c("no_items")) + ggtitle("Ceteris-paribus profile", "") +
+  scale_x_continuous(breaks=1:20)
+
+```
+
+Number of items bought in the first purchase negatively influences the probability of the second purchase. This effect is visible only for the smallest numbers of items, while the model response for no_items>4 stays roughly the same. 
+
+```{r }
+# Predictions for geo data
+
+predict_profile(explainer = explain, 
+                new_observation = mean_values,variables = c('geolocation_lng', 'geolocation_lat')) -> profile_geo
+
+profile_geo %>%
+  as_tibble() %>%
+  select(geolocation_lat) %>%
+  distinct() %>%
+  crossing(
+    profile_geo %>% 
+      select(geolocation_lng) %>%
+      distinct()) %>%
+  crossing(mean_values %>% select(-geolocation_lat, -geolocation_lng)) -> profile_geo
+
+profile_geo$yhat <- predict(models_list$all_with_pca$model, profile_geo,type='prob')[,2]
+```
+
+
+```{r }
+# 2-d map ceteris paribus
+library(sf)
+profile_geo %>%
+  select(geolocation_lat, geolocation_lng, yhat) %>%
+  # sample_frac(0.7) %>%
+  mutate(a = as.factor(as.numeric(cut(yhat, breaks=9)))) -> profile_geo_to_plot
+
+# Bounding box
+profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lat <= 5.27438888,]
+profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lng >= -73.98283055,]
+profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lat >= -33.75116944,]
+profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lng <=  -34.79314722,]
+
+
+# pal <- colorFactor(RColorBrewer::brewer.pal(9, 'Greens'), domain = levels(profile_geo_to_plot$a))
+# 
+# profile_geo_to_plot %>%
+#   rename(lat = geolocation_lat, lng = geolocation_lng) %>%
+#   leaflet() %>%  
+#   addTiles() %>%
+#   # addProviderTiles('Stamen.Toner') %>%
+#   addCircleMarkers(
+#     color = ~pal(a),
+#     stroke = FALSE, fillOpacity = 0.5,
+#     radius = 4
+#   )
+# TODO: Bounding box z kraju - żeby nie wychodziło poza Brazylię
+
+
+library(tmap)
+tmap_mode("plot")
+brazil_map <- brazilmaps::get_brmap("Brazil")
+brazil_map_city <- brazilmaps::get_brmap("City")
+# 
+df <- sf::st_as_sf(profile_geo_to_plot, coords = c(2,1))
+st_crs(df) <- st_crs(brazil_map)
+
+library(readxl)
+brasil_cities_coords <- read_excel("data/brasil_cities_coords.xlsx")
+brasil_cities_coords <- brasil_cities_coords %>%
+  select(city, lat, lng, population)
+
+
+brasil_cities_coords <- sf::st_as_sf(brasil_cities_coords, coords = c(3,2))
+st_crs(brasil_cities_coords) <- st_crs(brazil_map)
+
+
+tm_shape(brazil_map) +
+  tm_polygons(col = "white") +
+  tm_shape(df[which(lengths(st_within(df, brazil_map)) != 0), ]%>%rename(`Prediction quantile`=a)) +
+  tm_symbols(size = 0.4,
+             col = "Prediction quantile",
+             palette = RColorBrewer::brewer.pal(9, 'Greens'),
+             # style = "fixed",
+             # breaks = c(45, 60, 75, 90),
+             border.lwd = NA,
+             alpha = 0.8) +
+  tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(20)) +
+  tm_symbols(size = 0.4,
+             col = "red",
+             # style = "fixed",
+             # breaks = c(45, 60, 75, 90),
+             border.lwd = NA,
+             alpha = 0.8) +
+  tm_text(text='city', just='top')
+
+```
+
+In the case of geolocation data, I have created 2-d ceteris paribus estimates .. and visualized it on the map. To facilitate the analysis I have marked 10 most populated Brazilian cities. They are mostly located along the coast, with the exception of Brasilia (new capital of the country) and Manaus (the biggest city in Amazonia region). It can be seen that the predictions are the highest in two distinct large spots - one having center close to Brasilia, and the other one same latitude, but closer to the western country border. 
+
+It can be seen that the predictions form a very visible pattern in stripes. One possible explanation is the limitation of the model underlying XGBoost method, that is decision trees. The vanilla decision tree algorithm works by partitioning the feature space on a binary basis, and a typical output of that model on 2-d space are visible rectangles. And as XGBoost is simply stacked decision trees, the resulting partition pattern is a bit more complex, but still decision-tree-typical artifacts are visible. 
+
+Another possible explanation comes from the work of ... (TODO: znaleźć pracę o wkładaniu surowych wartości long/lat do modelu, napisać paragraf). They noticed that ... 
+
+
+
+#### Break down of average prediction 
+
+(TODO: opisać bardziej ogólnie metodę we wstępie i po co robić, na tą chwilę też opisy wyników są trochę nieczytelne, do poprawy)
+
+Variable Attributions via Sequential Variable Conditioning - algorithm (?? cytowanie z paczki DALEX):
+
+For breakdown of one particular observation x_1:
+
+1. Calculate prediction for all of the observations and calculate mean. This value is conceptually equivalent to intercept in Linear Regression
+2. Change value of one variable in all observations and set it as the one from observation x_1
+3. Calculate prediction and check how much it has changed from the value obtained from intercept
+4. Repeat for the rest of the variables. 
+
+Because the variables are set to a constant sequentially, the recommended algorithm is to perform a greedy search for the variable that once set constant results in the biggest change in prediction. This approach however does not facilitate comparisons between the plots as the order of the variables will change. That is why I have decided to have a fixed order of the variables, with variable importance as the main criterium. 
+
+```{r cache=T}
+varImp(models_list$product_categories$model)$importance %>%
+  head(10) %>%
+  rownames() -> most_important_vars
+
+
+
+bd_rf <- predict_parts(explainer = explain,
+                       new_observation = mean_values,
+                       order = most_important_vars,
+                       type = "break_down")
+plot(bd_rf)
+```
+
+On the plot .. such break down additive plot is presented. The way to interpret it is as follows:
+
+1. Obtain prediction for all of the observations. Calculate the mean prediction (*intercept*), in this case 0.156. 
+2. For all observations in the dataset, set the value of the variable *payment_value* to 175. This is the value from the mean observation.
+3. Obtain prediction for all of the observations. Calculate the mean prediction and substract it from the *intercept*. In this case the change is -0.016. This means that *payment_value* equal to the value from the mean observation lowers the average probability that the customer will buy second time.
+4. Select next variable, (*geolocation_lat*) and repeat the process. In this case the predicted probability drops even further, to 0.101 (0.156-0.016-0.039)
+5. Go through all variables. The last value on the plot, *prediction*, contains true prediction for the mean observation.
+
+One interesting remark from this plot is that the low response of the model does not come from the fact that all variables influence it negatively. Rather, that for the variables that increase the response, there are other variables that lower the response for a similar amount and that the influences cancel out. 
+
+The prediction for the average customer at the probability is very low (0.07). This is caused by the fact that there is big imbalance in the data, and in the test dataset used for analyzing the model results there is no imbalance correction applied. From the perspective of marketing targeting more important is gaining some knowledge not about an average customer, but the ones that are the most probable to buy next time. That is why I have also created a breakdown plot for the observation that is scored as the most probable to buy second time. 
+
+
+```{r}
+preds[c(models_list$product_categories$vars_used, 'prob')] %>%
+  mutate(if_second_order = to_model_test$if_second_order) %>%
+  filter(if_second_order == 'yes') %>%
+  arrange(-prob) %>%
+  head(1) %>%
+  predict_parts(explainer = explain,
+                new_observation = .,
+                order = most_important_vars,
+                type = "break_down") %>%
+  plot() 
+
+```
+
+In the case of the prediction for the best customer, almost all variables influence the prediction positively. The only variable doing otherwise is payment value. The influence is however minor compared to the other variables. This negative influence can be analyzed in connection with ceteris-paribus plot for that variable analyzed before. On the plot ... it can be seen that the model response has a small drop for the values around 500. 
+
+The rest of the variables influence the score positively. The biggest gain is from the value of the transport, however number of items equal to 6 has also a large influence. 
+
+```{r }
+# RANDOM
+
+# preds[c(models_list$product_categories$vars_used, 'prob')] %>%
+#   arrange(-prob) %>%
+#   select(prob, everything()) %>%
+#   distinct() %>%
+#   head(10)
+```
+```{r }
+# break
+# preds2 %>%
+#   arrange(-prob) %>%
+#   mutate(bin = floor(row_number()/1000)) %>%
+#   group_by(bin) %>%
+#   summarise(perc_second = mean(if_second_order)) %>%
+#   View()
+# 
+# 
+# preds2 %>%
+#   filter(prob>quantile(prob, 0.7)) %>%
+#   summarise(no_people_second=mean(if_second_order),
+#             perc_second = (mean(if_second_order-0.0344)/0.0344)
+#   )
+# # przy "wyślij do 30% klientów" o 65% lepsze wyniki
+# 
+# preds2 %>%
+#   filter(prob>quantile(prob, 0.9)) %>%
+#   summarise(no_people_second=mean(if_second_order),
+#             perc_second = (mean(if_second_order-0.0344)/0.0344)
+#   )
+# # a przy "wyślij do 10% klientów" o 144% 
+# 
+# 
+# cp2d <- ingredients::ceteris_paribus_2d(explainer = explain_topic,observation = mean_values,
+#                                         variables = c('geolocation_lng', 'geolocation_lat'))
+# 
+# cp2d %>%
+#   ggplot(aes(x=geolocation_lat, y = geolocation_lng, fill=y_hat)) +
+#   geom_raster()
+# 
+# 
+# fifa_mp_gbm_deep <- model_parts(explain)
+# plot(fifa_mp_gbm_deep, max_vars = 20, 
+#      bar_width = 4, show_boxplots = FALSE) 
+# 
+```
+

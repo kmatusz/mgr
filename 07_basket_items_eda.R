@@ -127,6 +127,40 @@ order_matrix %>%
   arrange(-value) %>%
   View()
 
+
+order_matrix %>%
+  select_if(is.numeric) %>%
+  prcomp() -> pca
+
+pca %>%
+  summary()
+
+
+order_matrix %>%
+  select_if(is.numeric) %>% #sample_n(10000) %>% 
+  t() %>% 
+  prcomp(rank. = 100) -> pca
+
+pca$x
+rownames(pca$x)
+
+
+tsne::tsne(pca$x)-> ts
+
+out <- as_tibble(ts) %>%
+  mutate(name = rownames(pca$x))
+
+library(ggrepel)
+out %>%
+  ggplot(aes(x = V1, y= V2, label = name)) +
+  geom_point() +
+  geom_text_repel()
+
+tsne::tsne(order_matrix %>%
+             select_if(is.numeric) %>% sample_n(1000))-> ts
+
+plot(ts)
+
 #' Clustering
 #' 
 #' Options:
