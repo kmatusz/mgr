@@ -304,19 +304,14 @@ Most important features in Logistic Regression model - most simple one:
 plot(varImp(model3))
 ```
 
-
 ### Reviews analysis
 
 #### Literature review
 
-- https://www.aclweb.org/anthology/P17-1036.pdf - najlepsze wyniki
-- Vanilla LDA
-- https://github.com/markoarnauto/biterm , http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.402.4032&rep=rep1&type=pdf , 
-
+-   <https://www.aclweb.org/anthology/P17-1036.pdf> - najlepsze wyniki
+-   Vanilla LDA
+-   <https://github.com/markoarnauto/biterm> , <http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.402.4032&rep=rep1&type=pdf> ,
 
 #### Methods
+
 #### Results
-
-
-
-

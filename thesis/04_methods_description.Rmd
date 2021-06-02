@@ -1,0 +1,143 @@
+---
+title: "Methods description"
+output: html_document
+bibliography: resources/bib.bibtex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Processing parts of the dataset
+
+### Order items
+
+For each purchase of the customer there is avaliable information about the items that particular customer bought. All items in the shop are assigned to one of .. categories. There is a couple of challenges that should be adressed before adding this information to the dataset:
+
+1. For each purchase, the customer can buy products from different categories
+2. Most of the purchases (..%) contain only one item - this means that one-hot-encoding matrix would be extremely sparse
+3. Some of the categories are underrepresented - there are ... categories for which only ... purchases were made. This can pose generalization problems.
+4. The number of categories is very big, and because of that model training would be extremely slow
+
+To mitigate the problem of too many categories, I have decided to bin the least popular ones as a distinct category "other". I have chosen 13 (??) most popular ones, which account for .. of all observations. Then, I have used one-hot-encoding^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.] approach to create numeric representation. Category "other" was set as a base level. 
+
+### Geographic data - long/lat (TODO)
+
+TODO: Znaleźć cytowanie o wkładaniu wyników klastrowania do modelu zamiast surowych koordynat, opisać jak wybrałem parametry
+
+### Demographic data - sidra (TODO)
+
+TODO: Opisać PCA i po co robiłem
+
+### Text reviews
+
+Olist e-commerce store is operating only in Brazil. That is why most of the reviews are written in Portuguese. I have used Google Translate API to change the language of them to English. This is to facilitate not only understanding the reviews, but also the NLP tools avaliable for english language are more up-to-date and advanced.
+
+3 algorithms for topic modeling that I have tested were:
+
+- Latent Dirchlet Allocation - because it is a go-to standard for topic recognition
+- Gibbs Sampling algorithm for the Dirichlet Multinomial Mixture - as this method is an improvement over LDA, meant especially for short texts. This is the case from this study, as most of the reviews are just couple of words long
+- Attention-Based Aspect Extraction - this method is also meant for short texts, and at the same time it uses the most modern, state-of-the-art NLP techniques.
+
+To improve the results in all 3 methods I have removed stopwords and punctuation from the text. Also, to limit the number of words in the vocabulary I have used lemmatization technique. This was done by WordNet lemmatizer. To further improve the results, I have used Part-of-Speech tagger, and passed the tags of words to the lemmatizer. This way the algorithm can change the form of the word on a more informed basis, and thus apply lemmatization to more words. 
+
+Second step of the preprocessing was converting lemmatized reviews into vector format. In case of LDA, count-vectorizing approach was applied. the words which appeared in less than 0.1% of reviews were dropped from the dataset. In the case of Gibbs Sampling the same preprocessing is done internally by the function. 
+
+In both of these cases after vectorization one should obtain a matrix with n rows and k columns, where n is number of observations in the original dataset, while k - size of the vocabulary. 
+
+Very different preprocessing was required in the case of Attention-Based Aspect Extraction. The neural network requires simply lemmatized reviews in textual format as the output. Then, one of the layers of the network is meant to embed the currently preprocessed word. These embeddings are not learnt during the network training, they should be trained beforehand instead. The authors of the paper propose Word2vec technique for learning embeddings. Following their guidelines I have used this method, setting the dimensionality of the vector space to 200. I have also applied the word window of 10. 
+
+After applying word2vec on this dataset, I have obtained the matrix with m rows and 200 columns, where m stands for number of words in the dataset, and 200 is the dimensionality of the vector space chosen as a hyperparameter. 
+One should bear in mind that count-vectorization works on review level, while word2vec - on words level. This means that after applying word2vec model to 1 review, one would obtain the same number of outputs as the number of words in the review. This is why it is impossible to use word2vec to preprocess the dataset and then use LDA or Gibbs sampling without some way to convert couple of vectors into one. 
+
+Unfortunately, the evaluation of topic extraction is a hard task. The only reasonable one is human inspection. That is why after running every model I have verified the obtained topic for coherency and distinctiveness.
+
+TODO: Opis wyboru parametrów modeli z poniższej listy
+
+- LDA
+  - remove stopwords and punctuation
+  - use wordnet lemmatizer [@wordnet] with POS tagging (NLTK)
+  - use count-vectorize approach with removing words which appear in less than 0.1% reviews
+  - use LDA with varying number of components 3, 5, 10, 15
+  - manually inspect inferred topics
+  
+- Gibbs Sampling algorithm for the Dirichlet Multinomial Mixture (movie group process)
+  - same as in LDA but this one does not require vectorizing the dataset
+  - 30 topics
+  - Citing python gsdmm package documentation:
+  
+    "Alpha controls the probability that a student will join a table that is currently empty.
+    When alpha is 0, no one will join an empty table.
+    Beta controls the student's affinity for other students with similar interests. A low beta means
+    that students desire to sit with students of similar interests. A high beta means they are less
+    concerned with affinity and are more influenced by the popularity of a table"
+  - checking every combination of alpha, beta chosen from the values: [0.01, 0.1, 0.5, 0.9]
+  - manual inspection
+  
+- Attention-Based Aspect Extraction [@he2017aspect]
+  - Based on the implementation by authors of the article 
+  - remove stopwords and punctuation
+  - use wordnet lemmatizer [@wordnet]
+  - converting to vectorized form using Word2Vect model with final dimensionality of 200 and window of 10
+  - Training attention model
+  - manual assessment of reviews topics
+  
+For the analysis of textual reviews I have used python programming language. 
+
+- python [@van1995python]
+  - NLTK [@bird2009natural], spacy [@spacy] itd
+  
+## Modeling approach
+
+### General 
+
+TODO: Przepisać podpunkty do paragrafu
+
+-   Train-test 70/30 split of the dataset
+-   Hyperparameter search using 3-fold Cross-validation on training dataset, grid search of possible combinations
+-   Used models: XGBoost, Logistic Regression
+-   Upsampling for handling class imbalance (97/3) - only on training dataset
+-   Metric used - AUC, as there is class imbalance
+-   Bootstrap of test set with 100 replcations to get standard errors of AUC estimation
+
+### Feature selection 
+
+#### General
+
+TODO: Introduction, opisać listy 1 zdaniem
+
+Sets of features:
+
+- basic information - value of the purchase, geolocation in raw format lat/lng, value of the package, number of items in the package, review score (6 variables)
+- demographic features for the region from which the customer is - age structure, percentage of population in urban area, income structure (35 variables)
+- demographic features transformed using PCA - (10 variables/components)
+- indicator whether the customer is in an agglomeration area obtained from DBSCAN on location data (1 variable)
+- product categories that the customer has bought in the purchase (15 dummy variables)
+- main topic that the customer has mentioned in the review (15 dummy variables)
+
+Models tested:
+
+- basic features
+- demographic + basic
+- demographic with PCA + basic
+- agglomeration + basic
+- product categories + basic
+- review topic + basic
+- all variables - demographic features transformed with PCA
+
+I have not run the model containing all variables with demographic features without PCA preprocessing. There are 2 reasons for that - one is that number of variables in this set is very big, what poses performance reasons - model training simply would take a very long time. Assuming that the PCA set of features would give better score can be also supported by the fact that the model with only included PCA demographic variables is performing better than the full set of variables.  
+
+#### Boruta
+
+To remove the human judgement about which predictors should be used, I have also used a Boruta algorithm for feature selection. It is widely popular among machine learning practitioners (??? TODO: znaleźć cytowania oryginalnej pracy). The algorithm belongs to category of wrapper feature selection algorithms, and Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. In this way one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and Random Forest model is trained. 
+
+Random Forest model have a built in feature importance measure, that is usually Mean Decrease Impurity. After running random forest model, for each original features MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of shadow features, the variable gets a "hit". 
+
+Above procedure is repeated for preassigned number of iterations. Finally, important features that should make it to the final model are the ones that obtain less hits than preassigned n. 
+
+After gaining knowledge about the variables that should make it to the model, I have trained XGBoost classifier using these features. The rest of the fitting procedure (cross-validation, up-sampling, hyper-parameters etc.) stayed the same as in the rest of the approaches.  
+
+One should have in mind that Boruta algorithm is very time-consuming. The minimal number of runs recommended by the method authors is 100, and one run consists of fitting a Random Forest model to the whole dataset with doubled number of features (because of added shadow features). In the case of this analysis, model computation took about 12 hours on a medium-class modern laptop. Although other wrapper algorithms also require an iterative fitting the model, they usually start with fitting the model to one variable, in the next iteration to 2, and so on up to k features. On the other hand Boruta algorithm in each iteration fits the model to 2*k features (original and shadow features).
+
+
+

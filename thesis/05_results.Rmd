@@ -1,15 +1,15 @@
 ---
-title: "Analysis of model results"
-# output: html_document
-output: word_document
+title: "Results analysis"
+output: html_document
+# output: word_document
 ---
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(message = F, warning = F, echo=F, fig.width = 6, fig.height = 4)
+knitr::opts_chunk$set(message = F, warning = F, echo=F, fig.width = 6, fig.height = 4, cache = T)
 ```
 
-```{r }
+```{r cache=F}
 library(readr)
 library(tidyverse)
 library("leaflet")
@@ -21,6 +21,7 @@ library(caret)
 library(rpart)
 library(DALEX)
 library(stringr)
+library(here)
 ```
 
 
@@ -94,15 +95,15 @@ calc_roc <- function(model, to_model_test, run_confusion_matrix = F){
 ```{r }
 # Load the models and training data - only XGB, LR is too big for now
 
-files_cache <- list.files('run_all_models_cache/')
+files_cache <- list.files(here('run_all_models_cache/'))
 files_names_models <- files_cache[str_starts(files_cache, 'saved_model')]
 files_names_models <- files_names_models[!str_starts(files_names_models, 'saved_model_lr')]
 files_names_models <- files_names_models[!str_starts(files_names_models, 'saved_model_boruta_all_with_pca')]
 # files_names_models
 
 
-load('run_all_models_cache/to_model_train.Rdata')
-load('run_all_models_cache/to_model_test.Rdata')
+load(here('run_all_models_cache/to_model_train.Rdata'))
+load(here('run_all_models_cache/to_model_test.Rdata'))
 
 models_list <- vector('list', length(files_names_models))
 
@@ -110,7 +111,7 @@ for (i in 1:length(files_names_models)){
   # print(i)
   name <- files_names_models[i]
   temp_env <- new.env()
-  load(paste0('run_all_models_cache/',name),envir = temp_env)
+  load(here(paste0('run_all_models_cache/',name)),envir = temp_env)
   models_list[[i]] <- temp_env$model_spec
 }
 
@@ -122,51 +123,28 @@ for (i in models_list){
 names(models_list) <- models_names
 ```
 
+## Results of the pre-modeling phase
 
-## Modeling description (docelowo o wiele bardziej rozbudowane, tutaj tylko zalążek potrzebny do opisu rezultatów)
-
-### Description 
-
-Sets of features:
-
-- basic information - value of the purchase, geolocation in raw format lat/lng, value of the package, number of items in the package, review score (6 variables)
-- demographic features for the region from which the customer is - age structure, percentage of population in urban area, income structure (35 variables)
-- demographic features transformed using PCA - (10 variables/components)
-- indicator whether the customer is in an agglomeration area obtained from DBSCAN on location data (1 variable)
-- product categories that the customer has bought in the purchase (15 dummy variables)
-- main topic that the customer has mentioned in the review (15 dummy variables)
-
-Models tested:
-
-- basic features
-- demographic + basic
-- demographic with PCA + basic
-- agglomeration + basic
-- product categories + basic
-- review topic + basic
-- all variables - demographic features transformed with PCA
-
-I have not run the model containing all variables with demographic features without PCA preprocessing. There are 2 reasons for that - one is that number of variables in this set is very big, what poses performance reasons - model training simply would take a very long time. Assuming that the PCA set of features would give better score can be also supported by the fact that the model with only included PCA demographic variables is performing better than the full set of variables.  
-
-### Boruta
-
-#### Methods (do przeklejenia do rozdziału methods description)
-
-To remove the human judgement about which predictors should be used, I have also used a Boruta algorithm for feature selection. It is widely popular among machine learning practitioners (??? TODO: znaleźć cytowania oryginalnej pracy). The algorithm belongs to category of wrapper feature selection algorithms, and Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. In this way one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and Random Forest model is trained. 
-
-Random Forest model have a built in feature importance measure, that is usually Mean Decrease Impurity. After running random forest model, for each original features MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of shadow features, the variable gets a "hit". 
-
-Above procedure is repeated for preassigned number of iterations. Finally, important features that should make it to the final model are the ones that obtain less hits than preassigned n. 
-
-After gaining knowledge about the variables that should make it to the model, I have trained XGBoost classifier using these features. The rest of the fitting procedure (cross-validation, up-sampling, hyper-parameters etc.) stayed the same as in the rest of the approaches.  
-
-One should have in mind that Boruta algorithm is very time-consuming. The minimal number of runs recommended by the method authors is 100, and one run consists of fitting a Random Forest model to the whole dataset with doubled number of features (because of added shadow features). In the case of this analysis, model computation took about 12 hours on a medium-class modern laptop. Although other wrapper algorithms also require an iterative fitting the model, they usually start with fitting the model to one variable, in the next iteration to 2, and so on up to k features. On the other hand Boruta algorithm in each iteration fits the model to 2*k features (original and shadow features).
-
-#### Results
+### Boruta feature selection
 
 The Boruta algorithm concluded that from all 47 variables only the 14 variables indicating topics are non-relevant. One should notice that even using automatic feature selection, the algorithm has dropped the whole category of variables, meaning that the approach of manually setting sets of variables to include in the model is also "recommended" by the algorithm. 
 
-To assess the performance of Boruta algorithm one should however also look at the final accuracy of the model. The score using AUC on the test set is 0.646 - less than the model including all variables. This means that using Boruta algorithm did not bring an additional predictive power to the model. At the same time, this means that the variables indicating reviews topics are relevant for the model performance. 
+### Topic modeling (TODO)
+
+TODO: Description of the table, that only one model produced meaningful results  
+
+```{r}
+DT::datatable(read_csv(here('topics_table_to_paper.csv')) %>% mutate(`Example reviews` = str_replace(`Example reviews`, '\\n', '||||')))
+```
+
+
+### DBSCAN for long/lat data (TODO)
+
+TODO: Opis wynikowych klastrów, może mapka jakie wyniki
+
+### PCA for demographic data (TODO)
+
+TODO: Ile features zostawiłem
 
 ## Performance analysis
 
@@ -207,6 +185,9 @@ Table .. shows the performance of the XGB models using various sets of variables
 
 Second best model is the one containing all variables, with demographic variables transformed with PCA. It is worth noticing that this model also contains the features containing product categories information, so similar performance is not a surprise. The percentage drop in AUC is very small (0.6%). The model with only basic information is worse for about 2.5%. 
 
+The score of the subset of features selected by Boruta algorithm using AUC on the test set is 0.646 - less than the model including all variables. This means that using Boruta algorithm did not bring an additional predictive power to the model. At the same time, this means that the variables indicating reviews topics seem to be relevant for the model performance. 
+
+
 Another thing worth noticing is the fact that AUC on the train set is almost 1 in every model. These values are worrying because this means that the models are highly over-fitted, and that generalization problems can be present. The XGBoost model has some built-in parameters that can be used as a regularization strategies, like ... and ... (TODO: dopisać czym manipulowałem w CV). In search for a less over-fitted model I have tweaked these parameters in cross-validation. However, although in some cases I was able to make the model overfit less, the performance in 2-fold cross-validation was still the best with a highly over-fitted models.
 
 I have also created a table .. containing similar information, but this time for Logistic Regression model. Main finding is that even the best LR model (containing product categories and basic features) is worse than the worst XGBoost model (0.586 vs. 0.625, respectively). This means that linear modeling is in general very poorly suited for this prediction task. 
@@ -220,7 +201,7 @@ I have also created a table .. containing similar information, but this time for
 #   
 # save(auc_table_for_lr, file='run_all_models_cache/auc_table_for_lr.Rdata')
 
-load(file='run_all_models_cache/auc_table_for_lr.Rdata')
+load(file=here('run_all_models_cache/auc_table_for_lr.Rdata'))
 
 auc_table_for_lr %>%
   knitr::kable()
@@ -555,9 +536,15 @@ profile_geo$yhat <- predict(models_list$all_with_pca$model, profile_geo,type='pr
 ```
 
 
+```{r cache=F}
+library(sf)
+library(tmap)
+library(readxl)
+```
+
+
 ```{r }
 # 2-d map ceteris paribus
-library(sf)
 profile_geo %>%
   select(geolocation_lat, geolocation_lng, yhat) %>%
   # sample_frac(0.7) %>%
@@ -585,7 +572,6 @@ profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lng <=
 # TODO: Bounding box z kraju - żeby nie wychodziło poza Brazylię
 
 
-library(tmap)
 tmap_mode("plot")
 brazil_map <- brazilmaps::get_brmap("Brazil")
 brazil_map_city <- brazilmaps::get_brmap("City")
@@ -593,8 +579,8 @@ brazil_map_city <- brazilmaps::get_brmap("City")
 df <- sf::st_as_sf(profile_geo_to_plot, coords = c(2,1))
 st_crs(df) <- st_crs(brazil_map)
 
-library(readxl)
-brasil_cities_coords <- read_excel("data/brasil_cities_coords.xlsx")
+
+brasil_cities_coords <- read_excel(here("data/brasil_cities_coords.xlsx"))
 brasil_cities_coords <- brasil_cities_coords %>%
   select(city, lat, lng, population)
 
@@ -692,6 +678,7 @@ In the case of the prediction for the best customer, almost all variables influe
 
 The rest of the variables influence the score positively. The biggest gain is from the value of the transport, however number of items equal to 6 has also a large influence. 
 
+
 ```{r }
 # RANDOM
 
@@ -701,6 +688,7 @@ The rest of the variables influence the score positively. The biggest gain is fr
 #   distinct() %>%
 #   head(10)
 ```
+
 ```{r }
 # break
 # preds2 %>%
