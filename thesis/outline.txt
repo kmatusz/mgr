@@ -1,6 +1,7 @@
 01_introduction
 02_literature_review
-03_dataset_description
-04_methods_description
-05_results
+03_dataset_description bez wykresów 5, z wykresami pewnie 6-7
+04_methods_description około 6 
+05_results ok 10 bez wykresów i ale z dużymi tabelami - pewnie będzie jakoś 12
 06_summary
+

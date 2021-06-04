@@ -1,6 +1,7 @@
 ---
 title: "Dataset description"
-output: html_document
+# output: html_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}

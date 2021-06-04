@@ -1,7 +1,8 @@
 ---
 title: "Methods description"
-output: html_document
 bibliography: resources/bib.bibtex
+output: html_document
+# output: word_document
 ---
 
 ```{r setup, include=FALSE}
@@ -23,9 +24,9 @@ For each purchase of the customer there is avaliable information about the items
 
 To mitigate the problem of too many categories, I have decided to bin the least popular ones as a distinct category "other". I have chosen 13 (??) most popular ones, which account for .. of all observations. Then, I have used one-hot-encoding^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.] approach to create numeric representation. Category "other" was set as a base level. 
 
-### Geographic data - long/lat (TODO)
+### Geographic data - long/lat
 
-TODO: Znaleźć cytowanie o wkładaniu wyników klastrowania do modelu zamiast surowych koordynat, opisać jak wybrałem parametry
+TODO: Znaleźć cytowanie o wkładaniu wyników klastrowania do modelu zamiast surowych koordynat
 
 To be able to decode the coordinates differently, I have used a DBSCAN clustering technique (TODO: cytowanie). 
 
@@ -36,11 +37,15 @@ A typical rule-of-thumb for deciding k and epsilon parameters is to first set k,
 
 In my work I have decided somehow arbitrarly that minimal number of customers in the cluster is 100, and the maximum  distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. However, this kind of decision in a real company setting can (and should be) consulted with the company's domain experts in marketing. 
 
-### Demographic data - sidra (TODO)
+### Demographic data - sidra
 
-TODO: Opisać PCA i po co robiłem
+I have processed the demographic part of the dataset using Principal Components Analysis. There are couple of reasons for that. First, this part of the dataset is relatively high dimensional (34 variables). At the same time, one would expect that the information can be somehow compressed, because lots of the variables represent very similar concept (for example there are 20 variables encoding age structure). Second, trainig Machine Learning models on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results (TODO: cytowania z prac w których robili PCA). 
 
-### Text reviews
+One decision regarding PCA transformation is whether to use a standard version, or the one with rotated loadings (TODO: cytowanie). The trade-off between these two methods is that rotated loadings allows for interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in case of this study, because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
+
+### Text reviews (TODO)
+
+TODO: Ogarnąć strukturę
 
 Olist e-commerce store is operating only in Brazil. That is why most of the reviews are written in Portuguese. I have used Google Translate API to change the language of them to English. This is to facilitate not only understanding the reviews, but also the NLP tools avaliable for english language are more up-to-date and advanced.
 
@@ -102,14 +107,11 @@ For the analysis of textual reviews I have used python programming language.
 
 ### General 
 
-TODO: Przepisać podpunkty do paragrafu
+I have used a simple train-test split of the dataset, with 70% of the observations belonging to the trainig dataset. On the training dataset, I have searched for optimal hyperparameters using 3-fold cross-validation on training dataset. I have defined search space simply as a grid of all possible combinations of the hyperaparameters. 
 
--   Train-test 70/30 split of the dataset
--   Hyperparameter search using 3-fold Cross-validation on training dataset, grid search of possible combinations
--   Used models: XGBoost, Logistic Regression
--   Upsampling for handling class imbalance (97/3) - only on training dataset
--   Metric used - AUC, as there is class imbalance
--   Bootstrap of test set with 100 replcations to get standard errors of AUC estimation
+One important problem with this dataset is its very high target classes imbalance. Only 3% of the customers have decided to buy for the second time. To handle this issue I have used upsampling of the minority class on the training dataset to obtain equal class proportions. Also, the choice of an appropriate metric to optimize is very important in imbalanced dataset, as some metrics (like accuracy) are very biased in these cases. That is why I have decided to optimize Area-Under-Curve metric, as it weights the performance on the minority and majority classes equally.
+
+I have used Logistic Regression and XGBoost models. The reason is that Logistic Regression is relatively simple and explainable, and was used in the task of churn modeling in previous studies (TODO: cytowania do tego paragrafu). On the other hand, XGBoost model was shown to be very well-suited for all kinds of modeling using tabular data. It can also learn non-linearities and interactions between the variables on its own, contrary to LR where such features should be introduced to the model manually. 
 
 ### Feature selection 
 

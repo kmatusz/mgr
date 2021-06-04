@@ -9,7 +9,10 @@ bibliography: resources/bib.bibtex
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ### Reviews analysis
+
+TODO: do zastanowienia jakie powinny być więcej częsci w lit review, poprawić strukturę tekstu
 
 An important source of knowledge about e-commerce customers are textual reviews. They can serve as a rich source of feedback for what in the shop or product is liked and what needs change. Also, in the textual reviews one can get to know customer's opinions way better then using other types of feedback, for example 1-5 rating of a purchase. With these advantages, they come at the expense of increased complexity of such analysis. A big challenge is to extract meaningful information from this type of highly unstructured data.
 
