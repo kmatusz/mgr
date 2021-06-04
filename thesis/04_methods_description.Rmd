@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Processing parts of the dataset
 
+TODO: zastanowić się nad diagramem gdzie będzie opisane jak były przetwarzane dane
+
 ### Order items
 
 For each purchase of the customer there is avaliable information about the items that particular customer bought. All items in the shop are assigned to one of .. categories. There is a couple of challenges that should be adressed before adding this information to the dataset:
@@ -24,6 +26,15 @@ To mitigate the problem of too many categories, I have decided to bin the least 
 ### Geographic data - long/lat (TODO)
 
 TODO: Znaleźć cytowanie o wkładaniu wyników klastrowania do modelu zamiast surowych koordynat, opisać jak wybrałem parametry
+
+To be able to decode the coordinates differently, I have used a DBSCAN clustering technique (TODO: cytowanie). 
+
+DBSCAN is particularly well-suited for geolocation point data. First, it is density-based, and because of that has a natural interpretation. When the point belongs to any cluster it means that the customer is living in a densely-populated area, while the points decoded by DBSCAN as noise are the customers living in more isolated places. Second, one doesn't have to set the number of clusters in advance. Third, it doesn't require the clusters to be spherical, which is not a condition that comes naturally in the geolocation settings. 
+
+DBSCAN has 2 parameters to be decided before running the algorithm. These are the minimal number of points laying close to each other that are needed to constitute a cluster (*k*), and maximal distance, at which one considers the poits to lay close to each oter (*epsilon*). 
+A typical rule-of-thumb for deciding k and epsilon parameters is to first set k, and then plot k-nearest-neighbors distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, epsilon is actually a physical distance between two locations. That is why based on expert knowledge from the company one can set what should be more reasonable criteria for constituting clusters. 
+
+In my work I have decided somehow arbitrarly that minimal number of customers in the cluster is 100, and the maximum  distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. However, this kind of decision in a real company setting can (and should be) consulted with the company's domain experts in marketing. 
 
 ### Demographic data - sidra (TODO)
 

@@ -84,7 +84,30 @@ library(factoextra)
 pca_model <- prcomp(spatial_all_by_zip %>% 
                       mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) %>%
                       select(-demographic_geolocation_zip_code_prefix), scale = TRUE,center = TRUE)
+
 summary(pca_model)
+summary(pca_model) -> pca_importances
+
+pca_importances$importance %>%
+  as_tibble(rownames = 'a') %>%
+  filter(row_number()==3) %>%
+  pivot_longer(2:36) %>%
+  select(name, value) %>%
+  mutate(PC = row_number()) -> pca_to_plot
+
+save(pca_to_plot, file='run_all_models_cache/pca_to_plot.Rdata')
+  
+ggplot(pca_to_plot, aes(x=PC, y=value)) +
+  geom_line() +
+  ggrepel::geom_text_repel(data = tibble(value = 0.973, PC=10), aes(label=value))+
+  geom_point(data = tibble(value = 0.973, PC=10), color='red')
+  
+
+tibble(var = pca_model$sdev)  %>%
+  mutate(no_components=row_number(),
+         cum_variance = cumsum(var)/sum(var)
+         )
+
 fviz_eig(pca_model)
 # Setting no of components to 8 - 90% of variability
 pca_model_8 <- prcomp(spatial_all_by_zip %>% 
@@ -129,6 +152,24 @@ first_orders %>%
   mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) -> to_model_all_0
 
 dbscan_geo <- dbscan::dbscan(to_model_all_0%>%select(geolocation_lat,geolocation_lng), 0.2, 100)
+plot(dbscan_geo)
+
+RUN_DBSCAN_TESTING = TRUE
+
+if (RUN_DBSCAN_TESTING){
+  
+}
+dbscan::kNNdistplot(to_model_all_0%>%select(geolocation_lat,geolocation_lng), k =100)
+abline(h=2.3)
+
+
+dbscan_geo_test <- dbscan::dbscan(to_model_all_0%>%select(geolocation_lat,geolocation_lng) %>% sample_frac(0.5), 2, 100)
+dbscan_geo_test
+plot(dbscan_geo)
+
+dbscan::hullplot(to_model_all_0%>%select(geolocation_lat,geolocation_lng), dbscan_geo, solid=TRUE, alpha=0.7)
+
+
 
 to_model_all_0 %>%
   mutate(cluster = dbscan_geo$cluster) %>%

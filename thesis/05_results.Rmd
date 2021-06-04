@@ -142,9 +142,23 @@ DT::datatable(read_csv(here('topics_table_to_paper.csv')) %>% mutate(`Example re
 
 TODO: Opis wynikowych klastrów, może mapka jakie wyniki
 
-### PCA for demographic data (TODO)
+In the case of epsilon equal to 50 kilometers range, DBSCAN found 78 clusters, and 18 thousand noise points. After a quick visual inspection of the points colored by cluster association, I have concluded that the clusters boundaries overlap with bigger cities boundaries, which proves that the clustering has discovered a valuable information from the data. 
 
-TODO: Ile features zostawiłem
+I have also tried running the clustering with the epsilon obtained from using the elbow method, namely 2. Only 2 clusters were created, of which one of them contaied 99.97% of observations. The probable reason for that is that 2 would roughly translate to 500 kilometers of cluster range, which is way to big to model a way more fine-grained information about the population density on a country-level.
+
+### PCA for demographic data
+
+Cumulative variance explained by each of the consecutive loadings is presented on the plot .. . I have decided to leave the 10 most informative PCA eigenvectors. These account for 97.3% of the explained variance. 
+
+```{r}
+load(file=here('run_all_models_cache/pca_to_plot.Rdata'))
+ggplot(pca_importances2, aes(x=PC, y=value)) +
+  geom_line() +
+  ggrepel::geom_text_repel(data = tibble(value = 0.973, PC=10), aes(label=value))+
+  geom_point(data = tibble(value = 0.973, PC=10), color='red')
+
+```
+
 
 ## Performance analysis
 
