@@ -1,7 +1,7 @@
 ---
 title: "Literature review"
-# output: word_document
-output: html_document
+output: word_document
+# output: html_document
 bibliography: resources/bib.bibtex
 ---
 
@@ -9,6 +9,10 @@ bibliography: resources/bib.bibtex
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+TODO: 
+*W części 02 z literature review dałabym ilustrację celów, metod i dotychczasowych badań (trochę jak w tym artykule o metodach w CRM), żeby uwypuklić o czym w ogóle mówimy.*
+
+TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
 
 ### Reviews analysis
 

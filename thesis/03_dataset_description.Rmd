@@ -1,12 +1,18 @@
 ---
 title: "Dataset description"
-# output: html_document
-output: word_document
+output: html_document
+# output: word_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = F, warning = F, echo=T, fig.width = 6, fig.height = 4)
 ```
+
+
+TODO: *W części 03 przydadzą się ilustracje jak wygląda zbiór danych, statystyki zmiennych etc + solidne mapowanie. Rzeczywiście ostatnia mapa chyba ciekawiej może wyglądać jako grid (dałabym obie). Zupełnie brakuje prostych statystyk sprzedażowych zwizualizowanych na mapie (jako grid): ilu klientów, ile transakcji, wartość transakcji - w ujęciu nominalnym, ale też w odniesieniu do populacji (żeby lepiej rozumieć rozkład transakcji i klientów) + jego density (w gglot można zrobić kernel density punktów i zmapować).*
+
+
+
 
 ## Olist
 
@@ -89,6 +95,36 @@ vars_basic <- c("payment_value", "review_score", "geolocation_lat",
 
 df <- to_model_train[c(vars_basic, 'if_second_order')]
 ```
+
+#### Statistics in a table
+
+```{r cache=T}
+summarise_numeric_custom <- function(x){
+  
+  list(
+    "min" = min(x, na.rm = TRUE),
+    "Q1" = quantile(x, 0.25, na.rm = TRUE),
+    "median" = quantile(x, 0.5, na.rm = TRUE),
+    "mean" = mean(x, na.rm = TRUE),
+    "Q3" = quantile(x, 0.75, na.rm = TRUE),
+    "max" = max(x, na.rm = TRUE)
+  ) %>% 
+    as_tibble() %>%
+    mutate_all(round,2)
+}
+
+df %>%
+  select_if(is.numeric) %>%
+  map_df(~summarise_numeric_custom(.)) -> stats_table
+
+stats_table$Variable = df %>%select_if(is.numeric) %>% names
+stats_table <- stats_table %>% select(Variable, everything())
+stats_table %>%
+  kableExtra::kable()
+
+```
+
+TODO: opisać
 
 #### if_second_order 
 
@@ -242,6 +278,141 @@ tm_shape(brazil_map) +
              border.lwd = NA,
              alpha = 0.5)
 ```
+
+#### Maps
+
+TODO: Opisać mapy, zastanowić się które wywalić
+
+An aggregation to microregions is relatively coarse. Because of that, some of the statistics can be not reliable in the regions with a very small number of customers. That is why I have decided to remove from the map these microregions, in which number of customers was less than 5. 
+
+
+```{r cache=T}
+# prepare dataset
+
+load(here('data/preprocessed/spatial_all.Rdata'))
+# microregion_map <- brazilmaps::get_brmap("City")
+load(file=here('data/microregion_map.Rdata'))
+
+microregion_map = st_transform(microregion_map, 4326)
+
+microregion_map1 = st_transform(microregion_map, st_crs(df_map))
+
+
+# Punkt - region
+intersection <- st_intersection(y = microregion_map1 %>% select(MicroRegion) , x = df_map)
+
+# statsy per region
+intersection %>%
+  st_set_geometry(NULL) %>%
+  group_by(MicroRegion) %>%
+  summarise(
+    no_customers = n(),
+    mean_payment_value = mean(payment_value),
+    sum_payment_value = sum(payment_value),
+    median_payment_value = median(payment_value),
+    mean_review_score = mean(review_score)
+  ) -> stats_per_microregion
+
+
+intersection %>%
+  st_set_geometry(NULL) %>%
+  group_by(MicroRegion, if_second_order) %>%
+  filter(if_second_order=='yes') %>%
+  tally(name = 'cnt_second_order') %>%
+  select(-if_second_order) -> tmp_cnt_second_order
+
+
+stats_per_microregion %>%
+  left_join(tmp_cnt_second_order) %>%
+  mutate(
+    cnt_second_order = coalesce(cnt_second_order, 0),
+    percent_second_order = cnt_second_order/no_customers     
+         ) %>%
+  left_join(spatial_all %>% select(microregion_code, total_pop), 
+            by = c('MicroRegion'='microregion_code')) %>%
+  mutate(no_customers_per_10000_pop = no_customers/(total_pop/10000)) -> stats_per_microregion2
+
+microregion_map %>%
+  left_join(stats_per_microregion2) %>%
+  filter(no_customers>5) -> stats_per_microregion3 # TODO: zastanowić się czy ma sens usuwanie regionów o mniej niż x klientów - zaburza obraz
+
+tmap_mode(mode = c("plot"))
+```
+
+Number of customers
+
+```{r cache=T}
+tm_shape(brazil_map) +
+  tm_borders()+
+  tm_shape(stats_per_microregion3) +
+  tm_polygons(col = "no_customers",border.alpha = 0)
+
+```
+
+Number of customers per 10 thousand population
+
+```{r cache=T}
+tm_shape(brazil_map) +
+  tm_borders()+
+  tm_shape(stats_per_microregion3) +
+  tm_polygons(col = "no_customers_per_10000_pop",border.alpha = 0)
+
+```
+
+KDE of customers
+
+```{r}
+st_coordinates(df_map) %>% 
+  as_tibble() %>%
+  # sample_frac(0.1) %>%
+  ggplot(aes(x=X, y=Y)) +
+  geom_density2d_filled(alpha = 0.7) +
+  geom_point(size=0.05) +
+  theme_minimal()
+```
+
+TODO: prawie nic nie widać, raczej do wyrzucenia
+
+
+Mean review score
+
+```{r cache=T}
+tm_shape(brazil_map) +
+  tm_borders()+
+  tm_shape(stats_per_microregion3) +
+  tm_polygons(col = "mean_review_score",border.alpha = 0)
+
+```
+
+
+Percent of people that gave second order
+
+```{r cache=T}
+tm_shape(brazil_map) +
+  tm_borders()+
+  tm_shape(stats_per_microregion3) +
+  tm_polygons(col = "percent_second_order",border.alpha = 0)
+```
+
+
+Total transactions value
+
+```{r cache=T}
+tm_shape(brazil_map) +
+  tm_borders()+
+  tm_shape(stats_per_microregion3) +
+  tm_polygons(col = "sum_payment_value",border.alpha = 0)
+```
+
+Mean transactions value
+
+```{r cache=T}
+tm_shape(brazil_map) +
+  tm_borders()+
+  tm_shape(stats_per_microregion3) +
+  tm_polygons(col = "mean_payment_value",border.alpha = 0)
+```
+
 
 #### Product categories (TODO)
 

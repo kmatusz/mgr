@@ -9,9 +9,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Processing parts of the dataset
+
+TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.*
 
 TODO: zastanowić się nad diagramem gdzie będzie opisane jak były przetwarzane dane
+
+## Processing parts of the dataset
+
 
 ### Order items
 
