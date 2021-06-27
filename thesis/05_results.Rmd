@@ -9,8 +9,6 @@ always_allow_html: true
 TODO: *W części 05 trzeba do każdej analizy dać dwa typy opisów: metodologiczne (co wyszło, co nie wyszło etc) i marketingowe (co to znaczy dla CRM).*
 
 
-
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = F, warning = F, echo=F, fig.width = 6, fig.height = 4, cache = T)
 ```
@@ -145,23 +143,23 @@ Pre-modeling:
 
 After-modeling
 
-- Model performance- AUC values for all models
+- OK Model performance- AUC values for all models
   - methodological:
   - which ML model suits the task better (XGB)
   - which variables give the best score
   - CRM:
   - Most important: the model has predictive power
   - which parts of the dataset should be observed after putting model to production (drift analysis)
-- Model performance- Bootstrap, K-S test, density plots
+- OK Model performance- Bootstrap, K-S test, density plots
   - Methodological: Another tool for the best model search (complementing AUC on test set)
   - no importance for CRM
 - Model performance- Lift curve, lift analysis
   - Methodological: a way to show how the model performs in a way that is understandable by non-technical adopters, a way of quantifying a potential revenue from using the model
-  - CRM: a way to enhance targeting strategies (which customers should be more/less targeted based on apriori probability of buying second time), a more meaningful baseline to assessing A/B testing strategies (probability to buy from the model vs. share of customers that bought)
+  - OK CRM: a way to enhance targeting strategies (which customers should be more/less targeted based on apriori probability of buying second time), a more meaningful baseline to assessing A/B testing strategies (probability to buy from the model vs. share of customers that bought)
   - Customer Lifetime Value for new customers - probability to buy second time from the model \* average buy second time 
-  - Model performs better for almost all the cohorts of probabilities
-  - segmentation+targeting - a way to reduce customer aquisition cost
-  - Segmenation based on probability to buy second time
+  - OK Model performs better for almost all the cohorts of probabilities
+  - OK segmentation+targeting - a way to reduce customer aquisition cost
+  - OK Segmenation based on probability to buy second time
 - XAI on model level (VI plots, cateris paribus plots)
 - XAI on customer level (break-down plots)
 
@@ -169,7 +167,7 @@ After-modeling
   - a way to verify if the intuition and know-how present in the marketing department is compliant with the one that the model used to do predictions
   - in the case of complaints about model prediction a way to assess why the model did particular decision
   - increase of trust in the model from non-technical part of the company, better comunication between business and IT
-- Methodology - że może poprawiać przewidywania modelu, 
+- Methodology - że może poprawiać przewidywania modelu, że można testować hipotezy (TODO jak już wymyślę hipotezy do przetestowania)
 
 ## Results of the pre-modeling phase
 
@@ -255,10 +253,9 @@ Second best model is the one containing all variables, with demographic variable
 The score of the subset of features selected by Boruta algorithm using AUC on the test set is 0.646 - less than the model including all variables. This means that using Boruta algorithm did not bring an additional predictive power to the model. At the same time, this means that the variables indicating reviews topics seem to be relevant for the model performance. 
 
 
-Another thing worth noticing is the fact that AUC on the train set is almost 1 in every model. These values are worrying because this means that the models are highly over-fitted, and that generalization problems can be present. The XGBoost model has some built-in parameters that can be used as a regularization strategies, like ... and ... (TODO: dopisać czym manipulowałem w CV). In search for a less over-fitted model I have tweaked these parameters in cross-validation. However, although in some cases I was able to make the model overfit less, the performance in 2-fold cross-validation was still the best with a highly over-fitted models.
+Another thing worth noticing is the fact that AUC on the train set is almost 1 in every model. These values are worrying because this means that the models are highly over-fitted, and that generalization problems can be present. The XGBoost model has some built-in parameters that can be used as a regularization strategies, like the maximum tree depth of single tree trained and number of iterations. In search for a less over-fitted model I have tweaked these parameters in cross-validation. However, although in some cases I was able to make the model overfit less, the performance in 2-fold cross-validation was still the best with a highly over-fitted models.
 
 I have also created a table .. containing similar information, but this time for Logistic Regression model. Main finding is that even the best LR model (containing product categories and basic features) is worse than the worst XGBoost model (0.586 vs. 0.625, respectively). This means that linear modeling is in general very poorly suited for this prediction task. 
-
 
 
 ```{r }
@@ -284,8 +281,6 @@ Comparison of performance for *agglomeration* set of features is particularly in
 
 
 From the perspective of CRM, the most important result of the modeling procedure is that the created model has predictive power in the task of churn prediction. This means that using model's predictions the marketing department can understand which of the customers are most likely to place the second order and can be encouraged further. And on the other hand, which customers have a very low probability to buy, and thus the company can restrain from losing money on targeting them.
-
-
 
 From the comparison of Logistic Regression and Extreme Gradient Boosting results, the latter one was shown to be superior over the other. Logistic Regression interpretability is an important feature that XGB lacks. 
 Knowing what are the factors that make the customer more likely to stay is important not only for increasing trust about model predictions. Also, such information can serve as an important source of knowledge that can be passed to non-technical marketing workers in the company and potentially help them in their daily work.
@@ -328,7 +323,7 @@ The p-value for the first hypothesis is 0.0541. This means that with the level o
 
 P-value with 'greater' hypothesis is 0.02705. This means that at the levels of significance 0.1, 0.05 one can say that the performance of the first model is better than of the second one.
 
-These two tests show that the results are ambiguous. Although there is some evidence that the performance of the product categories model is better, it cannot be said with a great certainty. One heuristic can come into help in deciding which model should be used in production setting is Occam's razor. The model with product categories has 21 variables, while the one with all variables included - 47. If there is no an important reason why the more complex approach should be used, the simpler is usually better. In this case, using simpler approach has the following advantages:
+These two tests show that the results are ambiguous. Although there is some evidence that the performance of the product categories model is better, it cannot be said with a great certainty. One heuristic can come into help in deciding which model should be used in production setting is Occam's razor. The model with product categories has 21 variables, while the one with all variables included - 47. If there is no an important reason why the more complex approach should be used, the simpler is usually better. In this case, using simpler approach has the following advantages for the usage in CRM contest:
 
 - Faster inference about the new customers - especially in an online prediction setting when the predictions have to be done on the fly
 - The predictions are easier to interpret. Not only the amount of factors taken into account is lower, but also the predictions are made only on the basis of the features that can be directly obtained from the purchase data. On the contrary - variables containing topic information or demographic features are somehow biased and uncertain. In the case of the review topic data it is because of the model imperfections, and in the case of demographic data because of too big generalization
@@ -399,9 +394,11 @@ A potential usages of customer ranking based on probability to churn and lift an
 - One can also vary the targeting strategy based on different cutoffs from the ranking. For example don't do anything with top 1%, send encouraging email to top 10%, send discount to top 20%. This can serve as a way to optimize costs of more expensive targeting measures.
 - It can serve as a baseline for various marketing tools in the paradigm of A/B testing - instead of computing the performance of the test group vs. control group, one can replace the performance of control group with more informed guess about the performance, namely the probability obtained from the ranking list.
 - Another interesting insight that can be obtained from a well designed A/B testing experiment is the how the conversion rate of each of the customers group changes after performing some action, for example sending an encouraging email or giving a discount for the next purchase. 
-- TODO: cost analysis vs. profitability
+- A typical approach for judging the effectivity of a targeting campaign is comparing cost of particular targeting effort with potential revenue that can be gained. Only the approaches that still give some positive results should be continued. One could expect that the bigger probability outputed by the model, the more susceptible is the customer to be affected by targeting. This can be tested by using some targeting tools (e.g. gving discount) on a sample of customers selected from each quantile, and compare the performance with the control group per quantile. (TODO: przeformułować ten podpunkt bo chyba jest trochę niejasny)
 
 The way to approach the customers is however in the hands of company's marketing experts. Only information about the ranking of customers probabilities to buy second time is not enough to add value for the company. To this, know-how about effectiveness of various marketing tools and cost analysis of each channels that the company can influence customer's choices is needed. Such information is often already available in the marketing departments, if not based on previous market research, then coming from the intuition of the experienced marketing department employees.
+
+TODO: - Customer Lifetime Value for new customers - probability to buy second time from the model \* average buy second time 
 
 ### Lift analysis (TODO: opisać wykres i tabelkę)
 
@@ -411,6 +408,8 @@ Later, churn rates of both groups should be compared. *Lift* is defined as test 
 1. Split the dataset into 100 sub-datasets. The split is done on the basis of quantile of the response from the model y_hat.
 2. Calculate true response rate for each subset i (share_second_model_i)
 3. Calculate lift value for each subset i (share_second_model_i/share_second)
+
+
 
 
 ```{r}
@@ -429,7 +428,10 @@ score_randomly <- mean(preds2$if_second_order)
 # score_randomly
 ```
 
-0.033 of people have second order. This means that if we would send out the encouragement randomly, we would hit 0.033 percent of people that truly would do second order.
+
+Suppose the marketing campaign is meant to target 5% of the customers that has already made the first order. This equals to 1598 customers from the test set. If one would choose the customers to target randomly, on average in this group would be 3.3% of customers that would do the second order anyway. Using the output of the churn prediction, this score would be 17%, which means a performance gain of 416%. One should bear in mind that targeting the customers that would place the second order anyway is useless. However, because the model is able to predict if the customer will buy second time with higher accuracy, it can be assumed that it can also correctly predict the customers that are likely to "almost buy".
+
+TODO: tutaj przydałaby się argumentacja z discrete choice. Zakładamy że wynik modelu (albo rankingu) to latent variable, a decyzja czy klient kupuje jest bazowana na jakimś progu. Wtedy kiedy wiemy że model poprawnie przewiduje tych którzy kupili, to możemy zakładać że poprawnie przewiduje też tych którzy "prawie" kupili
 
 
 ```{r }
@@ -475,21 +477,44 @@ output_lifts %>%
 
 ```{r }
 
+# output_lifts %>%
+#   ggplot(aes(x = fraction_of_customers, y= lift_over_randomly)) +
+#   geom_line() +
+#   geom_hline(yintercept = 1, color = 'red') +
+#   labs(title = 'Lift curve') +
+#   theme_minimal() 
+# elbow method
+  # geom_point(data = output_lifts %>%
+  #                                filter(fraction_of_customers>0.08 & fraction_of_customers<0.089), 
+  #                              
+  #                              color = 'red', size = 3
+  # ) +
+  # ggrepel::geom_text_repel(data = output_lifts %>%
+  #              filter(fraction_of_customers>0.08 & fraction_of_customers<0.089) %>%
+  #              mutate(label = paste0('Lift:', round(lift_over_randomly,2))),aes(label=label))
+
+quantiles_to_show2 <- c(0.99, 0.98, 0.97, 0.96, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.25, 0.01)
+
 output_lifts %>%
   ggplot(aes(x = fraction_of_customers, y= lift_over_randomly)) +
   geom_line() +
-  geom_hline(yintercept = 1, color = 'red') +
+  # geom_hline(yintercept = 1, color = 'red') +
   labs(title = 'Lift curve') +
-  theme_minimal() + geom_point(data = output_lifts %>%
-                                 filter(fraction_of_customers>0.08 & fraction_of_customers<0.089), 
-                               
-                               color = 'red', size = 3
+  theme_minimal() +
+  geom_point(data = output_lifts %>% 
+               filter(fraction_of_customers %in% (1-quantiles_to_show2))
   ) +
-  ggrepel::geom_text_repel(data = output_lifts %>%
-               filter(fraction_of_customers>0.08 & fraction_of_customers<0.089) %>%
-               mutate(label = paste0('Lift:', round(lift_over_randomly,2))),aes(label=label))
+  ggrepel::geom_text_repel(data =output_lifts %>% 
+                             filter(fraction_of_customers %in% (1-quantiles_to_show2)), 
+                           aes(label=sprintf('(%s: %s)', (1-quantiles_to_show2), round(lift_over_randomly,1)))) +
+  scale_y_continuous(breaks = c(1,5,10,15,20),limits = c(1, NA)) 
+  
+
 
 ```
+
+On the plot .., lift curve is presented. On the x axis, the fraction of the *top* customers judging by probability to buy second time is presented. On the y axis, lift value for this quantile is shown. 
+The shape of the plot resembles the one of the function 1/x. Values of lift are very big for the smallest percentage of the best customers to target, and they are getting smaller very quickly. This means that the more customers the company would like to target based on the model prediction, the less marginal effects it would get from the usage of the model. For example, for top 1% of the customers, the model can predict retention 18.7 times better than the random targeting approach. For top 5%, it is still very effective, being 4.2 times better. However, the improvement for half of the customers is only 0.3. Although this value is less impressive, it is still an improvement over random targeting. 
 
 ## Model explanations
 

@@ -1,10 +1,3 @@
-st_coordinates(df_map) %>% 
-  as_tibble() %>%
-  # sample_frac(0.1) %>%
-  ggplot(aes(x=X, y=Y)) +
-  geom_density2d_filled(alpha = 0.7) +
-  geom_point(size=0.05) +
-  theme_minimal()
 
 
 ### DUMP ----

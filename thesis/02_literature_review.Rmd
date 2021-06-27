@@ -14,6 +14,8 @@ TODO:
 
 TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
 
+TODO: 
+
 ### Reviews analysis
 
 TODO: do zastanowienia jakie powinny być więcej częsci w lit review, poprawić strukturę tekstu
@@ -84,6 +86,12 @@ Other branch of customer behaviour analysis is concentrated on declaration of de
 
 
 Luźne opisy paperów:
+
+https://www.preprints.org/manuscript/202106.0063/v1
+Dokładnie ten sam dataset, preprint opublikowany 5.06 (sic!)
+
+https://arxiv.org/pdf/1703.03869.pdf
+Bardzo dokładny opis podejścia do churn prediction z użyciem DL
 
 https://link.springer.com/chapter/10.1007/978-981-32-9563-6_11
 [@jheng2019customer]

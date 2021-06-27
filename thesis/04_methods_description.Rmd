@@ -12,9 +12,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.*
 
-TODO: zastanowić się nad diagramem gdzie będzie opisane jak były przetwarzane dane
-
 ## Processing parts of the dataset
+
+TODO: Introduction, opisać diagram
+
+![](resources/data_processing_diagram.png)
+
 
 
 ### Order items
@@ -26,7 +29,7 @@ For each purchase of the customer there is avaliable information about the items
 3. Some of the categories are underrepresented - there are ... categories for which only ... purchases were made. This can pose generalization problems.
 4. The number of categories is very big, and because of that model training would be extremely slow
 
-To mitigate the problem of too many categories, I have decided to bin the least popular ones as a distinct category "other". I have chosen 13 (??) most popular ones, which account for .. of all observations. Then, I have used one-hot-encoding^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.] approach to create numeric representation. Category "other" was set as a base level. 
+To mitigate the problem of too many categories, I have decided to bin the least popular ones as a distinct category "other". I have chosen 15 (??) most popular ones, which account for .. of all observations. Then, I have used one-hot-encoding^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.] approach to create numeric representation. Category "other" was set as a base level. 
 
 ### Geographic data - long/lat
 
@@ -55,8 +58,8 @@ Olist e-commerce store is operating only in Brazil. That is why most of the revi
 
 3 algorithms for topic modeling that I have tested were:
 
-- Latent Dirchlet Allocation - because it is a go-to standard for topic recognition
-- Gibbs Sampling algorithm for the Dirichlet Multinomial Mixture - as this method is an improvement over LDA, meant especially for short texts. This is the case from this study, as most of the reviews are just couple of words long
+- Latent Dirchlet Allocation - because it is a go-to standard for topic recognition.
+- Gibbs Sampling algorithm for the Dirichlet Multinomial Mixture - as this method is an improvement over LDA, meant especially for short texts. This is the case from this study, as most of the reviews are just a couple of words long.
 - Attention-Based Aspect Extraction - this method is also meant for short texts, and at the same time it uses the most modern, state-of-the-art NLP techniques.
 
 To improve the results in all 3 methods I have removed stopwords and punctuation from the text. Also, to limit the number of words in the vocabulary I have used lemmatization technique. This was done by WordNet lemmatizer. To further improve the results, I have used Part-of-Speech tagger, and passed the tags of words to the lemmatizer. This way the algorithm can change the form of the word on a more informed basis, and thus apply lemmatization to more words. 
