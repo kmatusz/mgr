@@ -14,7 +14,6 @@ TODO:
 
 TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
 
-TODO: 
 
 ### Reviews analysis
 
@@ -84,6 +83,14 @@ Other branch of customer behaviour analysis is concentrated on declaration of de
 
 @9325646 analysed responses to such questionaires and tried to predict, whether preprocessed textual reviews can serve as explanatory variables. After using tf-idf transformation they found out that they can. 
 
+### XAI
+
+https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q
+challenge dla marketingu przy stosowaniu AI
+
+https://arxiv.org/pdf/1810.00184.pdf
+
+xai z perspektywy końcowego usera
 
 Luźne opisy paperów:
 

@@ -18,37 +18,55 @@ TODO: Introduction, opisać diagram
 
 ![](resources/data_processing_diagram.png)
 
-
+On diagram .. a summary of preprocessing applied to all the parts of the dataset is presented. All the tables on the left-hand-side are coming directly from Olist (4 tables) and SIDRA sources (1 table - demographic data). Purple table is the primary one, the features from this table were used for testing all the sets of variables. The final tables after preprocessing of each of the parts of the dataset are shown in gray. In the modeling phase, I have used simple join of the basic table, and the remaining ones, separately from each other (e.g. basic information + order items, basic inforamation + DBSCAN cluster etc.).
 
 ### Order items
 
-For each purchase of the customer there is avaliable information about the items that particular customer bought. All items in the shop are assigned to one of .. categories. There is a couple of challenges that should be adressed before adding this information to the dataset:
+For each purchase of the customer there is avaliable information about the items that particular customer bought. All items in the shop are assigned to one of 74 categories. There is a couple of challenges that should be adressed before adding this information to the dataset:
 
 1. For each purchase, the customer can buy products from different categories
-2. Most of the purchases (..%) contain only one item - this means that one-hot-encoding matrix would be extremely sparse
-3. Some of the categories are underrepresented - there are ... categories for which only ... purchases were made. This can pose generalization problems.
+2. Most of the purchases (92%) contain only one item - this means that one-hot-encoding matrix would be extremely sparse
+3. Some of the categories are underrepresented - top 15 categories account for 80% of all purchases, and there are 19 categories for which less than 100 purchases were made. This can pose generalization problems.
 4. The number of categories is very big, and because of that model training would be extremely slow
 
-To mitigate the problem of too many categories, I have decided to bin the least popular ones as a distinct category "other". I have chosen 15 (??) most popular ones, which account for .. of all observations. Then, I have used one-hot-encoding^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.] approach to create numeric representation. Category "other" was set as a base level. 
+To mitigate the problem of too many categories, I have decided to bin the least popular ones as a distinct category "other". I have chosen 15 most popular ones, which account for 79% of all observations. Then, I have used one-hot-encoding^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.] approach to create numeric representation. Category "other" was set as a base level. 
 
 ### Geographic data - long/lat
 
-TODO: Znaleźć cytowanie o wkładaniu wyników klastrowania do modelu zamiast surowych koordynat
+TODO: Znaleźć cytowanie o wkładaniu wyników klastrowania do modelu zamiast surowych koordynat, [@behrens2018spatial] to nie to - jest wytłumaczone dlaczego są artefakty, ale oni używają Euclidean Distance Fields zamiast klastrowania, a artefakty i tak zostają
 
 To be able to decode the coordinates differently, I have used a DBSCAN clustering technique (TODO: cytowanie). 
 
 DBSCAN is particularly well-suited for geolocation point data. First, it is density-based, and because of that has a natural interpretation. When the point belongs to any cluster it means that the customer is living in a densely-populated area, while the points decoded by DBSCAN as noise are the customers living in more isolated places. Second, one doesn't have to set the number of clusters in advance. Third, it doesn't require the clusters to be spherical, which is not a condition that comes naturally in the geolocation settings. 
 
-DBSCAN has 2 parameters to be decided before running the algorithm. These are the minimal number of points laying close to each other that are needed to constitute a cluster (*k*), and maximal distance, at which one considers the poits to lay close to each oter (*epsilon*). 
+DBSCAN has 2 parameters to be decided before running the algorithm. These are the minimal number of points laying close to each other that are needed to constitute a cluster (*k*), and maximal distance, at which one considers the poits to lay close to each oter (*epsilon*).
 A typical rule-of-thumb for deciding k and epsilon parameters is to first set k, and then plot k-nearest-neighbors distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, epsilon is actually a physical distance between two locations. That is why based on expert knowledge from the company one can set what should be more reasonable criteria for constituting clusters. 
 
 In my work I have decided somehow arbitrarly that minimal number of customers in the cluster is 100, and the maximum  distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. However, this kind of decision in a real company setting can (and should be) consulted with the company's domain experts in marketing. 
 
 ### Demographic data - sidra
 
-I have processed the demographic part of the dataset using Principal Components Analysis. There are couple of reasons for that. First, this part of the dataset is relatively high dimensional (34 variables). At the same time, one would expect that the information can be somehow compressed, because lots of the variables represent very similar concept (for example there are 20 variables encoding age structure). Second, trainig Machine Learning models on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results (TODO: cytowania z prac w których robili PCA). 
+I have processed the demographic part of the dataset using Principal Components Analysis. There are couple of reasons for that. First, this part of the dataset is relatively high dimensional (34 variables). At the same time, one would expect that the information can be somehow compressed, because lots of the variables represent very similar concept (for example there are 20 variables encoding age structure). Second, trainig Machine Learning models on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results (TODO: cytowania z prac w których robili PCA).
 
 One decision regarding PCA transformation is whether to use a standard version, or the one with rotated loadings (TODO: cytowanie). The trade-off between these two methods is that rotated loadings allows for interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in case of this study, because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
+
+### Spatial join of SIDRA and Olist sources
+
+Joining of the data coming from SIDRA and OLIST sources proved to be challenging. There were multiple reasons for that:
+
+- In e-commerce dataset the spatial dimansion is decoded mainly in a form of ZIP codes, while in demographic dataset - in a form of microregions.
+- The boundaries of zipcodes and microregions do not align.
+- The geoloacation data from OLIST has 3 columns - zip code and lat/lng coordinates. For each zip code are multiple entries for coordinates. This probably means that the company has exact coordinates of each of their customers, but decided to not provide exact customer-location mapping in public dataset for anonimisation reasons. Because of that the boundaries of zip codes cannot be specified exactly and one has to rely on the particular points from this zipcode area.
+
+My approach was as follows: 
+
+1. For each of the points in OLIST geolocation dataset, establish in which microregion it is. Join the dataset for that region to OLIST geolocation dataset.
+2. Group the dataset by zip code and calculate the mean of each of the features in the dataset. In this case this mean would be a weighted mean (with weight in form of "how many customers are in this area?")
+
+![](resources/11_spatial_join_excel.png)
+
+(TODO: Zrobić tabelki w R a nie w excelu, pewnie też lepiej opisać)
+
 
 ### Text reviews (TODO)
 
@@ -149,7 +167,7 @@ I have not run the model containing all variables with demographic features with
 
 #### Boruta
 
-To remove the human judgement about which predictors should be used, I have also used a Boruta algorithm for feature selection. It is widely popular among machine learning practitioners (??? TODO: znaleźć cytowania oryginalnej pracy). The algorithm belongs to category of wrapper feature selection algorithms, and Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. In this way one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and Random Forest model is trained. 
+To remove the human judgement about which predictors should be used, I have also used a Boruta algorithm for feature selection. It is widely popular among machine learning practitioners (TODO: znaleźć cytowania oryginalnej pracy). The algorithm belongs to category of wrapper feature selection algorithms, and Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. In this way one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and Random Forest model is trained. 
 
 Random Forest model have a built in feature importance measure, that is usually Mean Decrease Impurity. After running random forest model, for each original features MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of shadow features, the variable gets a "hit". 
 

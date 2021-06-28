@@ -36,6 +36,7 @@ bootstrap_auc <- function(model, test_set, no_resamples){
   
   len_test <- nrow(test_set)
   for (i in 1:no_resamples){
+    set.seed(i)
     idxes <- sample(1:len_test, size = len_test, replace = T)
     temp_test <- test_set[idxes,]
     
@@ -177,7 +178,7 @@ The Boruta algorithm concluded that from all 47 variables only the 14 variables 
 
 ### Topic modeling (TODO)
 
-TODO: Description of the table, that only one model produced meaningful results  
+TODO: that only one model produced meaningful results (Description of the table czy tabelka do appendixa??)
 
 ```{r}
 DT::datatable(read_csv(here('topics_table_to_paper.csv')) %>% mutate(`Example reviews` = str_replace(`Example reviews`, '\\n', '||||')))
@@ -198,7 +199,7 @@ To the final dataset I have added only one variable indicating whether the point
 
 Cumulative variance explained by each of the consecutive loadings is presented on the plot .. . I have decided to leave the 10 most informative PCA eigenvectors. These account for 97.3% of the explained variance. 
 
-TODO: Zostawić wykres czy wywalić?
+TODO: Zostawić wykres czy wywalić??
 
 ```{r}
 load(file=here('run_all_models_cache/pca_to_plot.Rdata'))
@@ -312,18 +313,19 @@ rbind(
 
 ```
 
-The curve for the model with basic features is standing out of the others. However, the difference between 1st best and 2nd best models is not as clear - it looks like the better model has slightly better AUC, but this should be investigated more thoroughly. That is why I have used Kolmorogov-Smirnov test to check if the empirical distributions can come from the same probability distribution. I have run the test twice using 2 alternative hypotheses. First one with `H1: auc_best =/= auc_2nd_best`, and the second one: `H1: auc_best > auc_2nd_best`.  (TODO: rezultaty opisane w tekście i z kodu się rozjechały, sprawdzić dlaczego i czy zmienia konkluzje)
+The curve for the model with basic features is standing out of the others. However, the difference between 1st best and 2nd best models is not as clear - it looks like the better model has slightly better AUC, but this should be investigated more thoroughly. That is why I have used Kolmorogov-Smirnov test to check if the empirical distributions can come from the same probability distribution. I have run the test twice using 2 alternative hypotheses. First one with `H1: auc_best =/= auc_2nd_best`, and the second one: `H1: auc_best > auc_2nd_best`.
 
 ```{r}
-ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best)
-ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best,alternative = 'less')
+ks_1 <- ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best)
+ks_2 <- ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best,alternative = 'less')
+
+ks_1
+ks_2
 ```
 
-The p-value for the first hypothesis is 0.0541. This means that with the level of significance 0.05 the performance of the models is indistinguishable. Using a more liberal level of significance of 0.1 one can say that the performance of the models is different.
+The p-value for the first hypothesis is `r round(ks_1$p.value,4)` This means that with the level of significance 0.05, 0.01 the performance of the models is distinguishable. At the same time, p-value with 'greater' hypothesis is `r round(ks_2$p.value,4)`. This means that at the levels of significance 0.05, 0.01 one can say that the performance of the first model (only product categories) is better than of the second one (all variables).
 
-P-value with 'greater' hypothesis is 0.02705. This means that at the levels of significance 0.1, 0.05 one can say that the performance of the first model is better than of the second one.
-
-These two tests show that the results are ambiguous. Although there is some evidence that the performance of the product categories model is better, it cannot be said with a great certainty. One heuristic can come into help in deciding which model should be used in production setting is Occam's razor. The model with product categories has 21 variables, while the one with all variables included - 47. If there is no an important reason why the more complex approach should be used, the simpler is usually better. In this case, using simpler approach has the following advantages for the usage in CRM contest:
+Another reason to choose the model for usage in in production setting is Occam's razor heuristic. The model with product categories has 21 variables, while the one with all variables included - 47. If there is no an important reason why the more complex approach should be used, the simpler is usually better. In this case, using simpler approach has the following advantages for the usage in CRM context:
 
 - Faster inference about the new customers - especially in an online prediction setting when the predictions have to be done on the fly
 - The predictions are easier to interpret. Not only the amount of factors taken into account is lower, but also the predictions are made only on the basis of the features that can be directly obtained from the purchase data. On the contrary - variables containing topic information or demographic features are somehow biased and uncertain. In the case of the review topic data it is because of the model imperfections, and in the case of demographic data because of too big generalization
@@ -343,7 +345,7 @@ These two tests show that the results are ambiguous. Although there is some evid
 
 #### ROC curve 
 
-TODO: dokładnie ta sama infromacja jest w lift curve. Pytanie czy zostawić roc curve.
+TODO: dokładnie ta sama infromacja jest w lift curve. Pytanie czy zostawić roc curve ??
 
 ```{r}
 roc_best_model <- calc_roc(models_list$product_categories$model, to_model_test)
@@ -378,9 +380,9 @@ roc_tibble %>%
 
 ## Analysis of potential revenue - lift etc. 
 
-### Lift analysis - introduction (TODO: na tą chwilę skrawki tekstu, do poukładania)
+### Lift analysis - introduction
 
-TODO: to że prawdopodobieństwa z modelu i prawdopodobieństwa empiryczne z posortowanego rankingu klientów się rozjeżdżają wynika z tego że model jest nieskalibrowany - przewidywane prawdopodobieństwa nie są prawdopodobieństwami [link](https://towardsdatascience.com/pythons-predict-proba-doesn-t-actually-predict-probabilities-and-how-to-fix-it-f582c21d63fc). Nie wiem jak to opisać (i czy opisać)
+TODO: to że prawdopodobieństwa z modelu i prawdopodobieństwa empiryczne z posortowanego rankingu klientów się rozjeżdżają wynika z tego że model jest nieskalibrowany - przewidywane prawdopodobieństwa nie są prawdopodobieństwami [link](https://towardsdatascience.com/pythons-predict-proba-doesn-t-actually-predict-probabilities-and-how-to-fix-it-f582c21d63fc). Nie wiem jak to opisać (i czy opisać) ??
 
 An ultimate goal of customer churn prediction is gaining information, which customers are most likely to buy for the second time. From these insights, the CRM experts can make an informed decision which customers are the most likely to respond positively to targeting efforts. 
 
@@ -400,7 +402,7 @@ The way to approach the customers is however in the hands of company's marketing
 
 TODO: - Customer Lifetime Value for new customers - probability to buy second time from the model \* average buy second time 
 
-### Lift analysis (TODO: opisać wykres i tabelkę)
+### Lift analysis
 
 Later, churn rates of both groups should be compared. *Lift* is defined as test group performance divided by control group performance. 
 
@@ -431,7 +433,7 @@ score_randomly <- mean(preds2$if_second_order)
 
 Suppose the marketing campaign is meant to target 5% of the customers that has already made the first order. This equals to 1598 customers from the test set. If one would choose the customers to target randomly, on average in this group would be 3.3% of customers that would do the second order anyway. Using the output of the churn prediction, this score would be 17%, which means a performance gain of 416%. One should bear in mind that targeting the customers that would place the second order anyway is useless. However, because the model is able to predict if the customer will buy second time with higher accuracy, it can be assumed that it can also correctly predict the customers that are likely to "almost buy".
 
-TODO: tutaj przydałaby się argumentacja z discrete choice. Zakładamy że wynik modelu (albo rankingu) to latent variable, a decyzja czy klient kupuje jest bazowana na jakimś progu. Wtedy kiedy wiemy że model poprawnie przewiduje tych którzy kupili, to możemy zakładać że poprawnie przewiduje też tych którzy "prawie" kupili
+TODO: tutaj przydałaby się argumentacja z discrete choice. Zakładamy że wynik modelu (albo rankingu) to latent variable, a decyzja czy klient kupuje jest bazowana na jakimś progu. Wtedy kiedy wiemy że model poprawnie przewiduje tych którzy kupili, to możemy zakładać że poprawnie przewiduje też tych którzy "prawie" kupili ??
 
 
 ```{r }
@@ -466,10 +468,13 @@ for (quant in seq(0.99, 0.01, -0.01)){
 
 #### Table with selected quantiles
 
+TODO: wykres i tabela pokazują prawie te same informacje, tabelę może dać do appendixa??
+
 ```{r }
 quantiles_to_show <- c(0.99, 0.98, 0.97, 0.96, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5)
 output_lifts %>% 
   filter(fraction_of_customers %in% (1-quantiles_to_show)) %>%
+  mutate_if(is.numeric, round, 2) %>%
   knitr::kable()
 ```
 
@@ -670,7 +675,6 @@ profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lng <=
 #     stroke = FALSE, fillOpacity = 0.5,
 #     radius = 4
 #   )
-# TODO: Bounding box z kraju - żeby nie wychodziło poza Brazylię
 
 
 tmap_mode("plot")
@@ -713,17 +717,14 @@ tm_shape(brazil_map) +
 
 In the case of geolocation data, I have created 2-d ceteris paribus estimates .. and visualized it on the map. To facilitate the analysis I have marked 10 most populated Brazilian cities. They are mostly located along the coast, with the exception of Brasilia (new capital of the country) and Manaus (the biggest city in Amazonia region). It can be seen that the predictions are the highest in two distinct large spots - one having center close to Brasilia, and the other one same latitude, but closer to the western country border. 
 
-It can be seen that the predictions form a very visible pattern in stripes. One possible explanation is the limitation of the model underlying XGBoost method, that is decision trees. The vanilla decision tree algorithm works by partitioning the feature space on a binary basis, and a typical output of that model on 2-d space are visible rectangles. And as XGBoost is simply stacked decision trees, the resulting partition pattern is a bit more complex, but still decision-tree-typical artifacts are visible. 
-
-Another possible explanation comes from the work of ... (TODO: znaleźć pracę o wkładaniu surowych wartości long/lat do modelu, napisać paragraf). They noticed that ... 
-
+It can be seen that the predictions form a very visible pattern in stripes. As was noticed by @behrens2018spatial, it comes from the limitation of the model underlying XGBoost method, that is decision trees. The vanilla decision tree algorithm works by partitioning the feature space on a discrete basis, and a typical output of that model on 2-d space are visible rectangles. And as XGBoost is simply stacked decision trees, the resulting partition pattern is a bit more complex, but still decision-tree-typical artifacts are visible. 
 
 
 #### Break down of average prediction 
 
 (TODO: opisać bardziej ogólnie metodę we wstępie i po co robić, na tą chwilę też opisy wyników są trochę nieczytelne, do poprawy)
 
-Variable Attributions via Sequential Variable Conditioning - algorithm (?? cytowanie z paczki DALEX):
+Variable Attributions via Sequential Variable Conditioning - algorithm (TODO cytowanie z paczki DALEX):
 
 For breakdown of one particular observation x_1:
 

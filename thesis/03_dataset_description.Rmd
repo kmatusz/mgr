@@ -36,7 +36,7 @@ The Olist dataset has the following features groups:
 - number of items the customer bought in particular order
 - review of the order - after the finished order the customer can provide the review of the order in 2 forms - 1-5 score or textual review. In the dataset codebook the authors stated that not all of the customers in real life put any review, but this dataset was sampled in such a way that the records without 1-5 review were excluded. On the contrary, the textual review is filled only in ~50%. The data about 1-5 review can be included to the models as-is. Textual review requires however more intense preprocessing, which is described in the *methods* section of this study.
 - location of the customer - the main table containing customer information contains 5-digit ZIP code of the customer's home. The company provided also a mapping table, in which each ZIP code is assigned to multiple latitude/longitude coordinates. Probably this was done because of anonimisation reasons - so that one cannot connect the customer from the dataset with the exact house location. To obtain an exact one-to-one customer-geolocation mapping, to each zip code, I have assigned the most central geolocation from the mapping table. To obtain the most central point, I have used Clustering Around Medoids algorithm with only one cluster, and ran the algorithm separately for each ZIP code. 
-- products bought - the dataset contains information about how many items there were in the package, as well as product category of each item - in the form of raw text. In total there were ... categories, but the top .. accounted for ... of all the purchases. To limit the number of the variables for the modeling process, I have decided to change the label of all the least popular categories to "others".
+- products bought - the dataset contains information about how many items there were in the package, as well as product category of each item - in the form of raw text. In total there were 74 categories, but the top 15 accounted for 80% of all the purchases. To limit the number of the variables for the modeling process, I have decided to change the label of all the least popular categories to "others".
 
 ## SIDRA
 
@@ -47,24 +47,6 @@ The dataset about the population statistics was obtained from Instituto Brasilei
 - percentage of people living in rural areas and urban areas - 2 variables
 - percentage of immigrants compared to total microregion population - 1 variable
 - earnings structure - share of the people that earn between x0\*minimum_wage and x1\*minimum_wage - 11 variables
-
-## Joining of the 2 data sources
-
-Joining of the data coming from SIDRA and OLIST sources proved to be challenging. There were multiple reasons for that:
-
-- In e-commerce dataset the spatial dimansion is decoded mainly in a form of ZIP codes, while in demographic dataset - in a form of microregions.
-- The boundaries of zipcodes and microregions do not align.
-- The geoloacation data from OLIST has 3 columns - zip code and lat/lng coordinates. For each zip code are multiple entries for coordinates. This probably means that the company has exact coordinates of each of their customers, but decided to not provide exact customer-location mapping in public dataset for anonimisation reasons. Because of that the boundaries of zip codes cannot be specified exactly and one has to rely on the particular points from this zipcode area.
-
-My approach was as follows: 
-
-1. For each of the points in OLIST geolocation dataset, establish in which microregion it is. Join the dataset for that region to OLIST geolocation dataset.
-2. Group the dataset by zip code and calculate the mean of each of the features in the dataset. In this case this mean would be a weighted mean (with weight in form of "how many customers are in this area?")
-
-![](resources/11_spatial_join_excel.png)
-
-(TODO: Zrobić tabelki w R a nie w excelu, pewnie też lepiej opisać)
-
 
 ## EDA
 
@@ -124,7 +106,7 @@ stats_table %>%
 
 ```
 
-TODO: opisać
+TODO: opisać? Czy do appendixa??
 
 #### if_second_order 
 
@@ -231,9 +213,10 @@ df %>%
   scale_x_log10()
 ```
 
-#### Geolocation
 
-TODO: Opisać mapę, do zastanowienia czy taka mapa pokazuje cokolwiek czy lepiej zbinować punkty do siatki i policzyć procentowy udział 
+#### Maps
+
+TODO: Opisać mapy, zastanowić się które wywalić (??)
 
 
 ```{r cache=T}
@@ -278,10 +261,6 @@ tm_shape(brazil_map) +
              border.lwd = NA,
              alpha = 0.5)
 ```
-
-#### Maps
-
-TODO: Opisać mapy, zastanowić się które wywalić
 
 An aggregation to microregions is relatively coarse. Because of that, some of the statistics can be not reliable in the regions with a very small number of customers. That is why I have decided to remove from the map these microregions, in which number of customers was less than 5. 
 
@@ -334,7 +313,7 @@ stats_per_microregion %>%
 
 microregion_map %>%
   left_join(stats_per_microregion2) %>%
-  filter(no_customers>5) -> stats_per_microregion3 # TODO: zastanowić się czy ma sens usuwanie regionów o mniej niż x klientów - zaburza obraz
+  filter(no_customers>5) -> stats_per_microregion3 # TODO: zastanowić się czy ma sens usuwanie regionów o mniej niż x klientów - zaburza obraz (??)
 
 tmap_mode(mode = c("plot"))
 ```
@@ -371,7 +350,7 @@ st_coordinates(df_map) %>%
   theme_minimal()
 ```
 
-TODO: prawie nic nie widać, raczej do wyrzucenia
+TODO: prawie nic nie widać, raczej do wyrzucenia (??)
 
 
 Mean review score
@@ -414,9 +393,36 @@ tm_shape(brazil_map) +
 ```
 
 
-#### Product categories (TODO)
+#### Product categories
 
-TODO: tabela: kategoria, liczba obserwacji dla kategorii, procentowy if_second_order
+In the table .., summary statistics about product categories are presented. The most popular category, "bed, bath and tables" accounts for 12% of all items bought in the shop. The table is ordered by the percentage of the customers that in first purchase bought particular category, and later decided to buy in the shop for the second time. The difference in the percentages is clearly visible. For "the best" category, it is 13.8%, while fot the worst one - only 0.029. This is a very promising result, and a signal that the dummy variables indicating product category can serve as important features in the modeling phase. 
 
+```{r}
+to_model_train %>%
+  select_at(vars(starts_with('prod_cat'), if_second_order)) %>%
+  group_by(if_second_order) %>%
+  summarise_if(is.numeric, mean) %>%
+  filter(if_second_order =='yes') %>%
+  pivot_longer(2:16) %>%
+  select(-if_second_order) %>%
+  mutate(category = str_replace(name, 'prod_cat_', '')) %>%
+  rename(percent_second_order = value) %>%
+  select(category, percent_second_order) -> product_categories_temp2
 
+to_model_train %>%
+  select_at(vars(starts_with('prod_cat'), if_second_order)) %>%
+  summarise_if(is.numeric, sum) %>%
+  pivot_longer(1:15) %>%
+  mutate(category = str_replace(name, 'prod_cat_', '')) %>%
+  rename(no_items = value) %>%
+  mutate(percentage = no_items/sum(no_items)) %>%
+  select(category, no_items, percentage) -> product_categories_temp1
+  
+product_categories_temp1 %>%
+  left_join(product_categories_temp2) %>%
+  arrange(-percent_second_order) %>%
+  mutate_if(is.numeric, round,3) %>%
+  knitr::kable()
+
+```
 

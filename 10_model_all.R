@@ -69,6 +69,9 @@ order_items3 %>%
   left_join(product_translation, by = c('prod_cat_'='product_category_name')) %>%
   mutate(prod_cat_ = coalesce(product_category_name_english, prod_cat_)) -> order_items4
 
+order_items_for_stats_table <- order_items4
+save(order_items_for_stats_table, file = 'run_all_models_cache/order_items_for_stats_table.Rdata')
+
 dummy <- dummyVars(" ~ prod_cat_", data=order_items4)
 order_items4 %>% 
   cbind(tibble(data.frame(predict(dummy, newdata = order_items4)))) %>%
