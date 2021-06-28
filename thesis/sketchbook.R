@@ -1,3 +1,21 @@
+{
+  plot_map <- function(variable, title){
+  tm_shape(brazil_map) +
+    tm_borders()+
+    tm_shape(stats_per_microregion3) +
+    tm_polygons(col = variable,border.alpha = 0) +
+    tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
+    tm_symbols(size = 0.2,
+               col = "black",
+               # style = "fixed",
+               # breaks = c(45, 60, 75, 90),
+               border.lwd = NA,
+               alpha = 0.8) +
+    tm_text(text='city', just='top',size = 0.8) +
+    tm_layout(title= title, title.size = 0.9)
+}
+plot_map('mean_payment_value', 'Mean payment value')
+}
 
 ### DUMP ----
 

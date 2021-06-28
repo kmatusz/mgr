@@ -4,13 +4,15 @@ output: html_document
 # output: word_document
 # TODO: zamienić tabelke z tematami na output nie-html, pozniej usunac ten agrument
 always_allow_html: true
+params:
+  echo: False
 ---
 
 TODO: *W części 05 trzeba do każdej analizy dać dwa typy opisów: metodologiczne (co wyszło, co nie wyszło etc) i marketingowe (co to znaczy dla CRM).*
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(message = F, warning = F, echo=F, fig.width = 6, fig.height = 4, cache = T)
+knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 6, fig.height = 4, cache = T)
 ```
 
 ```{r cache=F}
@@ -569,7 +571,7 @@ Second variable importance plot contains importances for the best model - with i
 
 #### Cateris paribus plots
 
-In my analysis I have decided to obtain the ceteris paribus profiles for mean values of each variable. Unfortunately this method is not able to meaningfully analyse dummy variables, that is why I have excluded the variables indicating product categories. Another variables requiring special treatment are the ones indicating geographic location. For them, I have created a 2-way ceteris paribus estimates and plotted them over the Brazil map. This way it is possible to see if it is correlated with presence of bigger cities or small population density (as in the Amazonia area).
+In my analysis I have decided to obtain the ceteris paribus profiles for mean values of each variable [@dalex]. Unfortunately this method is not able to meaningfully analyse dummy variables, that is why I have excluded the variables indicating product categories. Another variables requiring special treatment are the ones indicating geographic location. For them, I have created a 2-way ceteris paribus estimates and plotted them over the Brazil map. This way it is possible to see if it is correlated with presence of bigger cities or small population density (as in the Amazonia area).
 
 ```{r cache=T}
   explain <- DALEX::explain(model = models_list$product_categories$model,  
@@ -724,7 +726,7 @@ It can be seen that the predictions form a very visible pattern in stripes. As w
 
 (TODO: opisać bardziej ogólnie metodę we wstępie i po co robić, na tą chwilę też opisy wyników są trochę nieczytelne, do poprawy)
 
-Variable Attributions via Sequential Variable Conditioning - algorithm (TODO cytowanie z paczki DALEX):
+Variable Attributions via Sequential Variable Conditioning - algorithm [@dalex]:
 
 For breakdown of one particular observation x_1:
 

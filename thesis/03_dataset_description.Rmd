@@ -2,17 +2,16 @@
 title: "Dataset description"
 output: html_document
 # output: word_document
+params:
+  echo: False
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(message = F, warning = F, echo=T, fig.width = 6, fig.height = 4)
+knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 6, fig.height = 4)
 ```
 
 
 TODO: *W części 03 przydadzą się ilustracje jak wygląda zbiór danych, statystyki zmiennych etc + solidne mapowanie. Rzeczywiście ostatnia mapa chyba ciekawiej może wyglądać jako grid (dałabym obie). Zupełnie brakuje prostych statystyk sprzedażowych zwizualizowanych na mapie (jako grid): ilu klientów, ile transakcji, wartość transakcji - w ujęciu nominalnym, ale też w odniesieniu do populacji (żeby lepiej rozumieć rozkład transakcji i klientów) + jego density (w gglot można zrobić kernel density punktów i zmapować).*
-
-
-
 
 ## Olist
 
@@ -50,7 +49,7 @@ The dataset about the population statistics was obtained from Instituto Brasilei
 
 ## EDA
 
-```{r }
+```{r cache=F}
 library(readr)
 library(tidyverse)
 library("leaflet")
@@ -65,6 +64,7 @@ library(stringr)
 library(sf)
 library(tmap)
 library(here)
+library(readxl)
 ```
 
 ```{r cache=T}
@@ -216,10 +216,13 @@ df %>%
 
 #### Maps
 
-TODO: Opisać mapy, zastanowić się które wywalić (??)
+![](resources/brazil_population_density.png)
+
+On the picture .., map of Brazil population density is presented (source: https://www.gifex.com/detail2-en/2018-12-15-15407/Population_density_of_Brazil.html). The most densely populated areas are located in souther part of the country. There also the biggest cities like São Paulo and Rio de Janeiro are located. Another populated area is on the eastern coast. North-western part of the country is the least populated. The distribution of the customers (as expected) follows this density, that is why I did not include the map of customers density. 
 
 
 ```{r cache=T}
+
 
 tmap_mode("plot")
 brazil_map <- brazilmaps::get_brmap("Brazil")
@@ -238,6 +241,18 @@ df_map %>%
   mutate(size=ifelse(if_second_order=='yes', 1, 0.4)) -> df_map
 ```
 
+```{r}
+# Load the cities coords
+
+brasil_cities_coords <- read_excel(here("data/brasil_cities_coords.xlsx"))
+brasil_cities_coords <- brasil_cities_coords %>%
+  select(city, lat, lng, population)
+
+
+brasil_cities_coords <- sf::st_as_sf(brasil_cities_coords, coords = c(3,2))
+st_crs(brasil_cities_coords) <- st_crs(brazil_map)
+
+```
 
 ```{r cache=T}
 tm_shape(brazil_map) +
@@ -262,7 +277,6 @@ tm_shape(brazil_map) +
              alpha = 0.5)
 ```
 
-An aggregation to microregions is relatively coarse. Because of that, some of the statistics can be not reliable in the regions with a very small number of customers. That is why I have decided to remove from the map these microregions, in which number of customers was less than 5. 
 
 
 ```{r cache=T}
@@ -318,23 +332,51 @@ microregion_map %>%
 tmap_mode(mode = c("plot"))
 ```
 
-Number of customers
+```{r cache = T}
+# Function to plot the map with the same layout and colors
+plot_map <- function(variable, title){
+  tm_shape(brazil_map) +
+    tm_borders()+
+    tm_shape(stats_per_microregion3) +
+    tm_polygons(col = variable,border.alpha = 0) +
+    tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
+    tm_symbols(size = 0.2,
+               col = "black",
+               # style = "fixed",
+               # breaks = c(45, 60, 75, 90),
+               border.lwd = NA,
+               alpha = 0.8) +
+    tm_text(text='city', just='top',size = 0.8) +
+    tm_layout(title= title, title.size = 0.9)
+}
+
+w1 <- plot_map('no_customers_per_10000_pop', 'No. customers per 10 thousand inhabitants')
+w2 <- plot_map('mean_review_score', 'Mean review score')
+w3 <- plot_map('percent_second_order', 'Percentage of customers that placed second order')
+w4 <- plot_map('mean_payment_value', 'Mean payment value')
+```
+
+```{r cache = T, fig.width=9, fig.height=7}
+tmap_arrange(w1, w2, w3, w4, nrow=2)
+```
+
+On the figure .., basic statistics about spatial distribution of the features are presented - in aggregation to microregion level. Such binning is relatively coarse - because of that, some of the statistics can be not reliable in the regions with a very small number of customers. That is why I have decided to remove from the map these microregions, in which number of customers was less than 5. Because of hight correlation between number of customers in the region and total population (~93%), a more meaningful statistic than total number of customers is the number of customers per 10 thousand of inhabitants. It is presented on the plot .. . It is visible that bigger shares of customers appear in the southern part of the country, concentrated in the triangle between São Paulo, Rio de Janeiro and Belo Horizonte agglomerations. 
+
+Mean transaction value is bigger in the northern, more desolated part of Brazil. One explanation could be that in these parts deliveries of the packages are more complicated/expensive/take more time, and thus the customers are more eager to place one bigger order than few small ones. Other possibility is that in the northern part the competition between e-commerce sites is smaller, and thus the customers are pushed to buiyng more items at one supplier. 
+
+It is could be argued that in the northern part of the country the people that placed second order are a bit higher. However, this relationship is rather weak. Similar things can be said about mean review score - there is no clear pattern visible.
+
+TODO: Dalsze mapy raczej do wyrzucenia, wprost wynikają z gęstości populacji ??
+
+Number of customers 
+
+wprost wynika z gęstości populacji (korelacja 0.93), raczej do wyrzucenia 
 
 ```{r cache=T}
 tm_shape(brazil_map) +
   tm_borders()+
   tm_shape(stats_per_microregion3) +
   tm_polygons(col = "no_customers",border.alpha = 0)
-
-```
-
-Number of customers per 10 thousand population
-
-```{r cache=T}
-tm_shape(brazil_map) +
-  tm_borders()+
-  tm_shape(stats_per_microregion3) +
-  tm_polygons(col = "no_customers_per_10000_pop",border.alpha = 0)
 
 ```
 
@@ -350,29 +392,7 @@ st_coordinates(df_map) %>%
   theme_minimal()
 ```
 
-TODO: prawie nic nie widać, raczej do wyrzucenia (??)
-
-
-Mean review score
-
-```{r cache=T}
-tm_shape(brazil_map) +
-  tm_borders()+
-  tm_shape(stats_per_microregion3) +
-  tm_polygons(col = "mean_review_score",border.alpha = 0)
-
-```
-
-
-Percent of people that gave second order
-
-```{r cache=T}
-tm_shape(brazil_map) +
-  tm_borders()+
-  tm_shape(stats_per_microregion3) +
-  tm_polygons(col = "percent_second_order",border.alpha = 0)
-```
-
+prawie nic nie widać, raczej do wyrzucenia (??)
 
 Total transactions value
 
@@ -383,15 +403,7 @@ tm_shape(brazil_map) +
   tm_polygons(col = "sum_payment_value",border.alpha = 0)
 ```
 
-Mean transactions value
-
-```{r cache=T}
-tm_shape(brazil_map) +
-  tm_borders()+
-  tm_shape(stats_per_microregion3) +
-  tm_polygons(col = "mean_payment_value",border.alpha = 0)
-```
-
+Tak jak z ilością customerów, duża korelacja po prostu z gęstością zaludnienia, raczej do wyrzucenia 
 
 #### Product categories
 

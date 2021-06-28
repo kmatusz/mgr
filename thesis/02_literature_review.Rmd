@@ -3,10 +3,12 @@ title: "Literature review"
 output: word_document
 # output: html_document
 bibliography: resources/bib.bibtex
+params:
+  echo: False
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=params$echo)
 ```
 
 TODO: 

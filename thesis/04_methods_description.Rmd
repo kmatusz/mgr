@@ -3,22 +3,24 @@ title: "Methods description"
 bibliography: resources/bib.bibtex
 output: html_document
 # output: word_document
+params:
+  echo: False
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=params$echo)
 ```
-
 
 TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.*
 
+## Introduction (TODO)
+
 ## Processing parts of the dataset
 
-TODO: Introduction, opisać diagram
+On diagram .. a summary of preprocessing applied to all the parts of the dataset is presented. All the tables on the left-hand-side are coming directly from Olist (4 tables) and SIDRA sources (1 table - demographic data). Purple table is the primary one, the features from this table were combined with all the remaining sets of variables. The final tables after preprocessing of each of the parts of the dataset are shown in gray. In the modeling phase, I have used simple join of the basic table, and the remaining ones, separately from each other (e.g. basic information + order items, basic inforamation + DBSCAN cluster etc.).
 
 ![](resources/data_processing_diagram.png)
 
-On diagram .. a summary of preprocessing applied to all the parts of the dataset is presented. All the tables on the left-hand-side are coming directly from Olist (4 tables) and SIDRA sources (1 table - demographic data). Purple table is the primary one, the features from this table were used for testing all the sets of variables. The final tables after preprocessing of each of the parts of the dataset are shown in gray. In the modeling phase, I have used simple join of the basic table, and the remaining ones, separately from each other (e.g. basic information + order items, basic inforamation + DBSCAN cluster etc.).
 
 ### Order items
 
@@ -33,9 +35,9 @@ To mitigate the problem of too many categories, I have decided to bin the least 
 
 ### Geographic data - long/lat
 
-TODO: Znaleźć cytowanie o wkładaniu wyników klastrowania do modelu zamiast surowych koordynat, [@behrens2018spatial] to nie to - jest wytłumaczone dlaczego są artefakty, ale oni używają Euclidean Distance Fields zamiast klastrowania, a artefakty i tak zostają
+TODO: opisać po co metodologicznie dodawać wyniki z klastrowania, jakieś prace które to wykorzystują (cytowania ??)
 
-To be able to decode the coordinates differently, I have used a DBSCAN clustering technique (TODO: cytowanie). 
+To be able to decode the coordinates differently, I have used a DBSCAN clustering technique...
 
 DBSCAN is particularly well-suited for geolocation point data. First, it is density-based, and because of that has a natural interpretation. When the point belongs to any cluster it means that the customer is living in a densely-populated area, while the points decoded by DBSCAN as noise are the customers living in more isolated places. Second, one doesn't have to set the number of clusters in advance. Third, it doesn't require the clusters to be spherical, which is not a condition that comes naturally in the geolocation settings. 
 
@@ -46,9 +48,9 @@ In my work I have decided somehow arbitrarly that minimal number of customers in
 
 ### Demographic data - sidra
 
-I have processed the demographic part of the dataset using Principal Components Analysis. There are couple of reasons for that. First, this part of the dataset is relatively high dimensional (34 variables). At the same time, one would expect that the information can be somehow compressed, because lots of the variables represent very similar concept (for example there are 20 variables encoding age structure). Second, trainig Machine Learning models on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results (TODO: cytowania z prac w których robili PCA).
+I have processed the demographic part of the dataset using Principal Components Analysis. There are couple of reasons for that. First, this part of the dataset is relatively high dimensional (34 variables). At the same time, one would expect that the information can be somehow compressed, because lots of the variables represent very similar concept (for example there are 20 variables encoding age structure). Second, trainig Machine Learning models on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results [@howley2005effect].
 
-One decision regarding PCA transformation is whether to use a standard version, or the one with rotated loadings (TODO: cytowanie). The trade-off between these two methods is that rotated loadings allows for interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in case of this study, because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
+One decision regarding PCA transformation is whether to use a standard version, or the one with rotated loadings [@corner2009choosing]. The trade-off between these two methods is that rotated loadings allows for interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in case of this study, because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
 
 ### Spatial join of SIDRA and Olist sources
 
@@ -68,7 +70,7 @@ My approach was as follows:
 (TODO: Zrobić tabelki w R a nie w excelu, pewnie też lepiej opisać)
 
 
-### Text reviews (TODO)
+### Text reviews
 
 TODO: Ogarnąć strukturę
 
@@ -136,7 +138,7 @@ I have used a simple train-test split of the dataset, with 70% of the observatio
 
 One important problem with this dataset is its very high target classes imbalance. Only 3% of the customers have decided to buy for the second time. To handle this issue I have used upsampling of the minority class on the training dataset to obtain equal class proportions. Also, the choice of an appropriate metric to optimize is very important in imbalanced dataset, as some metrics (like accuracy) are very biased in these cases. That is why I have decided to optimize Area-Under-Curve metric, as it weights the performance on the minority and majority classes equally.
 
-I have used Logistic Regression and XGBoost models. The reason is that Logistic Regression is relatively simple and explainable, and was used in the task of churn modeling in previous studies (TODO: cytowania do tego paragrafu). On the other hand, XGBoost model was shown to be very well-suited for all kinds of modeling using tabular data. It can also learn non-linearities and interactions between the variables on its own, contrary to LR where such features should be introduced to the model manually. 
+I have used Logistic Regression and XGBoost models. The reason is that Logistic Regression is relatively simple and explainable, and was used in the task of churn modeling in previous studies [@nie2011credit; @dalvi2016analysis]. On the other hand, XGBoost model was shown to be very well-suited for all kinds of modeling using tabular data, also in the context of churn prediction [@gregory2018predicting]. It can also learn non-linearities and interactions between the variables on its own, contrary to LR where such features should be introduced to the model manually. 
 
 ### Feature selection 
 
@@ -167,7 +169,7 @@ I have not run the model containing all variables with demographic features with
 
 #### Boruta
 
-To remove the human judgement about which predictors should be used, I have also used a Boruta algorithm for feature selection. It is widely popular among machine learning practitioners (TODO: znaleźć cytowania oryginalnej pracy). The algorithm belongs to category of wrapper feature selection algorithms, and Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. In this way one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and Random Forest model is trained. 
+To remove the human judgement about which predictors should be used, I have also used a Boruta algorithm for feature selection [@kursa2010feature]. It is widely popular among machine learning practitioners [@kumar2017empirical]. The algorithm belongs to category of wrapper feature selection algorithms, and Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. In this way one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and Random Forest model is trained. 
 
 Random Forest model have a built in feature importance measure, that is usually Mean Decrease Impurity. After running random forest model, for each original features MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of shadow features, the variable gets a "hit". 
 

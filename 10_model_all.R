@@ -99,17 +99,17 @@ pca_importances$importance %>%
   mutate(PC = row_number()) -> pca_to_plot
 
 save(pca_to_plot, file='run_all_models_cache/pca_to_plot.Rdata')
-  
+
 ggplot(pca_to_plot, aes(x=PC, y=value)) +
   geom_line() +
   ggrepel::geom_text_repel(data = tibble(value = 0.973, PC=10), aes(label=value))+
   geom_point(data = tibble(value = 0.973, PC=10), color='red')
-  
+
 
 tibble(var = pca_model$sdev)  %>%
   mutate(no_components=row_number(),
          cum_variance = cumsum(var)/sum(var)
-         )
+  )
 
 fviz_eig(pca_model)
 # Setting no of components to 8 - 90% of variability
