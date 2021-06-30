@@ -1,3 +1,10 @@
+to_model_train%>%
+  select(payment_value) %>%
+  arrange(-payment_value) %>%
+  mutate(a = cumsum(payment_value)/sum(payment_value)) %>%
+  .$a %>% plot
+
+
 
 ### DUMP ----
 

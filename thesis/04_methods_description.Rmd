@@ -13,6 +13,34 @@ knitr::opts_chunk$set(echo=params$echo)
 
 TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.*
 
+## Notatki
+
+W tej thesis:
+
+- Intro
+  - goal of study - explotre the predictive power of features
+  - krótkie intro o metodach
+- Definicja zmiennej wynikowej
+- Exploratory variables
+  - po kolei przez wykorzystywane zmienne - najpierw ogólny opis kategorii, później wyniki z poprzednich studies, później co dokładnie oznacza ta zmienna w modelowaniu
+  - dla bardziej skomplikowanej zmiennej baardzo szczegółowy opis
+
+W site selection:
+- feature selection
+- PCA
+- NN
+
+- Najpierw co to za metoda
+- Później gdzie wykorzystywana wcześniej
+- Później jak potrzebny to dokładny opis
+
+
+https://www.sciencedirect.com/science/article/pii/S0377221703009184?casa_token=6GS1hqD0KcAAAAAA:4p02d0H6wlfEDACtjCUYfXB_5ABUmf2QqD9RILvjbNYHgLF6S3tnAT2VjqJXLzJFxI1oVK9GTQ
+
+Dobrze wytłumaczone co może powodować które kategorie
+
+
+
 ## Introduction (TODO)
 
 ## Processing parts of the dataset
@@ -24,14 +52,9 @@ On diagram .. a summary of preprocessing applied to all the parts of the dataset
 
 ### Order items
 
-For each purchase of the customer there is avaliable information about the items that particular customer bought. All items in the shop are assigned to one of 74 categories. There is a couple of challenges that should be adressed before adding this information to the dataset:
+The categories that the customer have been buying in the previous purchases have been shown in previous studies to influence the customer's decision to stay [@BUCKINX2005252; @athanassopoulos2000customer]. One possible explanation is that the satisfaction of purchasing a particular category is low - no matter if because of high price or low quality of the product bought. 
 
-1. For each purchase, the customer can buy products from different categories
-2. Most of the purchases (92%) contain only one item - this means that one-hot-encoding matrix would be extremely sparse
-3. Some of the categories are underrepresented - top 15 categories account for 80% of all purchases, and there are 19 categories for which less than 100 purchases were made. This can pose generalization problems.
-4. The number of categories is very big, and because of that model training would be extremely slow
-
-To mitigate the problem of too many categories, I have decided to bin the least popular ones as a distinct category "other". I have chosen 15 most popular ones, which account for 79% of all observations. Then, I have used one-hot-encoding^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.] approach to create numeric representation. Category "other" was set as a base level. 
+The Olist company is selling the products belonging to 74 distinct categories. At the same time, top 15 categories account for 80% of all purchases. Because of potential problems with generalization and also slower model trainig, I have decided to bin the least popular ones as a new category "other". Then, I have used one-hot-encoding approach to create numeric representation, with "other" category set as a base level. ^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.]
 
 ### Geographic data - long/lat
 
