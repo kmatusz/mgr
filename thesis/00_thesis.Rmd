@@ -1,0 +1,37 @@
+---
+title: "Thesis"
+output: word_document
+bibliography: resources/bib.bibtex
+always_allow_html: true
+params:
+  echo: False
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+```{r child = '01_introduction.Rmd'}
+```
+
+# Literature review
+```{r child = '02_literature_review.Rmd'}
+```
+
+# Dataset description
+
+```{r child = '03_dataset_description.Rmd'}
+```
+
+# Methods description
+
+```{r child = '04_methods_description.Rmd'}
+```
+
+# Results
+
+```{r child = '05_results.Rmd'}
+```
+
+

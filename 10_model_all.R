@@ -157,7 +157,7 @@ first_orders %>%
 dbscan_geo <- dbscan::dbscan(to_model_all_0%>%select(geolocation_lat,geolocation_lng), 0.2, 100)
 plot(dbscan_geo)
 
-RUN_DBSCAN_TESTING = TRUE
+RUN_DBSCAN_TESTING = FALSE
 
 if (RUN_DBSCAN_TESTING){
   
@@ -282,6 +282,31 @@ save(up_train, file = 'run_all_models_cache/up_train.Rdata')
 load('run_all_models_cache/to_model_train.Rdata')
 load('run_all_models_cache/to_model_test.Rdata')
 load('run_all_models_cache/up_train.Rdata')
+
+# Save topics percentages
+to_model_train %>% 
+  select_at(vars(starts_with('topic'), if_second_order)) %>% 
+  mutate(a = row_number()) %>%
+  pivot_longer(1:15) %>%
+  filter(value == 1) %>%
+  group_by(name, if_second_order) %>%
+  tally() -> percentages_topics
+
+percentages_topics %>%
+  left_join(percentages_topics %>%
+              group_by(name) %>%
+              summarise(a = sum(n)), by = 'name'
+  ) %>%
+  mutate(percent_second_order = n/a) %>%
+  filter(if_second_order == 'yes') %>%
+  arrange(percent_second_order) %>%
+  ungroup() %>%
+  rename(topic = name) %>%
+  select(topic, percent_second_order) -> topics_second_order_percentages
+
+save(topics_second_order_percentages, file='run_all_models_cache/topics_second_order_percentages.Rdata')
+
+
 
 create_formula <- function(cols_names){
   paste0('if_second_order ~ ', paste(cols_names, collapse = ' + '))

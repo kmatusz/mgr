@@ -7,12 +7,11 @@ params:
   echo: False
 ---
 
-```{r setup, include=FALSE}
+```{r include=FALSE}
 knitr::opts_chunk$set(echo=params$echo)
 ```
 
-TODO: 
-*W części 02 z literature review dałabym ilustrację celów, metod i dotychczasowych badań (trochę jak w tym artykule o metodach w CRM), żeby uwypuklić o czym w ogóle mówimy.*
+TODO: *W części 02 z literature review dałabym ilustrację celów, metod i dotychczasowych badań (trochę jak w tym artykule o metodach w CRM), żeby uwypuklić o czym w ogóle mówimy.*
 
 TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
 
@@ -56,9 +55,7 @@ This concept can be very useful in the area of aspect prediction, as usually onl
 
 Another work worth mentioning is by @tulkens-van-cranenburgh-2020-embarrassingly, who proposed a new type of Attention mechanism, meant especially for aspect recognition task. It's advantage over the one presented by [@he2017aspect] is that instead of a complex neural network, a way simpler approach based on Radial Basis Function kernel is used. Another work presenting new attention mechanism is by @ijcai2019-712 - they use a use a Encoder-Decoder framework with an *Semene Attention* mechanism. 
 
-### Churn analysis
-
-TODO:
+### Churn analysis (TODO)
 
 - co to churn
 - churn vs retention

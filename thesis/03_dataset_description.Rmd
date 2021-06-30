@@ -1,12 +1,12 @@
 ---
 title: "Dataset description"
-output: html_document
+output: html_docuqment
 # output: word_document
 params:
   echo: False
 ---
 
-```{r setup, include=FALSE}
+```{r include=FALSE}
 knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 6, fig.height = 4)
 ```
 
@@ -102,7 +102,7 @@ df %>%
 stats_table$Variable = df %>%select_if(is.numeric) %>% names
 stats_table <- stats_table %>% select(Variable, everything())
 stats_table %>%
-  kableExtra::kable()
+  flextable::flextable()
 
 ```
 
@@ -434,7 +434,7 @@ product_categories_temp1 %>%
   left_join(product_categories_temp2) %>%
   arrange(-percent_second_order) %>%
   mutate_if(is.numeric, round,3) %>%
-  knitr::kable()
+  flextable::flextable()
 
 ```
 

@@ -11,7 +11,7 @@ params:
 TODO: *W części 05 trzeba do każdej analizy dać dwa typy opisów: metodologiczne (co wyszło, co nie wyszło etc) i marketingowe (co to znaczy dla CRM).*
 
 
-```{r setup, include=FALSE}
+```{r include=FALSE}
 knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 6, fig.height = 4, cache = T)
 ```
 
@@ -142,7 +142,7 @@ Pre-modeling:
 - DBSCAN on lon/lat, PCA on demographic
   - methodological: potential impact on model performance, shown by previous literature to be useful, reduction of dimensionality succesful (demographic+PCA better than demographic, lot of variance explained)
   - CRM: nie ma zbyt zastosowania
-  - ?? przenieść do methods description? bo bardzo krótkie i niewiele wnoszące rezultaty
+  - TODO przenieść dbscan i pca do methods description? bo bardzo krótkie i niewiele wnoszące rezultaty
 
 After-modeling
 
@@ -183,7 +183,25 @@ The Boruta algorithm concluded that from all 47 variables only the 14 variables 
 TODO: that only one model produced meaningful results (Description of the table czy tabelka do appendixa??)
 
 ```{r}
-DT::datatable(read_csv(here('topics_table_to_paper.csv')) %>% mutate(`Example reviews` = str_replace(`Example reviews`, '\\n', '||||')))
+
+topics_table_to_paper <- read_csv(here('topics_table_to_paper.csv')) %>%
+  mutate(`Example reviews` = str_replace_all(`Example reviews`, '\\n', '||||'))
+
+load(here('run_all_models_cache/topics_second_order_percentages.Rdata'))
+
+topics_second_order_percentages %>%
+  filter(topic != 'topic_nan') %>%
+  separate(topic, c('a', 'b'), '_') %>%
+  mutate(b = as.numeric(b)) %>%
+  select(b, percent_second_order) %>%
+  rename(`Topic no.` = b) %>%
+  mutate(percent_second_order = round(percent_second_order,3)) -> topics_second_order_percentages2
+
+topics_table_to_paper %>%
+  left_join(topics_second_order_percentages2) %>%
+  DT::datatable()
+
+
 ```
 
 
@@ -245,7 +263,7 @@ auc_test_table %>%
   left_join(auc_train_table) %>%
   arrange(-AUC_test) %>%
   mutate(AUC_perc_performance_drop = (AUC_test-max(AUC_test))/max(AUC_test)) %>%
-  knitr::kable()
+  flextable::flextable()
 
 ```
 
@@ -273,7 +291,7 @@ I have also created a table .. containing similar information, but this time for
 load(file=here('run_all_models_cache/auc_table_for_lr.Rdata'))
 
 auc_table_for_lr %>%
-  knitr::kable()
+  flextable::flextable()
 ```
 
 AUC values for the test set oscillating below 0.6 mean that the model is very poorly fitting to the data. For the worst model containing only agglomeration feature it is at the value of 0.546. It is that close to the level of random classifier (0.5), that one could wonder if this model has any predictive power at all.
@@ -477,7 +495,7 @@ quantiles_to_show <- c(0.99, 0.98, 0.97, 0.96, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5)
 output_lifts %>% 
   filter(fraction_of_customers %in% (1-quantiles_to_show)) %>%
   mutate_if(is.numeric, round, 2) %>%
-  knitr::kable()
+  flextable::flextable()
 ```
 
 #### Lift curve
