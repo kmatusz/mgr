@@ -16,19 +16,84 @@ TODO: *W części 02 z literature review dałabym ilustrację celów, metod i do
 TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
 
 
-### Churn analysis (TODO)
+
+## Customer churn
 
 Paragrafy do dodania ogólnie:
 
 - ogólnie o zjawisku churnu:
   - definicja churnu
   - zalety posiadania lojalnych klientóW
-  - jakie wykorzystywano zmienne - ogólnie o kategoriach
-- Churn prediction
+  - mechanizm churn i retention - większość researchu dla subscription based services, dla retail mało a dla online retail bardzo mało. Coś o tym że klienci w internecie są mniej lojalni (jeżeli to prawda)
+  - if we can predict which customers are likely to leave, we can target them with some customer attraction tools
+  
+  
+- Churn prediction methods
+
   - definicja churn jako zmiennej w modelowaniu
   - "churn problem can be decomposed as choice of ML model and choice of model of variable influences"
-  - review algorytmów wykorzystywanych
+  - review algorytmów wykorzystywanych - zacytować kilka prac o tym czego używali, ale też napisać o no free lunch theorem i że powinno się zawsze sprawdzić na swoich danych. Do tego może coś o trade offie pomiędzy LR i XGBoost - o explainability
   - review zmiennych wykorzystywanych
+
+### General about customer retention
+
+#### Churn in CRM
+
+Customer Relationship Management is defined as a process, in which the business manages its interactions with the customers using data integration from various sources and data analysis in the later stages [Digital CRM: Strategies and Emerging Trends: Building Customer Relationship in the Digital Era]. 
+[@] provides 4 areas in which CRM approaches can be of use:
+
+- Customer identification (aquisition) - determining who can be a potential customer?
+- Customer attraction - how can one make this person a customer?
+- Customer development - how can one make a customer more profitable?
+- Customer retention - how can one make the customer stay with the company?
+
+The last one is the main focus of this study. 
+
+#### Why having loyal clients is important
+
+Improving the loyalty of customer base is profitable to the company. This has its source in multiple factors, the most important one being cost of aquisition.  Multiple studies have shown that retaining customers costs less than attracting new ones [@dick1994customer; @gefen2002customer; @buckinx2005customer]. Moreover, there is some evidence that loyal customers are less sensitive to the competitor's actions regarding price changes [@achrol1999marketing; @choi2006customer]. 
+
+
+#### Difference with tackling potential churners
+
+There are 2 basic categories of approaches for the company to deal with customer churn. First category is "untargeted" approach. The company seeks to improve its product quality and relies on mass advertising to reduce the churn. The other way is "targeted" approach - the company tries to address aim their marketing campaigns at the customers that are more likely to churn [@burez2007crm]. This approach can be divided further, by the way in which targeted customers are chosen. The company can target only these ones that have already made a decision to resign from further relationship. For example, in contractual settings this can mean canceling the subscription or breaching the contract. 
+
+The other way to approach churn problem is to try to predict, which customers are likely to churn in the near future. This has an advantage of having lower cost, as the customers that are about to leave are likely to have higher demands from the last-minute deal proposed to them [@tamaddoni2010modeling]. 
+
+#### Non-contractual churn prediction
+
+- Most of the studies are for contractual businesses
+- Just a few studies for non-contractual
+
+As pointed out by @tamaddoni2010modeling modst of the studies concerning churn prediction were done in contractual settings. In other words, churn was defined as the client resigning from using the company's services more by canceling the subscription or breaching the contract. Such way to specify the churn is different from the businesses in which the customer doesn't have to inform the company about resigning. 
+
+One problem that arises in non-contractual setting is the definition of churn. @churnthesis defined partial churners as the customers not making new purchases in the retail shop for the next 3 months. A very different approach was used by @buckinx2005customer. All the customers that had frequency of purchases below average were treated as "churners", since these customers were shown to provide little value to the company. 
+
+
+#### Why churn prediction makes sense
+
+#### The difference between one-shot and multiple purchases shopping
+
+### Customer churn prediction
+
+#### Churn prediction models definition
+
+#### Challenges to be addressed
+
+- Choice of ML model
+- Choice of appropriate "model" - relationship
+- Appropriate data preprocessing - not all the data is tabular
+
+#### Review off previous churn studies for models used
+
+#### Review of previous churn studies for variables/categories of variables used
+
+- focus on preprocessing
+
+
+
+### Churn analysis (TODO)
+
   
 Although churn prediction is typically modeled as a classification problem, one should bear in mind the final goal of churn prediction, that is preventing the customer from leaving [@1255389]. One strategy to do that is to target the most risky customers with some kind of marketing campaign. The ultimate goal for the model should be to assess the probability of customer leaving, and let the marketing experts decide what level of probability bothers the company, and how strong the reaction should be. For example, one could decide that for top 1% of the most risky customers the company should contact the customer in person by phone, for top 10% offer special discounts, while for top 30% - just send an encouraging email. 
 
@@ -90,6 +155,11 @@ This concept can be very useful in the area of aspect prediction, as usually onl
 
 Another work worth mentioning is by @tulkens-van-cranenburgh-2020-embarrassingly, who proposed a new type of Attention mechanism, meant especially for aspect recognition task. It's advantage over the one presented by [@he2017aspect] is that instead of a complex neural network, a way simpler approach based on Radial Basis Function kernel is used. Another work presenting new attention mechanism is by @ijcai2019-712 - they use a use a Encoder-Decoder framework with an *Semene Attention* mechanism. 
 
+Losowe papery:
+
+Online reviews as a feedback mechanism for hotel CRM systems
+Creating a geodemographic classification model within geo-marketing: the case of Eskişehir province
+
 ### XAI
 
 co możesz napisać?
@@ -99,6 +169,7 @@ co możesz napisać?
 - AI jest black box
 - co to XAI
 - 
+https://www.kdnuggets.com/2018/10/enterprise-explainable-ai.html
 
 
 https://blog.goodaudience.com/holy-grail-of-ai-for-enterprise-explainable-ai-xai-6e630902f2a0
