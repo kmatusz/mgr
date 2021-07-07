@@ -16,6 +16,41 @@ TODO: *W części 02 z literature review dałabym ilustrację celów, metod i do
 TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
 
 
+### Churn analysis (TODO)
+
+Paragrafy do dodania ogólnie:
+
+- ogólnie o zjawisku churnu:
+  - definicja churnu
+  - zalety posiadania lojalnych klientóW
+  - jakie wykorzystywano zmienne - ogólnie o kategoriach
+- Churn prediction
+  - definicja churn jako zmiennej w modelowaniu
+  - "churn problem can be decomposed as choice of ML model and choice of model of variable influences"
+  - review algorytmów wykorzystywanych
+  - review zmiennych wykorzystywanych
+  
+Although churn prediction is typically modeled as a classification problem, one should bear in mind the final goal of churn prediction, that is preventing the customer from leaving [@1255389]. One strategy to do that is to target the most risky customers with some kind of marketing campaign. The ultimate goal for the model should be to assess the probability of customer leaving, and let the marketing experts decide what level of probability bothers the company, and how strong the reaction should be. For example, one could decide that for top 1% of the most risky customers the company should contact the customer in person by phone, for top 10% offer special discounts, while for top 30% - just send an encouraging email. 
+
+Because of that one should bear in mind that the models not outputting probabilities (for example vanilla SVM) are not the best choices. That is also why industry standard for churn prediction is logistic regression, as the outputs can be directly interpreted as probabilities, and also the customers can be ranked.
+
+The most low-hanging fruit for the companies that want to start basing their business desicions on the data is usage of transaction-level data. That is because virtually every e-commerce shop is based on the the mechanism of user registration, and storing the client's purchasing history is an industry standard.
+The data only about when the customer made purchases and how much did he pay are very easily translated into the framework of Recency-Frequency-Monetary value. Multiple works (@aleksandrova2018application, @8284914) demonstrated that such data can serve as a good input to churn prediction machine learning model. In fact, most of the publications presented in this review is using RFM variables as one part of the dataset, while including more complex, engineered variables as the other part. 
+
+Besides the application in churn prediction domain, clustering the customer base into different segments based on RFM model can be very valuable just for business intelligence application and exploratory data analysis. 
+
+Because of the digital nature of e-commerce shopping, way more detailed and enriched data can be used in hope of finding more appropriate features. One of such features is per-session data - that is the information about how the user is navigating on the site. @yu2011extended used the data avaliable in the data warehouse of e-commerce company to predict churn. They combined per-transaction data, per-session data and customer data using Extract-Transform-Load tools and manual feature engineering. @8627369 tried to predict user churn on a per-session basis. The question they stated was "Will the customer unregister from the service during this session?". They used a very detailed per-session metadata like the day of the week, session number or number of purchases done up to the point. 
+
+After the first purchase of the customer in the e-commerce shop, their exact adresses can be inferred with high probability. Usually the delivery adress would be to the home of a customer, or in worse cases to other place that the customer visits (like workplace etc.). @zhao2005customer used this kind of customer location data to enrich the dataset with basic spatial characteristics of the region, that is geographic situation and demographic variables.
+
+The content of the web is very often avaliable in unstructured, textual form. Online retailers very often give their customers to write reviews about the purchase. Although such information is very hard to incorporate into churn prediction model, it can serve as a very rich source of insight. 
+@DECAIGNY20201563 showed how such data can be incorporated into churn prediction modeling to obtain superior results. They have used text embedding approach as a feature extraction method.
+
+
+Other branch of customer behaviour analysis is concentrated on declaration of desire to repurchase in particular shop. Compared to the actual analysis of sales data, this approach has an advantage that the customer can have a very good experience in the shop, but not do the repurchase from other reasons. This information is still very valuable to the shop. On the other hand, questionaire data has usually less quality as the customers can lie, an also response rate is usually very low. 
+
+@9325646 analysed responses to such questionaires and tried to predict, whether preprocessed textual reviews can serve as explanatory variables. After using tf-idf transformation they found out that they can. 
+
 ### Reviews analysis
 
 TODO: do zastanowienia jakie powinny być więcej częsci w lit review, poprawić strukturę tekstu
@@ -55,34 +90,18 @@ This concept can be very useful in the area of aspect prediction, as usually onl
 
 Another work worth mentioning is by @tulkens-van-cranenburgh-2020-embarrassingly, who proposed a new type of Attention mechanism, meant especially for aspect recognition task. It's advantage over the one presented by [@he2017aspect] is that instead of a complex neural network, a way simpler approach based on Radial Basis Function kernel is used. Another work presenting new attention mechanism is by @ijcai2019-712 - they use a use a Encoder-Decoder framework with an *Semene Attention* mechanism. 
 
-### Churn analysis (TODO)
-
-- co to churn
-- churn vs retention
-- dlaczego się opłaca mieć lojalnych klientów
-
-Although churn prediction is typically modeled as a classification problem, one should bear in mind the final goal of churn prediction, that is preventing the customer from leaving [@1255389]. One strategy to do that is to target the most risky customers with some kind of marketing campaign. The ultimate goal for the model should be to assess the probability of customer leaving, and let the marketing experts decide what level of probability bothers the company, and how strong the reaction should be. For example, one could decide that for top 1% of the most risky customers the company should contact the customer in person by phone, for top 10% offer special discounts, while for top 30% - just send an encouraging email. 
-
-Because of that one should bear in mind that the models not outputting probabilities (for example vanilla SVM) are not the best choices. That is also why industry standard for churn prediction is logistic regression, as the outputs can be directly interpreted as probabilities, and also the customers can be ranked.
-
-The most low-hanging fruit for the companies that want to start basing their business desicions on the data is usage of transaction-level data. That is because virtually every e-commerce shop is based on the the mechanism of user registration, and storing the client's purchasing history is an industry standard.
-The data only about when the customer made purchases and how much did he pay are very easily translated into the framework of Recency-Frequency-Monetary value. Multiple works (@aleksandrova2018application, @8284914) demonstrated that such data can serve as a good input to churn prediction machine learning model. In fact, most of the publications presented in this review is using RFM variables as one part of the dataset, while including more complex, engineered variables as the other part. 
-
-Besides the application in churn prediction domain, clustering the customer base into different segments based on RFM model can be very valuable just for business intelligence application and exploratory data analysis. 
-
-Because of the digital nature of e-commerce shopping, way more detailed and enriched data can be used in hope of finding more appropriate features. One of such features is per-session data - that is the information about how the user is navigating on the site. @yu2011extended used the data avaliable in the data warehouse of e-commerce company to predict churn. They combined per-transaction data, per-session data and customer data using Extract-Transform-Load tools and manual feature engineering. @8627369 tried to predict user churn on a per-session basis. The question they stated was "Will the customer unregister from the service during this session?". They used a very detailed per-session metadata like the day of the week, session number or number of purchases done up to the point. 
-
-After the first purchase of the customer in the e-commerce shop, their exact adresses can be inferred with high probability. Usually the delivery adress would be to the home of a customer, or in worse cases to other place that the customer visits (like workplace etc.). @zhao2005customer used this kind of customer location data to enrich the dataset with basic spatial characteristics of the region, that is geographic situation and demographic variables.
-
-The content of the web is very often avaliable in unstructured, textual form. Online retailers very often give their customers to write reviews about the purchase. Although such information is very hard to incorporate into churn prediction model, it can serve as a very rich source of insight. 
-@DECAIGNY20201563 showed how such data can be incorporated into churn prediction modeling to obtain superior results. They have used text embedding approach as a feature extraction method.
-
-
-Other branch of customer behaviour analysis is concentrated on declaration of desire to repurchase in particular shop. Compared to the actual analysis of sales data, this approach has an advantage that the customer can have a very good experience in the shop, but not do the repurchase from other reasons. This information is still very valuable to the shop. On the other hand, questionaire data has usually less quality as the customers can lie, an also response rate is usually very low. 
-
-@9325646 analysed responses to such questionaires and tried to predict, whether preprocessed textual reviews can serve as explanatory variables. After using tf-idf transformation they found out that they can. 
-
 ### XAI
+
+co możesz napisać?
+
+- Dlaczego 
+
+- AI jest black box
+- co to XAI
+- 
+
+
+https://blog.goodaudience.com/holy-grail-of-ai-for-enterprise-explainable-ai-xai-6e630902f2a0
 
 https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q
 challenge dla marketingu przy stosowaniu AI

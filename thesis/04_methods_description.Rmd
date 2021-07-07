@@ -52,13 +52,15 @@ On diagram .. a summary of preprocessing applied to all the parts of the dataset
 
 ### Order items
 
-The categories that the customer have been buying in the previous purchases have been shown in previous studies to influence the customer's decision to stay [@BUCKINX2005252; @athanassopoulos2000customer]. One possible explanation is that the satisfaction of purchasing a particular category is low - no matter if because of high price or low quality of the product bought. 
+The categories that the customer have been buying in the previous purchases have been shown in previous studies to influence the customer's decision to stay [@BUCKINX2005252; @athanassopoulos2000customer]. One possible explanation of churning is that the satisfaction of purchasing a particular category is low - no matter if because of high price or low quality of the product bought.
 
-The Olist company is selling the products belonging to 74 distinct categories. At the same time, top 15 categories account for 80% of all purchases. Because of potential problems with generalization and also slower model trainig, I have decided to bin the least popular ones as a new category "other". Then, I have used one-hot-encoding approach to create numeric representation, with "other" category set as a base level. ^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.]
+In the case of Olist company, the products sold belong to 74 distinct categories. At the same time, top 15 categories account for 80% of all purchases. Because of potential problems with generalization and also slower model trainig, I have decided to bin the least popular ones as a new category "other". Then, I have used one-hot-encoding approach to create numeric representation, with "other" category set as a base level. ^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.]
 
 ### Geographic data - long/lat
 
 TODO: opisać po co metodologicznie dodawać wyniki z klastrowania, jakieś prace które to wykorzystują (cytowania ??)
+
+Problem - nie ma paperów które wykorzystują density do 
 
 To be able to decode the coordinates differently, I have used a DBSCAN clustering technique...
 
@@ -106,7 +108,6 @@ Olist e-commerce store is operating only in Brazil. That is why most of the revi
 In all 3 methods I have removed stopwords and punctuation from the text. Also, to limit the number of words in the vocabulary I have used lemmatization technique. This was done by WordNet lemmatizer [@wordnet]. To further improve the results, I have used Part-of-Speech tagger, and passed the tags of words to the lemmatizer. This way the algorithm can change the form of the word on a more informed basis, and thus apply lemmatization to more words. 
 
 Second step of the preprocessing was converting lemmatized reviews into vector format. In case of LDA, count-vectorizing approach was applied. The words which appeared in less than 0.1% of reviews were dropped from the dataset. In the case of Gibbs Sampling the same preprocessing is done internally by the training function from python package. 
-
 In both of these cases after vectorization one should obtain a matrix with n rows and k columns, where n is number of observations in the original dataset, while k - size of the vocabulary. 
 
 Very different preprocessing was required in the case of Attention-Based Aspect Extraction. The neural network requires simply lemmatized reviews in textual format as the output. Then, one of the layers of the network is meant to embed the currently preprocessed word. These embeddings are not learnt during the network training, they should be trained beforehand instead. The authors of the paper propose Word2vec technique [@mikolov2013efficient] for learning embeddings. Following their guidelines I have used this method, setting the dimensionality of the vector space to 200. I have also applied the word window of 10. 
