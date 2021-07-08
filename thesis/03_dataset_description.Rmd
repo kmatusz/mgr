@@ -1,6 +1,6 @@
 ---
 title: "Dataset description"
-output: html_docuqment
+output: html_document
 # output: word_document
 params:
   echo: False

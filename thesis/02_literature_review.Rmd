@@ -1,7 +1,7 @@
 ---
 title: "Literature review"
+# output: word_document
 output: word_document
-# output: html_document
 bibliography: resources/bib.bibtex
 params:
   echo: False
@@ -13,34 +13,14 @@ knitr::opts_chunk$set(echo=params$echo)
 
 TODO: *W części 02 z literature review dałabym ilustrację celów, metod i dotychczasowych badań (trochę jak w tym artykule o metodach w CRM), żeby uwypuklić o czym w ogóle mówimy.*
 
-TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
-
-
-
 ## Customer churn
-
-Paragrafy do dodania ogólnie:
-
-- ogólnie o zjawisku churnu:
-  - definicja churnu
-  - zalety posiadania lojalnych klientóW
-  - mechanizm churn i retention - większość researchu dla subscription based services, dla retail mało a dla online retail bardzo mało. Coś o tym że klienci w internecie są mniej lojalni (jeżeli to prawda)
-  - if we can predict which customers are likely to leave, we can target them with some customer attraction tools
-  
-  
-- Churn prediction methods
-
-  - definicja churn jako zmiennej w modelowaniu
-  - "churn problem can be decomposed as choice of ML model and choice of model of variable influences"
-  - review algorytmów wykorzystywanych - zacytować kilka prac o tym czego używali, ale też napisać o no free lunch theorem i że powinno się zawsze sprawdzić na swoich danych. Do tego może coś o trade offie pomiędzy LR i XGBoost - o explainability
-  - review zmiennych wykorzystywanych
 
 ### General about customer retention
 
-#### Churn in CRM
+#### Churn in context of CRM
 
-Customer Relationship Management is defined as a process, in which the business manages its interactions with the customers using data integration from various sources and data analysis in the later stages [Digital CRM: Strategies and Emerging Trends: Building Customer Relationship in the Digital Era]. 
-[@] provides 4 areas in which CRM approaches can be of use:
+Customer Relationship Management is defined as a process, in which the business manages its interactions with the customers using data integration from various sources and data analysis [@bardicchia2020digital]. 
+@churnthesis provides 4 areas in which CRM approaches can be of use:
 
 - Customer identification (aquisition) - determining who can be a potential customer?
 - Customer attraction - how can one make this person a customer?
@@ -53,8 +33,7 @@ The last one is the main focus of this study.
 
 Improving the loyalty of customer base is profitable to the company. This has its source in multiple factors, the most important one being cost of aquisition.  Multiple studies have shown that retaining customers costs less than attracting new ones [@dick1994customer; @gefen2002customer; @buckinx2005customer]. Moreover, there is some evidence that loyal customers are less sensitive to the competitor's actions regarding price changes [@achrol1999marketing; @choi2006customer]. 
 
-
-#### Difference with tackling potential churners
+#### Different approaches when tackling potential churners
 
 There are 2 basic categories of approaches for the company to deal with customer churn. First category is "untargeted" approach. The company seeks to improve its product quality and relies on mass advertising to reduce the churn. The other way is "targeted" approach - the company tries to address aim their marketing campaigns at the customers that are more likely to churn [@burez2007crm]. This approach can be divided further, by the way in which targeted customers are chosen. The company can target only these ones that have already made a decision to resign from further relationship. For example, in contractual settings this can mean canceling the subscription or breaching the contract. 
 
@@ -66,7 +45,7 @@ As pointed out by @tamaddoni2010modeling in their literature review, most of the
 
 One problem that arises in non-contractual setting is the definition of churn. As there is no clear moment that the customer decides not to use the company's services anymore, it has to be specified by the researcher based on the goals that one has to achieve from the churn analysis. @churnthesis defined partial churners as the customers not making new purchases in the retail shop for the next 3 months. A very different approach was used by @buckinx2005customer. All the customers that had frequency of purchases below average were treated as "churners", since these customers were shown to provide little value to the company. 
 
-#### The difference between one-shot and multiple purchases shopping
+#### The difference between one-shot and multiple purchases shopping (TODO??)
 
 - do tej pory nie widziałem takiej pracy która o tym mówiła
 
@@ -96,32 +75,61 @@ However, these two methods often give suboptimal results compared to more advanc
 Recently, XGBoost algorithm [@chen2015xgboost] is gaining popularity in multiple domains in which one faces prediction tasks.
 XGBoost main strengths are ability to infer non-linear relationships from the data, and relative speed, which allows the researcher to try out multiple hyperparameters and decide on the best ones [@chen2015xgboost]. Because of that, it is considered as a go-to standard for machine learning challenges, and very often solutions based on it achieve the best results in various competitions and benchmarks  [@xgblist]. In the context of churn prediction, XGBoost was used by @gregory2018predicting. It achieved superior performance compared to other techniques, like Logistic Regression and Random Forests.
 
-#### Review of previous churn studies for variables/categories of variables used 20 min przekminienie jak sformułować i czy tutaj czy do methods
+#### Review of previous churn studies for variables/categories of variables used
 
-- focus on preprocessing
+Previous churn prediction studies used a variety of variables to include in the model formulation. @BUCKINX2005252 divided them into 3 broad categories. These are behavioural, demographic and perception features. 
 
+##### Behavioural 
+
+First category of variables tries to describe how the customer has interacted with the company before. Typical features belonging to this category are recency, frequency and monetary value, which constitute a basis of RFM customer segmentation framework. These features are used in multiple studies [@churnthesis; @bhattacharya1998customers], and typically accompany the more complex variables that are main focus of particular studies.
+
+Besides these basic features, some studies focus on other areas of customer behaviour.
+Particular products that the customer has bought in previous purchases were shown to be useful for churn prediction [@BUCKINX2005252; @athanassopoulos2000customer].
+
+Some of the variables studied previously are avaliable only in some of the domains. For example, one possibility of analyzing customer behaviour in the context of e-commerce shopping is analyzing the customer behaviour while interacting with the company's website. @koehn2020predicting analyzed such click-stream sequential data using Recurrent Neural Networks. They found that such information can serve as a good predictor of customer churn. Similar studies were performed by @8627369 and @yu2011extended, however the click stream data was aggregated and preprocessed manually, instead of using sequential modeling approach.
+
+##### Demographics
+
+Second category of features used in churn prediction are demographic variables about the customer, such as age, gender or address. Such variables were shown to be good predictors of customer churn in multiple studies (For overview see @verbeke2011building). However, availability of such predictors to use in modeling is very often limited from multiple reasons. In non-contractual settings, customers don't have to always provide such data to the company. Moreover, usage of such personal data can be in some cases considered unethical, and lead to predictions biased against particular age or gender. 
+
+Another way to include demographics data in the churn prediction model was shown by @zhao2005customer. They used the data obtained from the statistical office for particular regions that the customer is residing in. Such variables were shown to be useful in churn prediction.
+
+##### Perception
+
+Last category of variables used for churn prediction specified by @BUCKINX2005252 is customer perception about the company. According to @kracklauer2001mutual, customer satisfaction is the most important factor driving customer retention. However, although such features could have potentially high predictive power, they are usually hard to observe and quantify meaningfuly. The one possible approach is asking the customers for direct feedback using questionaires or providing a way to post a review on the purchase. This kind of feedback can be obtained in different forms, one of them being a textual reviews. Couple of previous studies were aimed at extracting meaningful features from such reviews using different text mining methods. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique. In both studies the results using such methods were superior compared to the models without including such information.
+
+#### do methods:
+
+- do każdego podpunktu jak jest definiowany, jakie są wcześniejsze prace które go używają, jaka jest teoria za tym, hipoteza, opis przetwarzania w mojej pracy
+
+Behavioural:
+
+- transaction value
+- no items
+- categories of products bought
+
+Demographic:
+
+- wszystko z sidra
+- geoloc
+- dbscan
+
+Perception:
+
+- score 1-5
+- text review
 
 ### Churn analysis do śmieci?
-  
-
-
 
 The most low-hanging fruit for the companies that want to start basing their business desicions on the data is usage of transaction-level data. That is because virtually every e-commerce shop is based on the the mechanism of user registration, and storing the client's purchasing history is an industry standard.
 
 !!! The data only about when the customer made purchases and how much did he pay are very easily translated into the framework of Recency-Frequency-Monetary value. Multiple works (@aleksandrova2018application, @8284914) demonstrated that such data can serve as a good input to churn prediction machine learning model. In fact, most of the publications presented in this review is using RFM variables as one part of the dataset, while including more complex, engineered variables as the other part. 
 
-!!! Because of the digital nature of e-commerce shopping, way more detailed and enriched data can be used in hope of finding more appropriate features. One of such features is per-session data - that is the information about how the user is navigating on the site. @yu2011extended used the data avaliable in the data warehouse of e-commerce company to predict churn. They combined per-transaction data, per-session data and customer data using Extract-Transform-Load tools and manual feature engineering. @8627369 tried to predict user churn on a per-session basis. The question they stated was "Will the customer unregister from the service during this session?". They used a very detailed per-session metadata like the day of the week, session number or number of purchases done up to the point. 
 
 After the first purchase of the customer in the e-commerce shop, their exact adresses can be inferred with high probability. Usually the delivery adress would be to the home of a customer, or in worse cases to other place that the customer visits (like workplace etc.). @zhao2005customer used this kind of customer location data to enrich the dataset with basic spatial characteristics of the region, that is geographic situation and demographic variables.
 
-The content of the web is very often avaliable in unstructured, textual form. Online retailers very often give their customers to write reviews about the purchase. Although such information is very hard to incorporate into churn prediction model, it can serve as a very rich source of insight. 
-@DECAIGNY20201563 showed how such data can be incorporated into churn prediction modeling to obtain superior results. They have used text embedding approach as a feature extraction method.
-
-@9325646 analysed responses to such questionaires and tried to predict, whether preprocessed textual reviews can serve as explanatory variables. After using tf-idf transformation they found out that they can. 
 
 ### Reviews analysis
-
-TODO: do zastanowienia jakie powinny być więcej częsci w lit review, poprawić strukturę tekstu
 
 An important source of knowledge about e-commerce customers are textual reviews. They can serve as a rich source of feedback for what in the shop or product is liked and what needs change. Also, in the textual reviews one can get to know customer's opinions way better then using other types of feedback, for example 1-5 rating of a purchase. With these advantages, they come at the expense of increased complexity of such analysis. A big challenge is to extract meaningful information from this type of highly unstructured data.
 
@@ -176,6 +184,9 @@ co możesz napisać?
 - co to XAI
 - 
 https://www.kdnuggets.com/2018/10/enterprise-explainable-ai.html
+
+TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
+
 
 
 https://blog.goodaudience.com/holy-grail-of-ai-for-enterprise-explainable-ai-xai-6e630902f2a0

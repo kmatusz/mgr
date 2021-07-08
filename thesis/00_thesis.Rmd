@@ -1,6 +1,6 @@
 ---
 title: "Thesis"
-output: word_document
+output: html_document
 bibliography: resources/bib.bibtex
 always_allow_html: true
 params:
