@@ -62,57 +62,60 @@ The other way to approach churn problem is to try to predict, which customers ar
 
 #### Non-contractual churn prediction
 
-- Most of the studies are for contractual businesses
-- Just a few studies for non-contractual
+As pointed out by @tamaddoni2010modeling in their literature review, most of the studies concerning churn prediction were done in contractual settings. In other words, churn was defined as the client resigning from using the company's services more by canceling the subscription or breaching the contract. Such way to specify the churn is different from the businesses in which the customer doesn't have to inform the company about resigning. 
 
-As pointed out by @tamaddoni2010modeling modst of the studies concerning churn prediction were done in contractual settings. In other words, churn was defined as the client resigning from using the company's services more by canceling the subscription or breaching the contract. Such way to specify the churn is different from the businesses in which the customer doesn't have to inform the company about resigning. 
-
-One problem that arises in non-contractual setting is the definition of churn. @churnthesis defined partial churners as the customers not making new purchases in the retail shop for the next 3 months. A very different approach was used by @buckinx2005customer. All the customers that had frequency of purchases below average were treated as "churners", since these customers were shown to provide little value to the company. 
-
-
-#### Why churn prediction makes sense
+One problem that arises in non-contractual setting is the definition of churn. As there is no clear moment that the customer decides not to use the company's services anymore, it has to be specified by the researcher based on the goals that one has to achieve from the churn analysis. @churnthesis defined partial churners as the customers not making new purchases in the retail shop for the next 3 months. A very different approach was used by @buckinx2005customer. All the customers that had frequency of purchases below average were treated as "churners", since these customers were shown to provide little value to the company. 
 
 #### The difference between one-shot and multiple purchases shopping
 
+- do tej pory nie widziałem takiej pracy która o tym mówiła
+
 ### Customer churn prediction
 
-#### Churn prediction models definition
+#### Why churn prediction makes sense
+
+If the company is able to successfully predict, which customers are most likely to leave, it can target them with retention-focused campaign. Contrary to targeting all of the customers with such campaign, focusing on the customers that are most likely to leave leads to reduction of the cost of the campaign. 
+
+#### Why classification vs. ranking
+
+Churn prediction fits well with the framework of classification, as the variable that one would like to predict is binary (churn-no churn). However, not only such binary prediction is valuable for later retention campaign efforts. As noted by @1255389, equally important is that the machine learning model can predict the likelihood of the customer leaving. After such prediction, the customers can be ranked from the most to the least likely to churn. 
+
+This has two benefits. First, the company can decide what percentage of the customers to target in the retention campaign, and not be bound by how many customers the model will predict as potential churners. Second, the company can decide how strong the targeting should be based on the likelihood to leave. For example, based on cost-benefit analysis of variuos targeting approaches, one could decide that for top 10% of the most likely to leave customers the company should offer big discounts for the next purchase, while for top 30% - only send an encouraging email. 
 
 #### Challenges to be addressed
 
-- Choice of ML model
-- Choice of appropriate "model" - relationship
-- Appropriate data preprocessing - not all the data is tabular
+Churn prediction task can be decomposed into 2 main important aspects that one has to tackle. First is the decision about specific Machine Learning model that gives the best performance. Second is deciding on the model formula - in other words, deciding about which variables should be included in the model and what should be the form of the relationship.
 
-#### Review off previous churn studies for models used
+#### Review of previous churn studies for models used
 
-#### Review of previous churn studies for variables/categories of variables used
+In previous studies multiple machine learning algorithms for prediction were used in churn setting (for overview see @verbeke2011building). The two most widely used techniques are Logistic Regression (LR) and Decision Trees. 
+
+An important feature of both of them is that they are relatively simple, and because of that the way they make predictions can be assessed by a qualified expert [@paruelo1997prediction].
+However, these two methods often give suboptimal results compared to more advanced and recent approaches like Neural Networks or Random Forests [@murthy1998automatic; @churnthesis]. Moreover, this was shown not only in the case of churn prediction setting, but also in more general benchmarks that used multiple datasets and comparison metrics [@caruana2006empirical].
+
+Recently, XGBoost algorithm [@chen2015xgboost] is gaining popularity in multiple domains in which one faces prediction tasks.
+XGBoost main strengths are ability to infer non-linear relationships from the data, and relative speed, which allows the researcher to try out multiple hyperparameters and decide on the best ones [@chen2015xgboost]. Because of that, it is considered as a go-to standard for machine learning challenges, and very often solutions based on it achieve the best results in various competitions and benchmarks  [@xgblist]. In the context of churn prediction, XGBoost was used by @gregory2018predicting. It achieved superior performance compared to other techniques, like Logistic Regression and Random Forests.
+
+#### Review of previous churn studies for variables/categories of variables used 20 min przekminienie jak sformułować i czy tutaj czy do methods
 
 - focus on preprocessing
 
 
-
-### Churn analysis (TODO)
-
+### Churn analysis do śmieci?
   
-Although churn prediction is typically modeled as a classification problem, one should bear in mind the final goal of churn prediction, that is preventing the customer from leaving [@1255389]. One strategy to do that is to target the most risky customers with some kind of marketing campaign. The ultimate goal for the model should be to assess the probability of customer leaving, and let the marketing experts decide what level of probability bothers the company, and how strong the reaction should be. For example, one could decide that for top 1% of the most risky customers the company should contact the customer in person by phone, for top 10% offer special discounts, while for top 30% - just send an encouraging email. 
 
-Because of that one should bear in mind that the models not outputting probabilities (for example vanilla SVM) are not the best choices. That is also why industry standard for churn prediction is logistic regression, as the outputs can be directly interpreted as probabilities, and also the customers can be ranked.
+
 
 The most low-hanging fruit for the companies that want to start basing their business desicions on the data is usage of transaction-level data. That is because virtually every e-commerce shop is based on the the mechanism of user registration, and storing the client's purchasing history is an industry standard.
-The data only about when the customer made purchases and how much did he pay are very easily translated into the framework of Recency-Frequency-Monetary value. Multiple works (@aleksandrova2018application, @8284914) demonstrated that such data can serve as a good input to churn prediction machine learning model. In fact, most of the publications presented in this review is using RFM variables as one part of the dataset, while including more complex, engineered variables as the other part. 
 
-Besides the application in churn prediction domain, clustering the customer base into different segments based on RFM model can be very valuable just for business intelligence application and exploratory data analysis. 
+!!! The data only about when the customer made purchases and how much did he pay are very easily translated into the framework of Recency-Frequency-Monetary value. Multiple works (@aleksandrova2018application, @8284914) demonstrated that such data can serve as a good input to churn prediction machine learning model. In fact, most of the publications presented in this review is using RFM variables as one part of the dataset, while including more complex, engineered variables as the other part. 
 
-Because of the digital nature of e-commerce shopping, way more detailed and enriched data can be used in hope of finding more appropriate features. One of such features is per-session data - that is the information about how the user is navigating on the site. @yu2011extended used the data avaliable in the data warehouse of e-commerce company to predict churn. They combined per-transaction data, per-session data and customer data using Extract-Transform-Load tools and manual feature engineering. @8627369 tried to predict user churn on a per-session basis. The question they stated was "Will the customer unregister from the service during this session?". They used a very detailed per-session metadata like the day of the week, session number or number of purchases done up to the point. 
+!!! Because of the digital nature of e-commerce shopping, way more detailed and enriched data can be used in hope of finding more appropriate features. One of such features is per-session data - that is the information about how the user is navigating on the site. @yu2011extended used the data avaliable in the data warehouse of e-commerce company to predict churn. They combined per-transaction data, per-session data and customer data using Extract-Transform-Load tools and manual feature engineering. @8627369 tried to predict user churn on a per-session basis. The question they stated was "Will the customer unregister from the service during this session?". They used a very detailed per-session metadata like the day of the week, session number or number of purchases done up to the point. 
 
 After the first purchase of the customer in the e-commerce shop, their exact adresses can be inferred with high probability. Usually the delivery adress would be to the home of a customer, or in worse cases to other place that the customer visits (like workplace etc.). @zhao2005customer used this kind of customer location data to enrich the dataset with basic spatial characteristics of the region, that is geographic situation and demographic variables.
 
 The content of the web is very often avaliable in unstructured, textual form. Online retailers very often give their customers to write reviews about the purchase. Although such information is very hard to incorporate into churn prediction model, it can serve as a very rich source of insight. 
 @DECAIGNY20201563 showed how such data can be incorporated into churn prediction modeling to obtain superior results. They have used text embedding approach as a feature extraction method.
-
-
-Other branch of customer behaviour analysis is concentrated on declaration of desire to repurchase in particular shop. Compared to the actual analysis of sales data, this approach has an advantage that the customer can have a very good experience in the shop, but not do the repurchase from other reasons. This information is still very valuable to the shop. On the other hand, questionaire data has usually less quality as the customers can lie, an also response rate is usually very low. 
 
 @9325646 analysed responses to such questionaires and tried to predict, whether preprocessed textual reviews can serve as explanatory variables. After using tf-idf transformation they found out that they can. 
 
@@ -161,6 +164,9 @@ Online reviews as a feedback mechanism for hotel CRM systems
 Creating a geodemographic classification model within geo-marketing: the case of Eskişehir province
 
 ### XAI
+
+While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like boosting or neural networks, usually present superior performance to more basic approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees.
+
 
 co możesz napisać?
 
