@@ -13,33 +13,140 @@ knitr::opts_chunk$set(echo=params$echo)
 
 TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.*
 
-## Notatki
-
-W tej thesis:
-
-- Intro
-  - goal of study - explotre the predictive power of features
-  - krótkie intro o metodach
-- Definicja zmiennej wynikowej
-- Exploratory variables
-  - po kolei przez wykorzystywane zmienne - najpierw ogólny opis kategorii, później wyniki z poprzednich studies, później co dokładnie oznacza ta zmienna w modelowaniu
-  - dla bardziej skomplikowanej zmiennej baardzo szczegółowy opis
-
-W site selection:
-- feature selection
-- PCA
-- NN
-
-- Najpierw co to za metoda
-- Później gdzie wykorzystywana wcześniej
-- Później jak potrzebny to dokładny opis
-
-
 https://www.sciencedirect.com/science/article/pii/S0377221703009184?casa_token=6GS1hqD0KcAAAAAA:4p02d0H6wlfEDACtjCUYfXB_5ABUmf2QqD9RILvjbNYHgLF6S3tnAT2VjqJXLzJFxI1oVK9GTQ
 
 Dobrze wytłumaczone co może powodować które kategorie
 
+# Outline
 
+## Variables used
+
+In this study I have separated 3 groups of variables analyzed:
+
+- behavioural (first transaction) features
+- location features
+- perception features.
+
+
+### Transaction (behavioural)
+
+#### Definition of the category
+
+Behavioural predictors can be defined as the variables quantifying previous actions of the customer. In most of the cases this narrows down to the data about previous transactions and previous interactions with the company. Behavioural information about customer's interactions with the company was shown to be an important predictor in churn prediction (for overview see @schmittlein1994customer). 
+
+#### Previous studies
+
+The widest range of behavioural variables up to date was used by @buckinx2005customer. Besides 7 variables meant for encompassing frequency and monetary value, they also included variables indicating total spending divided by categories of the products avaliable in e-commerce shop. They found that all 3 categories of variables are statistically significant and bring improvement to model's predictions. In particular, thy found that bigger customer spending leads to the customer's desire to keep being a company's customer. Besides that, the categories that the customer has been buying in the previous purchases also have been shown to influence the customer's decision to stay. This is in line with findings from the previous studies [@athanassopoulos2000customer; @mozer2000predicting]. One possible explanation of churning based on categories bought suggested by @mozer2000predicting is that the satisfaction of purchasing a particular category is low - no matter if because of high price or low quality of the product bought.
+
+#### What variables I have used
+
+From the category of behavioural variables, I have included information about monetary value of the first purchase (Monetary value), delivery cost, number of items bought and categories of items that the customer bought. In this study, specification of the behavioural variables used is slightly different from previous studies. Namely, I have excluded Recency and Frequency from the set of predictors. The reason is that in this study I am interested in predicting customer loyalty just after first purchase. Because of that, these variables that need some time passed since the purchase can't be calculated or used.
+
+#### Preprocessing in this study
+
+In the case of company analyzed in this study, the products sold belong to 74 distinct categories. At the same time, top 15 categories account for 80% of all purchases. Because of potential problems with generalization and also slower model trainig, I have decided to bin the least popular ones as a new category "other". Then, I have used one-hot-encoding approach to create numeric representation, with "other" category set as a base level. ^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.]
+
+#### Hyphotesis
+
+To assess the validity of previous studies' findings about behavioural variables in e-commerce retail context, I have tested 2 hypotheses. (1) The amount of money spent on the first purchase positively influences customer probability of buying for the second time. (2) categories bought by the customer can influence the customer probability to stay with the company.
+
+### Location
+
+Iść w stronę że jest wiele sposobów zakodowania lokalizacji, nie tylko lon lat
+
+#### Way of including spatial dimension to the churn prediction
+
+opisać wszystkie, też spatial dependence/correlation mimo że nie użyłem
+
+
+Review poprzednich prac:
+
+#### churn + location 
+
+opisać które ze sposobów używa
+
+#### lon/lat + customer, jak nie ma to lon/lat + point data (najlepiej classification)
+
+To the best of authors knowledge, no studies on churn prediction conducted before included raw geographic coordinates in the model formulation. Rather, usually dummy variables indicating the administrative regions were used. There is no consensus whether such data can improve the predictions. @verbeke2012new argued that "the number of times a customercalled the helpdesk will most probably be a better predictor of churn behavior than the zip code". On the other hand, @buckinx2005customer showed that such dummies were significant in the case of Neural Network model, but not in Random Forest. Also, @long2019new found that these dummies are significant. In these case however, a different spatial extent was analyzed - the regions variables indicated countries rather than postcodes.
+
+@de2019impact used geolocation data in the context of churn prediction for an insurance company. They however took different approach to operationalizing customer location. Instead of including dummies indicating customer's region, they calculated distance between the customer and the closest insurance agent. Such variable was significant.
+
+#### population density + customer, density + customer behaviour (może być też bardziej jakościowa)
+
+Generally, there is a consensus among researchers that there is a difference in customer behaviours between rural and urban areas [@sun2004consumption]. In particular, couple of studies in FMCG sector have found that rural customers tend to be more loyal to the previously chosen company [@jha2003understanding; @sharma2021impact]. The potential reason for such finding provided by the authors is smaller choice of other options in the rural shops compared to urban ones. However, up to date there were no studies that were meant to assess the differences between customer loyalty in urban and rural areas, but aimed at e-commerce sector. The findings from FMCG sector does not have to translate directly, as in online setting the customers are generally not limited by the avaliability of the brand in their area. 
+
+#### co to geodemographics, jak było używane do tej pory
+
+Geodemographics is the "analysis of people by where they live" [@harris2005geodemographics]. In this paradigm, it is assumed that people living in the same area share similar characteristics, like their social status, income etc. Such type of data was used extensively in previous studies. However, as pointed by @singleton2014past, its usage was mostly in public sector areas, mainly public health and law enforcement. Publically avaliable research in usage of geodemographics in context of marketing, or specifically churn prediction is almost non-existent. This has its reasons in confidential nature of research done in individual companies [@webber2004targeting].
+
+TODO: nie mogę znaleźć paperów które używają danych ze spisów powszechnych do churnu - możliwe że w ogóle nie ma (są ogólnie o customer demographics)
+
+#### Że są 3(.5) sposoby w jaki zakodowałem lokalizację
+#### Hipotezy na które chcę odpowiedzieć
+
+- lon/lat - propensity to churn can be explained by customer location
+- cluster - tendency to churn is dependent on whether the customer is living in a densely populated area
+- demographic - social structure of the customer's environment can serve as a valuable predictor of churn tendency
+
+#### jak przetwarzałem - przekleić z tego co zrobiłem
+
+### Perception
+
+- text review, 1-5 review
+
+#### Definition of the category
+
+Customer perception of the company is considered an important factor driving customer loyalty. @kracklauer2001mutual poses a hypothesis, that when the customer is satisfied by the product, she is more inclined to keep buying the company's products.
+
+#### How can perception be proxied - text reviews, 1-5
+
+Unfortunately, customer satisfaction is an immesurable variable. Different proxies can be however included in the model, and usually gathering such data requires conducting customer surveys. @churnthesis specifies possible dimensions of such survey: "overall satisfaction, quality of service, locational convenience and reputation of the company". 
+
+In e-commerce settings, an industry standard is to provide a way for the customers to express their opinions about the purchase [@lucini2020text]. Company has to decide, in how structured way it would like to collect them. On one hand, text reviews can provide way richer information about the customer experience, as she is not limited to describing the experience in a predefined dimensions. On the other hand, extracting meaningful information from sometimes millions of text reviews is a very challenging task that no universally acclaimed solutions exist [@felbermayr2016role; @zhao2019predicting]. 
+
+In the case of the company analyzed in this study, there are 2 sources of customer perception. One is a customer review on a scale from 1 to 5. The other is a textual review of the purchase. 
+
+#### 1-5 - hypothesis
+
+A hyphotesis that I would like to check is as follows: the better the customer is rating the purchase, the more likely she is to purchase in the shop one time more.
+
+#### text reviews - ways of extracting meaningful information
+
+@zeroual2018data
+
+As stated before, text reviews can potentially serve as a rich source of information about customer satisfaction. @lucini2020text specifies 2 natural language processing areas that can be used to  extract insights from such reviews, namely topic modeling and sentiment analysis. First one is meant to answer the question "what the review is about?", while the second - "what are the emotions contained in this review?". Combination of these two dimensions can help answer the question which areas of customer experience are rated positively, and which need improvement.
+
+In the case of this study, I have focused only on extracting the topic from the review. The reason is that an information about whether the experience of the customer was positive is already contained in 1-5 review.
+
+Although text mining for customer reviews is a active field of research, usage of such information in the context of churn prediction is way less covered. To the best of author's knowledge, only 2 studies used the data from textual reviews for churn prediction. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique.
+ 
+#### Topic modeling in text reviews 
+
+The approach I have used in this study is topic modeling. ... 
+
+#### Hyphotesis for topic modeling
+
+Topic of the review can serve as a meaningful predictor ...
+
+@athanassopoulos2000customer 
+
+https://www.jmir.org/2021/1/e22184/ - topic modeling + RNN
+
+#### Preprocessing to apply topic modeling
+
+Wkleić to co jest poniżej
+
+## Variables selection
+
+### Previous approaches
+
+Previous studies usually used RFM variables as basic ones, adding other types as additional ones.
+
+### Sets of vars
+
+### Boruta
+
+## Modeling methodology
 
 ## Introduction (TODO)
 
@@ -50,11 +157,6 @@ On diagram .. a summary of preprocessing applied to all the parts of the dataset
 ![](resources/data_processing_diagram.png)
 
 
-### Order items
-
-The categories that the customer have been buying in the previous purchases have been shown in previous studies to influence the customer's decision to stay [@BUCKINX2005252; @athanassopoulos2000customer]. One possible explanation of churning is that the satisfaction of purchasing a particular category is low - no matter if because of high price or low quality of the product bought.
-
-In the case of Olist company, the products sold belong to 74 distinct categories. At the same time, top 15 categories account for 80% of all purchases. Because of potential problems with generalization and also slower model trainig, I have decided to bin the least popular ones as a new category "other". Then, I have used one-hot-encoding approach to create numeric representation, with "other" category set as a base level. ^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.]
 
 ### Geographic data - long/lat
 

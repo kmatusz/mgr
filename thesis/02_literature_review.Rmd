@@ -1,7 +1,7 @@
 ---
 title: "Literature review"
 # output: word_document
-output: word_document
+output: html_document
 bibliography: resources/bib.bibtex
 params:
   echo: False
@@ -97,27 +97,6 @@ Another way to include demographics data in the churn prediction model was shown
 ##### Perception
 
 Last category of variables used for churn prediction specified by @BUCKINX2005252 is customer perception about the company. According to @kracklauer2001mutual, customer satisfaction is the most important factor driving customer retention. However, although such features could have potentially high predictive power, they are usually hard to observe and quantify meaningfuly. The one possible approach is asking the customers for direct feedback using questionaires or providing a way to post a review on the purchase. This kind of feedback can be obtained in different forms, one of them being a textual reviews. Couple of previous studies were aimed at extracting meaningful features from such reviews using different text mining methods. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique. In both studies the results using such methods were superior compared to the models without including such information.
-
-#### do methods:
-
-- do każdego podpunktu jak jest definiowany, jakie są wcześniejsze prace które go używają, jaka jest teoria za tym, hipoteza, opis przetwarzania w mojej pracy
-
-Behavioural:
-
-- transaction value
-- no items
-- categories of products bought
-
-Demographic:
-
-- wszystko z sidra
-- geoloc
-- dbscan
-
-Perception:
-
-- score 1-5
-- text review
 
 ### Churn analysis do śmieci?
 
