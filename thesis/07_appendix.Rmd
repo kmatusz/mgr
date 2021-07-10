@@ -1,0 +1,32 @@
+---
+title: "Methods description"
+bibliography: resources/bib.bibtex
+# output: html_document
+output:
+  word_document:
+    reference_docx: resources/styles_template.docx
+    number_sections: true
+params:
+  echo: False
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo=params$echo)
+```
+
+## Appendix A - Spatial join of SIDRA and Olist sources
+
+Joining of the data coming from SIDRA and OLIST sources proved to be challenging. There were multiple reasons for that:
+
+- In e-commerce dataset the spatial dimansion is decoded mainly in a form of ZIP codes, while in demographic dataset - in a form of microregions.
+- The boundaries of zipcodes and microregions do not align.
+- The geoloacation data from OLIST has 3 columns - zip code and lat/lng coordinates. For each zip code are multiple entries for coordinates. This probably means that the company has exact coordinates of each of their customers, but decided to not provide exact customer-location mapping in public dataset for anonimisation reasons. Because of that the boundaries of zip codes cannot be specified exactly and one has to rely on the particular points from this zipcode area.
+
+My approach was as follows: 
+
+1. For each of the points in OLIST geolocation dataset, establish in which microregion it is. Join the dataset for that region to OLIST geolocation dataset.
+2. Group the dataset by zip code and calculate the mean of each of the features in the dataset. In this case this mean would be a weighted mean (with weight in form of "how many customers are in this area?")
+
+![](resources/11_spatial_join_excel.png)
+
+(TODO: Zrobić tabelki w R a nie w excelu, pewnie też lepiej opisać)

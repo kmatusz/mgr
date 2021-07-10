@@ -1,6 +1,10 @@
 ---
 title: "Thesis"
-output: html_document
+output: 
+  word_document:
+    reference_docx: resources/styles_template.docx
+    number_sections: true
+# output: html_document
 bibliography: resources/bib.bibtex
 always_allow_html: true
 params:
@@ -15,23 +19,64 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r child = '01_introduction.Rmd'}
 ```
 
+&nbsp;
+
+\pagebreak
+
 # Literature review
 ```{r child = '02_literature_review.Rmd'}
 ```
+
+&nbsp;
+
+\pagebreak
 
 # Dataset description
 
 ```{r child = '03_dataset_description.Rmd'}
 ```
 
+&nbsp;
+
+\pagebreak
+
 # Methods description
 
 ```{r child = '04_methods_description.Rmd'}
 ```
+
+&nbsp;
+
+\pagebreak
 
 # Results
 
 ```{r child = '05_results.Rmd'}
 ```
 
+&nbsp;
+
+\pagebreak
+
+# Summary
+
+```{r child = '06_summary.Rmd'}
+```
+
+&nbsp;
+
+\pagebreak
+
+# Appendixes
+
+```{r child = '07_appendix.Rmd'}
+```
+
+&nbsp;
+
+\pagebreak
+
+
+
+# References
 

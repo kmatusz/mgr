@@ -15,9 +15,9 @@ TODO: *W części 02 z literature review dałabym ilustrację celów, metod i do
 
 ## Customer churn
 
-### General about customer retention
+### Introduction
 
-#### Churn in context of CRM
+<!-- #### Churn in context of CRM -->
 
 Customer Relationship Management is defined as a process, in which the business manages its interactions with the customers using data integration from various sources and data analysis [@bardicchia2020digital]. 
 @churnthesis provides 4 areas in which CRM approaches can be of use:
@@ -29,86 +29,105 @@ Customer Relationship Management is defined as a process, in which the business 
 
 The last one is the main focus of this study. 
 
-#### Why having loyal clients is important
+<!-- #### Why having loyal clients is important -->
 
 Improving the loyalty of customer base is profitable to the company. This has its source in multiple factors, the most important one being cost of aquisition.  Multiple studies have shown that retaining customers costs less than attracting new ones [@dick1994customer; @gefen2002customer; @buckinx2005customer]. Moreover, there is some evidence that loyal customers are less sensitive to the competitor's actions regarding price changes [@achrol1999marketing; @choi2006customer]. 
 
-#### Different approaches when tackling potential churners
+<!-- #### Different approaches when tackling potential churners -->
 
 There are 2 basic categories of approaches for the company to deal with customer churn. First category is "untargeted" approach. The company seeks to improve its product quality and relies on mass advertising to reduce the churn. The other way is "targeted" approach - the company tries to address aim their marketing campaigns at the customers that are more likely to churn [@burez2007crm]. This approach can be divided further, by the way in which targeted customers are chosen. The company can target only these ones that have already made a decision to resign from further relationship. For example, in contractual settings this can mean canceling the subscription or breaching the contract. 
 
 The other way to approach churn problem is to try to predict, which customers are likely to churn in the near future. This has an advantage of having lower cost, as the customers that are about to leave are likely to have higher demands from the last-minute deal proposed to them [@tamaddoni2010modeling]. 
 
-#### Non-contractual churn prediction
+<!-- #### Non-contractual churn prediction -->
 
 As pointed out by @tamaddoni2010modeling in their literature review, most of the studies concerning churn prediction were done in contractual settings. In other words, churn was defined as the client resigning from using the company's services more by canceling the subscription or breaching the contract. Such way to specify the churn is different from the businesses in which the customer doesn't have to inform the company about resigning. 
 
 One problem that arises in non-contractual setting is the definition of churn. As there is no clear moment that the customer decides not to use the company's services anymore, it has to be specified by the researcher based on the goals that one has to achieve from the churn analysis. @churnthesis defined partial churners as the customers not making new purchases in the retail shop for the next 3 months. A very different approach was used by @buckinx2005customer. All the customers that had frequency of purchases below average were treated as "churners", since these customers were shown to provide little value to the company. 
 
-#### The difference between one-shot and multiple purchases shopping (TODO??)
-
-- do tej pory nie widziałem takiej pracy która o tym mówiła
+<!-- #### The difference between one-shot and multiple purchases shopping (TODO??) -->
+<!-- - do tej pory nie widziałem takiej pracy która o tym mówiła -->
 
 ### Customer churn prediction
 
-#### Why churn prediction makes sense
+#### Introduction 
+
+<!-- #### Why churn prediction makes sense -->
 
 If the company is able to successfully predict, which customers are most likely to leave, it can target them with retention-focused campaign. Contrary to targeting all of the customers with such campaign, focusing on the customers that are most likely to leave leads to reduction of the cost of the campaign. 
 
-#### Why classification vs. ranking
+<!-- #### Why classification vs. ranking -->
 
 Churn prediction fits well with the framework of classification, as the variable that one would like to predict is binary (churn-no churn). However, not only such binary prediction is valuable for later retention campaign efforts. As noted by @1255389, equally important is that the machine learning model can predict the likelihood of the customer leaving. After such prediction, the customers can be ranked from the most to the least likely to churn. 
 
 This has two benefits. First, the company can decide what percentage of the customers to target in the retention campaign, and not be bound by how many customers the model will predict as potential churners. Second, the company can decide how strong the targeting should be based on the likelihood to leave. For example, based on cost-benefit analysis of variuos targeting approaches, one could decide that for top 10% of the most likely to leave customers the company should offer big discounts for the next purchase, while for top 30% - only send an encouraging email. 
 
-#### Challenges to be addressed
+<!-- #### Challenges to be addressed -->
 
 Churn prediction task can be decomposed into 2 main important aspects that one has to tackle. First is the decision about specific Machine Learning model that gives the best performance. Second is deciding on the model formula - in other words, deciding about which variables should be included in the model and what should be the form of the relationship.
 
-#### Review of previous churn studies for models used
+<!-- #### Review of previous churn studies for models used -->
+
+#### Machine Learning models for churn prediction
 
 In previous studies multiple machine learning algorithms for prediction were used in churn setting (for overview see @verbeke2011building). The two most widely used techniques are Logistic Regression (LR) and Decision Trees. 
-
 An important feature of both of them is that they are relatively simple, and because of that the way they make predictions can be assessed by a qualified expert [@paruelo1997prediction].
 However, these two methods often give suboptimal results compared to more advanced and recent approaches like Neural Networks or Random Forests [@murthy1998automatic; @churnthesis]. Moreover, this was shown not only in the case of churn prediction setting, but also in more general benchmarks that used multiple datasets and comparison metrics [@caruana2006empirical].
 
 Recently, XGBoost algorithm [@chen2015xgboost] is gaining popularity in multiple domains in which one faces prediction tasks.
 XGBoost main strengths are ability to infer non-linear relationships from the data, and relative speed, which allows the researcher to try out multiple hyperparameters and decide on the best ones [@chen2015xgboost]. Because of that, it is considered as a go-to standard for machine learning challenges, and very often solutions based on it achieve the best results in various competitions and benchmarks  [@xgblist]. In the context of churn prediction, XGBoost was used by @gregory2018predicting. It achieved superior performance compared to other techniques, like Logistic Regression and Random Forests.
 
-#### Review of previous churn studies for variables/categories of variables used
+<!-- #### Review of previous churn studies for variables/categories of variables used -->
+#### Variables used in previous churn prediction studies
 
 Previous churn prediction studies used a variety of variables to include in the model formulation. @BUCKINX2005252 divided them into 3 broad categories. These are behavioural, demographic and perception features. 
 
-##### Behavioural 
+##### Behavioural features
 
 First category of variables tries to describe how the customer has interacted with the company before. Typical features belonging to this category are recency, frequency and monetary value, which constitute a basis of RFM customer segmentation framework. These features are used in multiple studies [@churnthesis; @bhattacharya1998customers], and typically accompany the more complex variables that are main focus of particular studies.
-
 Besides these basic features, some studies focus on other areas of customer behaviour.
 Particular products that the customer has bought in previous purchases were shown to be useful for churn prediction [@BUCKINX2005252; @athanassopoulos2000customer].
 
 Some of the variables studied previously are avaliable only in some of the domains. For example, one possibility of analyzing customer behaviour in the context of e-commerce shopping is analyzing the customer behaviour while interacting with the company's website. @koehn2020predicting analyzed such click-stream sequential data using Recurrent Neural Networks. They found that such information can serve as a good predictor of customer churn. Similar studies were performed by @8627369 and @yu2011extended, however the click stream data was aggregated and preprocessed manually, instead of using sequential modeling approach.
 
-##### Demographics
+##### Demographics features
 
 Second category of features used in churn prediction are demographic variables about the customer, such as age, gender or address. Such variables were shown to be good predictors of customer churn in multiple studies (For overview see @verbeke2011building). However, availability of such predictors to use in modeling is very often limited from multiple reasons. In non-contractual settings, customers don't have to always provide such data to the company. Moreover, usage of such personal data can be in some cases considered unethical, and lead to predictions biased against particular age or gender. 
 
 Another way to include demographics data in the churn prediction model was shown by @zhao2005customer. They used the data obtained from the statistical office for particular regions that the customer is residing in. Such variables were shown to be useful in churn prediction.
 
-##### Perception
+##### Perception features
 
 Last category of variables used for churn prediction specified by @BUCKINX2005252 is customer perception about the company. According to @kracklauer2001mutual, customer satisfaction is the most important factor driving customer retention. However, although such features could have potentially high predictive power, they are usually hard to observe and quantify meaningfuly. The one possible approach is asking the customers for direct feedback using questionaires or providing a way to post a review on the purchase. This kind of feedback can be obtained in different forms, one of them being a textual reviews. Couple of previous studies were aimed at extracting meaningful features from such reviews using different text mining methods. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique. In both studies the results using such methods were superior compared to the models without including such information.
 
-### Churn analysis do śmieci?
+## XAI
 
-The most low-hanging fruit for the companies that want to start basing their business desicions on the data is usage of transaction-level data. That is because virtually every e-commerce shop is based on the the mechanism of user registration, and storing the client's purchasing history is an industry standard.
-
-!!! The data only about when the customer made purchases and how much did he pay are very easily translated into the framework of Recency-Frequency-Monetary value. Multiple works (@aleksandrova2018application, @8284914) demonstrated that such data can serve as a good input to churn prediction machine learning model. In fact, most of the publications presented in this review is using RFM variables as one part of the dataset, while including more complex, engineered variables as the other part. 
+While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like boosting or neural networks, usually present superior performance to more basic approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees.
 
 
-After the first purchase of the customer in the e-commerce shop, their exact adresses can be inferred with high probability. Usually the delivery adress would be to the home of a customer, or in worse cases to other place that the customer visits (like workplace etc.). @zhao2005customer used this kind of customer location data to enrich the dataset with basic spatial characteristics of the region, that is geographic situation and demographic variables.
+co możesz napisać?
+
+- Dlaczego 
+
+- AI jest black box
+- co to XAI
+- 
+https://www.kdnuggets.com/2018/10/enterprise-explainable-ai.html
+
+TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
 
 
-### Reviews analysis
+
+https://blog.goodaudience.com/holy-grail-of-ai-for-enterprise-explainable-ai-xai-6e630902f2a0
+
+https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q
+challenge dla marketingu przy stosowaniu AI
+
+https://arxiv.org/pdf/1810.00184.pdf
+
+xai z perspektywy końcowego usera
+
+## Reviews analysis
 
 An important source of knowledge about e-commerce customers are textual reviews. They can serve as a rich source of feedback for what in the shop or product is liked and what needs change. Also, in the textual reviews one can get to know customer's opinions way better then using other types of feedback, for example 1-5 rating of a purchase. With these advantages, they come at the expense of increased complexity of such analysis. A big challenge is to extract meaningful information from this type of highly unstructured data.
 
@@ -145,145 +164,129 @@ This concept can be very useful in the area of aspect prediction, as usually onl
 
 Another work worth mentioning is by @tulkens-van-cranenburgh-2020-embarrassingly, who proposed a new type of Attention mechanism, meant especially for aspect recognition task. It's advantage over the one presented by [@he2017aspect] is that instead of a complex neural network, a way simpler approach based on Radial Basis Function kernel is used. Another work presenting new attention mechanism is by @ijcai2019-712 - they use a use a Encoder-Decoder framework with an *Semene Attention* mechanism. 
 
-Losowe papery:
+<!-- ## Churn analysis do śmieci? -->
 
-Online reviews as a feedback mechanism for hotel CRM systems
-Creating a geodemographic classification model within geo-marketing: the case of Eskişehir province
+<!-- The most low-hanging fruit for the companies that want to start basing their business desicions on the data is usage of transaction-level data. That is because virtually every e-commerce shop is based on the the mechanism of user registration, and storing the client's purchasing history is an industry standard. -->
 
-### XAI
-
-While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like boosting or neural networks, usually present superior performance to more basic approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees.
+<!-- !!! The data only about when the customer made purchases and how much did he pay are very easily translated into the framework of Recency-Frequency-Monetary value. Multiple works (@aleksandrova2018application, @8284914) demonstrated that such data can serve as a good input to churn prediction machine learning model. In fact, most of the publications presented in this review is using RFM variables as one part of the dataset, while including more complex, engineered variables as the other part.  -->
 
 
-co możesz napisać?
-
-- Dlaczego 
-
-- AI jest black box
-- co to XAI
-- 
-https://www.kdnuggets.com/2018/10/enterprise-explainable-ai.html
-
-TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
+<!-- After the first purchase of the customer in the e-commerce shop, their exact adresses can be inferred with high probability. Usually the delivery adress would be to the home of a customer, or in worse cases to other place that the customer visits (like workplace etc.). @zhao2005customer used this kind of customer location data to enrich the dataset with basic spatial characteristics of the region, that is geographic situation and demographic variables. -->
 
 
+<!-- ## Losowe papery: -->
 
-https://blog.goodaudience.com/holy-grail-of-ai-for-enterprise-explainable-ai-xai-6e630902f2a0
-
-https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q
-challenge dla marketingu przy stosowaniu AI
-
-https://arxiv.org/pdf/1810.00184.pdf
-
-xai z perspektywy końcowego usera
-
-Luźne opisy paperów:
-
-https://www.preprints.org/manuscript/202106.0063/v1
-Dokładnie ten sam dataset, preprint opublikowany 5.06 (sic!)
-
-https://arxiv.org/pdf/1703.03869.pdf
-Bardzo dokładny opis podejścia do churn prediction z użyciem DL
-
-https://link.springer.com/chapter/10.1007/978-981-32-9563-6_11
-[@jheng2019customer]
-- retention prediction przez CNN
-
-https://www.sciencedirect.com/science/article/pii/S0019850116301651?casa_token=YCUcElM8k_EAAAAA:-qJeOGXh7u2pQlqj-eyAo9k-eLgbc-m31QsDURsmpD2CEIyqtUzAjYGXUwkQRR4T0MrtkIbeWtaG
-
-- sam paper średni ale ma dużo referencji
-
-https://sci-hub.se/https://ieeexplore.ieee.org/abstract/document/7538581
-
-- fancy metody imbalance
-- używają datasetu takiego jak ja
-- mega dobra dokładność
-- ALE najpierw robią upsampling a później oceniają performance na CV - błąd! u mnie to różnica pommiędzy 0.62 a 0.78 AUC
-
-http://flr-journal.org/index.php/mse/article/view/10816/11113
-
-- wykorzystują social network userów
-
-https://link.springer.com/article/10.1007/s10660-019-09383-2
-
-- wykorzystują deep learning do imbalance - chyba lepiej będzie pasować do innej sekcji
-
-https://www.emerald.com/insight/content/doi/10.1108/17515631011063767/full/html
-
-dużo references 
-
-A study on factors affecting the purchasing process of online shopping: a survey in China & Japan
-
-na podstawie kwestionariusza ocena satysfakcji
-
-https://d1wqtxts1xzle7.cloudfront.net/62198454/key-paper20200225-3623-15suux9.pdf?1582687757=&response-content-disposition=inline%3B+filename%3DWhat_Effects_Repurchase_Intention_of_Onl.pdf&Expires=1617187287&Signature=LfylLp7R2PXNPLFtVyCNdj~e4FhDBUz04-T152E7FSsNHjnqclWeFnnKf9C2fJskRN2q~sRx~CsXCbeuhn0zcrktL0lj8oN8GUxrWXpavIz1UaQuO~ayrylqfAH2XgIdwhDe~8FOoMNP9ZzaNz6lqYuy6DYaBNhP6G7N3sUo2spQ187dGOgRHgGafoS3Z7HZ2AgEUjgs1ldOsU1E7FXrP1delDpO7QYarp9h1euOUM6vCWCxlsDZYnRF6A-PIuQlgyP8QOyzMo2d487sDw0Jepwjrd69ocCrSMsi7dmu56Z00CUoXaUA3b~C9vyQrfYI9T1hzMcJYfQYri4lUWgblQ__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA
-
-ocena repurchase probability na podstawie kwestionariusza 
+<!-- Online reviews as a feedback mechanism for hotel CRM systems -->
+<!-- Creating a geodemographic classification model within geo-marketing: the case of Eskişehir province -->
 
 
-https://www.tandfonline.com/doi/abs/10.1080/08874417.2011.11645518?casa_token=33mj-Wcpw8IAAAAA%3AQUNps1MzrKJLyKf_c0Vl6gRIzoqI8wU3PbavgeTiyiJlQxwpHMi3JLUMmmGr7ZX0C2uqsrTT-TBYIw8&
+<!-- Luźne opisy paperów: -->
 
-znowu kwestionariusz ale z modelem
+<!-- https://www.preprints.org/manuscript/202106.0063/v1 -->
+<!-- Dokładnie ten sam dataset, preprint opublikowany 5.06 (sic!) -->
 
+<!-- https://arxiv.org/pdf/1703.03869.pdf -->
+<!-- Bardzo dokładny opis podejścia do churn prediction z użyciem DL -->
 
-https://link.springer.com/article/10.1007/s10660-015-9207-2
+<!-- https://link.springer.com/chapter/10.1007/978-981-32-9563-6_11 -->
+<!-- [@jheng2019customer] -->
+<!-- - retention prediction przez CNN -->
 
-- predicting repurchase intention 
-- na podstawie kwestionariusza
-- ale prediction z fancy metodami
+<!-- https://www.sciencedirect.com/science/article/pii/S0019850116301651?casa_token=YCUcElM8k_EAAAAA:-qJeOGXh7u2pQlqj-eyAo9k-eLgbc-m31QsDURsmpD2CEIyqtUzAjYGXUwkQRR4T0MrtkIbeWtaG -->
 
+<!-- - sam paper średni ale ma dużo referencji -->
 
-https://ieeexplore.ieee.org/abstract/document/9325646
-[@9325646]
+<!-- https://sci-hub.se/https://ieeexplore.ieee.org/abstract/document/7538581 -->
 
-- repurchase jako kwestionariusz tak/nie 
-- ale wykorzystują predykcję na podstawie reviews
+<!-- - fancy metody imbalance -->
+<!-- - używają datasetu takiego jak ja -->
+<!-- - mega dobra dokładność -->
+<!-- - ALE najpierw robią upsampling a później oceniają performance na CV - błąd! u mnie to różnica pommiędzy 0.62 a 0.78 AUC -->
 
-[@ganesh2000understanding] definicja churn
+<!-- http://flr-journal.org/index.php/mse/article/view/10816/11113 -->
 
-A particularly prominent forecasting application in CRM is customer churn prediction (CCP), which is defined as a method of identifying customers who show a high inclination to abandon the company
+<!-- - wykorzystują social network userów -->
 
+<!-- https://link.springer.com/article/10.1007/s10660-019-09383-2 -->
 
-https://www.sciencedirect.com/science/article/pii/S0169207019301499?casa_token=kopLN0D45dwAAAAA:pARTYFQ1-0aho11qk4RpZdFdBIb1S-cJVHPb1iaggq41zU7pI-heeNpG9uK5cGThM7IWfFAkeGqU
-[@DECAIGNY20201563]
+<!-- - wykorzystują deep learning do imbalance - chyba lepiej będzie pasować do innej sekcji -->
 
--ładnie opisane profity z posiadania lojalnych customerów
-- dobry paper, dużo odniesień i wykorzystanie textual data
+<!-- https://www.emerald.com/insight/content/doi/10.1108/17515631011063767/full/html -->
 
+<!-- dużo references  -->
 
-https://www.sciencedirect.com/science/article/pii/S0957417410006779?casa_token=0C1SeJigqT8AAAAA:GCfX81AUr9p3ZfrqwTPCb23r4Slx6YijCvIOJE5xTcrxgl1nge7gjwvQnCo4c_r5fp1zaSigKjve
-[@yu2011extended]
+<!-- A study on factors affecting the purchasing process of online shopping: a survey in China & Japan -->
 
-- Jest o prawdziwym churnie a nie o retention
-- Jest złożona baza danych
-- minimalny wstęp o churn prediction
+<!-- na podstawie kwestionariusza ocena satysfakcji -->
 
-https://ieeexplore.ieee.org/abstract/document/8627369
-[@8627369]
+<!-- https://d1wqtxts1xzle7.cloudfront.net/62198454/key-paper20200225-3623-15suux9.pdf?1582687757=&response-content-disposition=inline%3B+filename%3DWhat_Effects_Repurchase_Intention_of_Onl.pdf&Expires=1617187287&Signature=LfylLp7R2PXNPLFtVyCNdj~e4FhDBUz04-T152E7FSsNHjnqclWeFnnKf9C2fJskRN2q~sRx~CsXCbeuhn0zcrktL0lj8oN8GUxrWXpavIz1UaQuO~ayrylqfAH2XgIdwhDe~8FOoMNP9ZzaNz6lqYuy6DYaBNhP6G7N3sUo2spQ187dGOgRHgGafoS3Z7HZ2AgEUjgs1ldOsU1E7FXrP1delDpO7QYarp9h1euOUM6vCWCxlsDZYnRF6A-PIuQlgyP8QOyzMo2d487sDw0Jepwjrd69ocCrSMsi7dmu56Z00CUoXaUA3b~C9vyQrfYI9T1hzMcJYfQYri4lUWgblQ__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA -->
 
-- używają danych o sesji w przeglądarce
-
-https://cursa.ihmc.us/rid=1MYWPTN4Z-BBB2D6-30SB/Zhao_Churn_Prediction_SVM.pdf
-
-[@zhao2005customer]
-- Używa danych demograficznych
-- jest o churn
-
-https://ieeexplore.ieee.org/abstract/document/8284914
-@8284914
-- prawie nic nie ma ciekawego, tylko jako case 
-
-https://ieeexplore.ieee.org/abstract/document/1255389
-[@1255389]
-
-- Jest o tym że nie chodzi o predykcję tylko o ranking
+<!-- ocena repurchase probability na podstawie kwestionariusza  -->
 
 
-##### References
+<!-- https://www.tandfonline.com/doi/abs/10.1080/08874417.2011.11645518?casa_token=33mj-Wcpw8IAAAAA%3AQUNps1MzrKJLyKf_c0Vl6gRIzoqI8wU3PbavgeTiyiJlQxwpHMi3JLUMmmGr7ZX0C2uqsrTT-TBYIw8& -->
 
-[@tulkens-van-cranenburgh-2020-embarrassingly] CAT 
-attention [@chorowski2015attention]
-word2vec [@mikolov2013efficient] 
-Main: [@he2017aspect]
-drawbacks of LDA [@hong2010empirical] 
+<!-- znowu kwestionariusz ale z modelem -->
+
+
+<!-- https://link.springer.com/article/10.1007/s10660-015-9207-2 -->
+
+<!-- - predicting repurchase intention  -->
+<!-- - na podstawie kwestionariusza -->
+<!-- - ale prediction z fancy metodami -->
+
+
+<!-- https://ieeexplore.ieee.org/abstract/document/9325646 -->
+<!-- [@9325646] -->
+
+<!-- - repurchase jako kwestionariusz tak/nie  -->
+<!-- - ale wykorzystują predykcję na podstawie reviews -->
+
+<!-- [@ganesh2000understanding] definicja churn -->
+
+<!-- A particularly prominent forecasting application in CRM is customer churn prediction (CCP), which is defined as a method of identifying customers who show a high inclination to abandon the company -->
+
+
+<!-- https://www.sciencedirect.com/science/article/pii/S0169207019301499?casa_token=kopLN0D45dwAAAAA:pARTYFQ1-0aho11qk4RpZdFdBIb1S-cJVHPb1iaggq41zU7pI-heeNpG9uK5cGThM7IWfFAkeGqU -->
+<!-- [@DECAIGNY20201563] -->
+
+<!-- -ładnie opisane profity z posiadania lojalnych customerów -->
+<!-- - dobry paper, dużo odniesień i wykorzystanie textual data -->
+
+
+<!-- https://www.sciencedirect.com/science/article/pii/S0957417410006779?casa_token=0C1SeJigqT8AAAAA:GCfX81AUr9p3ZfrqwTPCb23r4Slx6YijCvIOJE5xTcrxgl1nge7gjwvQnCo4c_r5fp1zaSigKjve -->
+<!-- [@yu2011extended] -->
+
+<!-- - Jest o prawdziwym churnie a nie o retention -->
+<!-- - Jest złożona baza danych -->
+<!-- - minimalny wstęp o churn prediction -->
+
+<!-- https://ieeexplore.ieee.org/abstract/document/8627369 -->
+<!-- [@8627369] -->
+
+<!-- - używają danych o sesji w przeglądarce -->
+
+<!-- https://cursa.ihmc.us/rid=1MYWPTN4Z-BBB2D6-30SB/Zhao_Churn_Prediction_SVM.pdf -->
+
+<!-- [@zhao2005customer] -->
+<!-- - Używa danych demograficznych -->
+<!-- - jest o churn -->
+
+<!-- https://ieeexplore.ieee.org/abstract/document/8284914 -->
+<!-- @8284914 -->
+<!-- - prawie nic nie ma ciekawego, tylko jako case  -->
+
+<!-- https://ieeexplore.ieee.org/abstract/document/1255389 -->
+<!-- [@1255389] -->
+
+<!-- - Jest o tym że nie chodzi o predykcję tylko o ranking -->
+
+
+<!-- ##### References -->
+
+<!-- [@tulkens-van-cranenburgh-2020-embarrassingly] CAT  -->
+<!-- attention [@chorowski2015attention] -->
+<!-- word2vec [@mikolov2013efficient]  -->
+<!-- Main: [@he2017aspect] -->
+<!-- drawbacks of LDA [@hong2010empirical]  -->
 

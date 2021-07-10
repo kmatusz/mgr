@@ -1,8 +1,11 @@
 ---
 title: "Methods description"
 bibliography: resources/bib.bibtex
-output: html_document
-# output: word_document
+# output: html_document
+output:
+  word_document:
+    reference_docx: resources/styles_template.docx
+    number_sections: true
 params:
   echo: False
 ---
@@ -13,11 +16,15 @@ knitr::opts_chunk$set(echo=params$echo)
 
 TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.*
 
-https://www.sciencedirect.com/science/article/pii/S0377221703009184?casa_token=6GS1hqD0KcAAAAAA:4p02d0H6wlfEDACtjCUYfXB_5ABUmf2QqD9RILvjbNYHgLF6S3tnAT2VjqJXLzJFxI1oVK9GTQ
 
-Dobrze wytłumaczone co może powodować które kategorie
+## Modeling methods
 
-# Outline
+I have used a simple train-test split of the dataset, with 70% of the observations belonging to the trainig dataset. On the training dataset, I have searched for optimal hyperparameters using 3-fold cross-validation on training dataset. I have defined search space simply as a grid of all possible combinations of the hyperaparameters. 
+
+One important problem with this dataset is its very high target classes imbalance. Only 3% of the customers have decided to buy for the second time. To handle this issue I have used upsampling of the minority class on the training dataset to obtain equal class proportions. Also, the choice of an appropriate metric to optimize is very important in imbalanced dataset, as some metrics (like accuracy) are very biased in these cases. That is why I have decided to optimize Area-Under-Curve metric, as it weights the performance on the minority and majority classes equally.
+
+I have used Logistic Regression and XGBoost models. The reason is that Logistic Regression is relatively simple and explainable, and was used in the task of churn modeling in previous studies [@nie2011credit; @dalvi2016analysis]. On the other hand, XGBoost model was shown to be very well-suited for all kinds of modeling using tabular data, also in the context of churn prediction [@gregory2018predicting]. It can also learn non-linearities and interactions between the variables on its own, contrary to LR where such features should be introduced to the model manually. 
+
 
 ## Variables used
 
@@ -27,78 +34,81 @@ In this study I have separated 3 groups of variables analyzed:
 - location features
 - perception features.
 
+On diagram .. a summary of preprocessing applied to all the parts of the dataset is presented. All the tables on the left-hand-side are coming directly from Olist (4 tables) and SIDRA sources (1 table - demographic data). Purple table is the primary one, the features from this table were combined with all the remaining sets of variables. The final tables after preprocessing of each of the parts of the dataset are shown in gray. In the modeling phase, I have used simple join of the basic table, and the remaining ones, separately from each other (e.g. basic information + order items, basic inforamation + DBSCAN cluster etc.).
 
-### Transaction (behavioural)
+![](resources/data_processing_diagram.png)
 
-#### Definition of the category
+
+### Behavioural features
 
 Behavioural predictors can be defined as the variables quantifying previous actions of the customer. In most of the cases this narrows down to the data about previous transactions and previous interactions with the company. Behavioural information about customer's interactions with the company was shown to be an important predictor in churn prediction (for overview see @schmittlein1994customer). 
 
-#### Previous studies
+The widest range of behavioural variables up in churn prediction setting up to date was used by @buckinx2005customer. Besides 7 variables meant for encompassing frequency and monetary value, they also included variables indicating total spending divided by categories of the products avaliable in e-commerce shop. They found that all 3 categories of variables are statistically significant and bring improvement to model's predictions. In particular, they found that bigger customer spending leads to the customer's desire to keep being a company's customer. Besides that, the categories that the customer has been buying in the previous purchases also have been shown to influence the customer's decision to stay. This is in line with findings from the previous studies [@athanassopoulos2000customer; @mozer2000predicting]. One possible explanation of churning based on categories bought suggested by @mozer2000predicting is that the satisfaction of purchasing a particular category is low - no matter if because of high price or low quality of the product bought.
 
-The widest range of behavioural variables up to date was used by @buckinx2005customer. Besides 7 variables meant for encompassing frequency and monetary value, they also included variables indicating total spending divided by categories of the products avaliable in e-commerce shop. They found that all 3 categories of variables are statistically significant and bring improvement to model's predictions. In particular, thy found that bigger customer spending leads to the customer's desire to keep being a company's customer. Besides that, the categories that the customer has been buying in the previous purchases also have been shown to influence the customer's decision to stay. This is in line with findings from the previous studies [@athanassopoulos2000customer; @mozer2000predicting]. One possible explanation of churning based on categories bought suggested by @mozer2000predicting is that the satisfaction of purchasing a particular category is low - no matter if because of high price or low quality of the product bought.
-
-#### What variables I have used
-
-From the category of behavioural variables, I have included information about monetary value of the first purchase (Monetary value), delivery cost, number of items bought and categories of items that the customer bought. In this study, specification of the behavioural variables used is slightly different from previous studies. Namely, I have excluded Recency and Frequency from the set of predictors. The reason is that in this study I am interested in predicting customer loyalty just after first purchase. Because of that, these variables that need some time passed since the purchase can't be calculated or used.
-
-#### Preprocessing in this study
+In this study, from the category of behavioural variables, I have included information about monetary value of the first purchase (Monetary value), delivery cost, number of items bought and categories of items that the customer bought. The specification of the behavioural variables used is slightly different from previous studies. Namely, I have excluded Recency and Frequency from the set of predictors. The reason is that in this study I am interested in predicting customer loyalty just after first purchase. Because of that, these variables that need some time passed since the purchase can't be calculated or used.
 
 In the case of company analyzed in this study, the products sold belong to 74 distinct categories. At the same time, top 15 categories account for 80% of all purchases. Because of potential problems with generalization and also slower model trainig, I have decided to bin the least popular ones as a new category "other". Then, I have used one-hot-encoding approach to create numeric representation, with "other" category set as a base level. ^[Because of the fact that in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in classical one-hot-encoding method.]
 
-#### Hyphotesis
-
 To assess the validity of previous studies' findings about behavioural variables in e-commerce retail context, I have tested 2 hypotheses. (1) The amount of money spent on the first purchase positively influences customer probability of buying for the second time. (2) categories bought by the customer can influence the customer probability to stay with the company.
 
-### Location
+### Location features
 
-Iść w stronę że jest wiele sposobów zakodowania lokalizacji, nie tylko lon lat
+#### Ways of including spatial dimension to the churn prediction
 
-#### Way of including spatial dimension to the churn prediction
+@lee2013neighborhood argues that customer location and its neighbourhood is an important factor to consider in CRM analyses even in e-commerce settings.
 
-opisać wszystkie, też spatial dependence/correlation mimo że nie użyłem
+There are multiple ways to include spatial dimension in modeling. In this study, I have analyzed 3 broad approaches, that were used in previous studies:
 
+- directly including location variables (geographical coordinates, zip code, region dummies etc.)
+- analyzing neighbourhood that the customer resides in (demographical statistics about the region)
+- classifying customers by living in an urban or rural area
 
-Review poprzednich prac:
-
-#### churn + location 
-
-opisać które ze sposobów używa
-
-#### lon/lat + customer, jak nie ma to lon/lat + point data (najlepiej classification)
+#### Direct inclusion of spatial variables
 
 To the best of authors knowledge, no studies on churn prediction conducted before included raw geographic coordinates in the model formulation. Rather, usually dummy variables indicating the administrative regions were used. There is no consensus whether such data can improve the predictions. @verbeke2012new argued that "the number of times a customercalled the helpdesk will most probably be a better predictor of churn behavior than the zip code". On the other hand, @buckinx2005customer showed that such dummies were significant in the case of Neural Network model, but not in Random Forest. Also, @long2019new found that these dummies are significant. In these case however, a different spatial extent was analyzed - the regions variables indicated countries rather than postcodes.
 
-@de2019impact used geolocation data in the context of churn prediction for an insurance company. They however took different approach to operationalizing customer location. Instead of including dummies indicating customer's region, they calculated distance between the customer and the closest insurance agent. Such variable was significant.
+@de2019impact used geolocation data in the context of churn prediction for an insurance company. They took different approach to operationalizing customer location. Instead of including dummies indicating customer's region, they calculated distance between the customer and the closest insurance agent. Such variable was significant.
 
-#### population density + customer, density + customer behaviour (może być też bardziej jakościowa)
+In this study, I have simply included longitude/latitude data about each customer directly to the model formulation. This is to check, if propensity to churn can be explained by customer location.
+
+#### Rural vs. urban
 
 Generally, there is a consensus among researchers that there is a difference in customer behaviours between rural and urban areas [@sun2004consumption]. In particular, couple of studies in FMCG sector have found that rural customers tend to be more loyal to the previously chosen company [@jha2003understanding; @sharma2021impact]. The potential reason for such finding provided by the authors is smaller choice of other options in the rural shops compared to urban ones. However, up to date there were no studies that were meant to assess the differences between customer loyalty in urban and rural areas, but aimed at e-commerce sector. The findings from FMCG sector does not have to translate directly, as in online setting the customers are generally not limited by the avaliability of the brand in their area. 
 
-#### co to geodemographics, jak było używane do tej pory
+A hypothesis worth checking is if tendency to churn is dependent on whether the customer is living in a densely populated area.
 
-Geodemographics is the "analysis of people by where they live" [@harris2005geodemographics]. In this paradigm, it is assumed that people living in the same area share similar characteristics, like their social status, income etc. Such type of data was used extensively in previous studies. However, as pointed by @singleton2014past, its usage was mostly in public sector areas, mainly public health and law enforcement. Publically avaliable research in usage of geodemographics in context of marketing, or specifically churn prediction is almost non-existent. This has its reasons in confidential nature of research done in individual companies [@webber2004targeting].
+There are 2 possible ways to conclude if particular customer is living in an urban or rural area. One is simply checking if the customer's coordinates are inside city's administrative boundaries. Such approach does not guarantee that this customer is really living in densely populated area - because of the fact that administrative boundaries do not have to reflect actual boundaries, for example because of fast suburbanisation spilling to previously village areas.
 
-TODO: nie mogę znaleźć paperów które używają danych ze spisów powszechnych do churnu - możliwe że w ogóle nie ma (są ogólnie o customer demographics)
+Other way is inferring the population density in the area from the data. This way, one gets more reality-reflecting densely populated areas classifications. As was shown before in dataset review (??), number of the customers per each microregion highly correlates with population density in this area. Because of that, it can be argued that also in smaller scale of analysis than microregions such correlation will be also evident. This leads to a conclusion that the company's customers' locations can be used as a proxy for population density, so it can be used for classifying densely and sparsely populated areas. 
 
-#### Że są 3(.5) sposoby w jaki zakodowałem lokalizację
-#### Hipotezy na które chcę odpowiedzieć
+In this study I have used Density-Based Spatial Clustering with Noise (DBSCAN) algorithm for the task of rural vs. urban areas classification. This clustering algorithm besides assignment to particular cluster can also detect noise points. Because of that the assignments have a natural interpretation. When the point belongs to any cluster it means that the customer is living in a densely-populated area, while the points decoded by DBSCAN as noise are the customers living in more isolated places.
 
-- lon/lat - propensity to churn can be explained by customer location
-- cluster - tendency to churn is dependent on whether the customer is living in a densely populated area
-- demographic - social structure of the customer's environment can serve as a valuable predictor of churn tendency
+DBSCAN has 2 parameters to be decided before running the algorithm. These are the minimal number of points laying close to each other that are needed to constitute a cluster (*k*), and maximal distance, at which one considers the poits to lay close to each oter (*epsilon*).
+A typical rule-of-thumb for deciding k and epsilon parameters is to first set k, and then plot k-nearest-neighbors distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, epsilon is actually a physical distance between two locations. That is why based on expert knowledge from the company one can set what should be more reasonable criteria for constituting clusters. 
 
-#### jak przetwarzałem - przekleić z tego co zrobiłem
+In my work I have decided somehow arbitrarly that minimal number of customers in the cluster is 100, and the maximum  distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. However, this kind of decision in a real company setting can (and should be) consulted with the company's domain experts in marketing. 
+
+#### Geodemographics
+
+Geodemographics is the "analysis of people by where they live" [@harris2005geodemographics]. In this paradigm, it is assumed that people living in the same area share similar characteristics, like their social status, income etc. Such type of data was used extensively in previous studies. However, as pointed by @singleton2014past, its usage was mostly in public sector areas, mainly public health and law enforcement. Publically avaliable research in usage of geodemographics in context of marketing, or specifically churn prediction is almost non-existent. This has its reasons in confidential nature of research done in individual companies [@webber2004targeting]. The only publically avaliable study was conducted by @zhao2005customer. They found that geodemographic features were significant in the churn prediction model.
+
+A hyphotesis I would like to check is if social structure of the customer's environment can serve as a valuable predictor of churn tendency.
+
+In total, I have included 35 demographic features for the microregion from which the customer is - age structure, percentage of population in urban area, income structure, number of immigrants. These features were obtained from Brazilian statistical office SIDRA. Joining of the data coming from SIDRA and OLIST sources proved to be challenging. The details of such spatial join are presented in Appendix A. 
+
+Geodemographic features in this study are relatively high dimensional (35 variables). At the same time, one would expect that the information can be somehow compressed, because lots of the variables represent very similar concept (for example there are 20 variables encoding only age structure). 
+
+Because of that, I have decided to process this part of the dataset using Principal Components Analysis. This can potentially bring some improvements in the process of Machine Learning modeling, as trainig the model on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results in some cases [@howley2005effect].
+
+One decision regarding PCA transformation is whether to use a standard version, or the one with rotated loadings [@corner2009choosing]. The trade-off between these two methods is that rotated loadings allows for interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in case of this study, because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
 
 ### Perception
 
-- text review, 1-5 review
-
-#### Definition of the category
+<!-- #### Definition of the category -->
 
 Customer perception of the company is considered an important factor driving customer loyalty. @kracklauer2001mutual poses a hypothesis, that when the customer is satisfied by the product, she is more inclined to keep buying the company's products.
 
-#### How can perception be proxied - text reviews, 1-5
+<!-- #### How can perception be proxied - text reviews, 1-5 -->
 
 Unfortunately, customer satisfaction is an immesurable variable. Different proxies can be however included in the model, and usually gathering such data requires conducting customer surveys. @churnthesis specifies possible dimensions of such survey: "overall satisfaction, quality of service, locational convenience and reputation of the company". 
 
@@ -106,13 +116,13 @@ In e-commerce settings, an industry standard is to provide a way for the custome
 
 In the case of the company analyzed in this study, there are 2 sources of customer perception. One is a customer review on a scale from 1 to 5. The other is a textual review of the purchase. 
 
-#### 1-5 - hypothesis
+<!-- #### 1-5 - hypothesis -->
 
 A hyphotesis that I would like to check is as follows: the better the customer is rating the purchase, the more likely she is to purchase in the shop one time more.
 
-#### text reviews - ways of extracting meaningful information
+<!-- #### text reviews - ways of extracting meaningful information -->
 
-@zeroual2018data
+<!-- @zeroual2018data -->
 
 As stated before, text reviews can potentially serve as a rich source of information about customer satisfaction. @lucini2020text specifies 2 natural language processing areas that can be used to  extract insights from such reviews, namely topic modeling and sentiment analysis. First one is meant to answer the question "what the review is about?", while the second - "what are the emotions contained in this review?". Combination of these two dimensions can help answer the question which areas of customer experience are rated positively, and which need improvement.
 
@@ -120,7 +130,7 @@ In the case of this study, I have focused only on extracting the topic from the 
 
 Although text mining for customer reviews is a active field of research, usage of such information in the context of churn prediction is way less covered. To the best of author's knowledge, only 2 studies used the data from textual reviews for churn prediction. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique.
  
-#### Topic modeling in text reviews 
+#### Topic modeling in text reviews
 
 The approach I have used in this study is topic modeling. ... 
 
@@ -132,72 +142,7 @@ Topic of the review can serve as a meaningful predictor ...
 
 https://www.jmir.org/2021/1/e22184/ - topic modeling + RNN
 
-#### Preprocessing to apply topic modeling
-
-Wkleić to co jest poniżej
-
-## Variables selection
-
-### Previous approaches
-
-Previous studies usually used RFM variables as basic ones, adding other types as additional ones.
-
-### Sets of vars
-
-### Boruta
-
-## Modeling methodology
-
-## Introduction (TODO)
-
-## Processing parts of the dataset
-
-On diagram .. a summary of preprocessing applied to all the parts of the dataset is presented. All the tables on the left-hand-side are coming directly from Olist (4 tables) and SIDRA sources (1 table - demographic data). Purple table is the primary one, the features from this table were combined with all the remaining sets of variables. The final tables after preprocessing of each of the parts of the dataset are shown in gray. In the modeling phase, I have used simple join of the basic table, and the remaining ones, separately from each other (e.g. basic information + order items, basic inforamation + DBSCAN cluster etc.).
-
-![](resources/data_processing_diagram.png)
-
-
-
-### Geographic data - long/lat
-
-TODO: opisać po co metodologicznie dodawać wyniki z klastrowania, jakieś prace które to wykorzystują (cytowania ??)
-
-Problem - nie ma paperów które wykorzystują density do 
-
-To be able to decode the coordinates differently, I have used a DBSCAN clustering technique...
-
-DBSCAN is particularly well-suited for geolocation point data. First, it is density-based, and because of that has a natural interpretation. When the point belongs to any cluster it means that the customer is living in a densely-populated area, while the points decoded by DBSCAN as noise are the customers living in more isolated places. Second, one doesn't have to set the number of clusters in advance. Third, it doesn't require the clusters to be spherical, which is not a condition that comes naturally in the geolocation settings. 
-
-DBSCAN has 2 parameters to be decided before running the algorithm. These are the minimal number of points laying close to each other that are needed to constitute a cluster (*k*), and maximal distance, at which one considers the poits to lay close to each oter (*epsilon*).
-A typical rule-of-thumb for deciding k and epsilon parameters is to first set k, and then plot k-nearest-neighbors distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, epsilon is actually a physical distance between two locations. That is why based on expert knowledge from the company one can set what should be more reasonable criteria for constituting clusters. 
-
-In my work I have decided somehow arbitrarly that minimal number of customers in the cluster is 100, and the maximum  distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. However, this kind of decision in a real company setting can (and should be) consulted with the company's domain experts in marketing. 
-
-### Demographic data - sidra
-
-I have processed the demographic part of the dataset using Principal Components Analysis. There are couple of reasons for that. First, this part of the dataset is relatively high dimensional (34 variables). At the same time, one would expect that the information can be somehow compressed, because lots of the variables represent very similar concept (for example there are 20 variables encoding age structure). Second, trainig Machine Learning models on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results [@howley2005effect].
-
-One decision regarding PCA transformation is whether to use a standard version, or the one with rotated loadings [@corner2009choosing]. The trade-off between these two methods is that rotated loadings allows for interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in case of this study, because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
-
-### Spatial join of SIDRA and Olist sources
-
-Joining of the data coming from SIDRA and OLIST sources proved to be challenging. There were multiple reasons for that:
-
-- In e-commerce dataset the spatial dimansion is decoded mainly in a form of ZIP codes, while in demographic dataset - in a form of microregions.
-- The boundaries of zipcodes and microregions do not align.
-- The geoloacation data from OLIST has 3 columns - zip code and lat/lng coordinates. For each zip code are multiple entries for coordinates. This probably means that the company has exact coordinates of each of their customers, but decided to not provide exact customer-location mapping in public dataset for anonimisation reasons. Because of that the boundaries of zip codes cannot be specified exactly and one has to rely on the particular points from this zipcode area.
-
-My approach was as follows: 
-
-1. For each of the points in OLIST geolocation dataset, establish in which microregion it is. Join the dataset for that region to OLIST geolocation dataset.
-2. Group the dataset by zip code and calculate the mean of each of the features in the dataset. In this case this mean would be a weighted mean (with weight in form of "how many customers are in this area?")
-
-![](resources/11_spatial_join_excel.png)
-
-(TODO: Zrobić tabelki w R a nie w excelu, pewnie też lepiej opisać)
-
-
-### Text reviews
+#### Text reviews preprocessing and methods
 
 Olist e-commerce store is operating only in Brazil. That is why most of the reviews are written in Portuguese. I have used Google Translate API to change the language of them to English. This is to facilitate not only understanding the reviews, but also the NLP tools avaliable for english language are more up-to-date and advanced.
 
@@ -223,26 +168,19 @@ I have searched for optimal hyperparameters for all 3 models based on grid searc
 
 Unfortunately, the evaluation of topic extraction is a hard task. The only reasonable method is human inspection. That is why after running every model I have verified the obtained topic for coherency (whether reviews inside one topic are similar) and distinctiveness (whether there are visible differences between modeled topics).
 
-## Modeling approach
 
-### General 
+## Variables selection
 
-I have used a simple train-test split of the dataset, with 70% of the observations belonging to the trainig dataset. On the training dataset, I have searched for optimal hyperparameters using 3-fold cross-validation on training dataset. I have defined search space simply as a grid of all possible combinations of the hyperaparameters. 
+TODO: Introduction dlaczego takie sety zmiennych a nie inne, opisać listy 1 zdaniem
 
-One important problem with this dataset is its very high target classes imbalance. Only 3% of the customers have decided to buy for the second time. To handle this issue I have used upsampling of the minority class on the training dataset to obtain equal class proportions. Also, the choice of an appropriate metric to optimize is very important in imbalanced dataset, as some metrics (like accuracy) are very biased in these cases. That is why I have decided to optimize Area-Under-Curve metric, as it weights the performance on the minority and majority classes equally.
+Previous studies usually used RFM variables as basic ones, adding other types as additional ones.
 
-I have used Logistic Regression and XGBoost models. The reason is that Logistic Regression is relatively simple and explainable, and was used in the task of churn modeling in previous studies [@nie2011credit; @dalvi2016analysis]. On the other hand, XGBoost model was shown to be very well-suited for all kinds of modeling using tabular data, also in the context of churn prediction [@gregory2018predicting]. It can also learn non-linearities and interactions between the variables on its own, contrary to LR where such features should be introduced to the model manually. 
-
-### Feature selection 
-
-#### General
-
-TODO: Introduction, opisać listy 1 zdaniem
+### Sets of conceptual features (?? lepszy tytuł)
 
 Sets of features:
 
 - basic information - value of the purchase, geolocation in raw format lat/lng, value of the package, number of items in the package, review score (6 variables)
-- demographic features for the region from which the customer is - age structure, percentage of population in urban area, income structure (35 variables)
+- demographic features for the region from which the customer is - age structure, percentage of population in urban area, income structure, number of immigrants (35 variables)
 - demographic features transformed using PCA - (10 variables/components)
 - indicator whether the customer is in an agglomeration area obtained from DBSCAN on location data (1 variable)
 - product categories that the customer has bought in the purchase (15 dummy variables)
@@ -260,7 +198,7 @@ Models tested:
 
 I have not run the model containing all variables with demographic features without PCA preprocessing. There are 2 reasons for that - one is that number of variables in this set is very big, what poses performance reasons - model training simply would take a very long time. Assuming that the PCA set of features would give better score can be also supported by the fact that the model with only included PCA demographic variables is performing better than the full set of variables.  
 
-#### Boruta
+### Boruta
 
 To remove the human judgement about which predictors should be used, I have also used a Boruta algorithm for feature selection [@kursa2010feature]. It is widely popular among machine learning practitioners [@kumar2017empirical]. The algorithm belongs to category of wrapper feature selection algorithms, and Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. In this way one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and Random Forest model is trained. 
 
@@ -271,3 +209,9 @@ Above procedure is repeated for preassigned number of iterations. Finally, impor
 After gaining knowledge about the variables that should make it to the model, I have trained XGBoost classifier using these features. The rest of the fitting procedure (cross-validation, up-sampling, hyper-parameters etc.) stayed the same as in the rest of the approaches.  
 
 One should have in mind that Boruta algorithm is very time-consuming. The minimal number of runs recommended by the method authors is 100, and one run consists of fitting a Random Forest model to the whole dataset with doubled number of features (because of added shadow features). In the case of this analysis, model computation took about 12 hours on a medium-class modern laptop. Although other wrapper algorithms also require an iterative fitting the model, they usually start with fitting the model to one variable, in the next iteration to 2, and so on up to k features. On the other hand Boruta algorithm in each iteration fits the model to 2*k features (original and shadow features).
+
+<!-- ## Śmieci -->
+
+<!-- https://www.sciencedirect.com/science/article/pii/S0377221703009184?casa_token=6GS1hqD0KcAAAAAA:4p02d0H6wlfEDACtjCUYfXB_5ABUmf2QqD9RILvjbNYHgLF6S3tnAT2VjqJXLzJFxI1oVK9GTQ -->
+
+<!-- Dobrze wytłumaczone co może powodować które kategorie -->
