@@ -104,32 +104,41 @@ One decision regarding PCA transformation is whether to use a standard version, 
 
 ### Perception
 
-<!-- #### Definition of the category -->
+#### Definition of the category
 
 Customer perception of the company is considered an important factor driving customer loyalty. @kracklauer2001mutual poses a hypothesis, that when the customer is satisfied by the product, she is more inclined to keep buying the company's products.
 
-<!-- #### How can perception be proxied - text reviews, 1-5 -->
+#### How can perception be proxied - text reviews, 1-5
 
 Unfortunately, customer satisfaction is an immesurable variable. Different proxies can be however included in the model, and usually gathering such data requires conducting customer surveys. @churnthesis specifies possible dimensions of such survey: "overall satisfaction, quality of service, locational convenience and reputation of the company". 
 
-In e-commerce settings, an industry standard is to provide a way for the customers to express their opinions about the purchase [@lucini2020text]. Company has to decide, in how structured way it would like to collect them. On one hand, text reviews can provide way richer information about the customer experience, as she is not limited to describing the experience in a predefined dimensions. On the other hand, extracting meaningful information from sometimes millions of text reviews is a very challenging task that no universally acclaimed solutions exist [@felbermayr2016role; @zhao2019predicting]. 
+In e-commerce settings, an industry standard is to provide a way for the customers to express their opinions about the purchase [@lucini2020text]. The company has to decide, in how structured way it would like to collect them. On one hand, text reviews can provide way richer information about the customer experience, as she is not limited to describing the experience in a predefined dimensions. On the other hand, extracting meaningful information from sometimes millions of text reviews is a very challenging task that no universally acclaimed solutions exist [@felbermayr2016role; @zhao2019predicting]. 
 
 In the case of the company analyzed in this study, there are 2 sources of customer perception. One is a customer review on a scale from 1 to 5. The other is a textual review of the purchase. 
 
-<!-- #### 1-5 - hypothesis -->
+#### 1-5 - hypothesis
 
 A hyphotesis that I would like to check is as follows: the better the customer is rating the purchase, the more likely she is to purchase in the shop one time more.
 
-<!-- #### text reviews - ways of extracting meaningful information -->
+#### text reviews analysis - 2 types, previous research on churn
 
 <!-- @zeroual2018data -->
+
 
 As stated before, text reviews can potentially serve as a rich source of information about customer satisfaction. @lucini2020text specifies 2 natural language processing areas that can be used to  extract insights from such reviews, namely topic modeling and sentiment analysis. First one is meant to answer the question "what the review is about?", while the second - "what are the emotions contained in this review?". Combination of these two dimensions can help answer the question which areas of customer experience are rated positively, and which need improvement.
 
 In the case of this study, I have focused only on extracting the topic from the review. The reason is that an information about whether the experience of the customer was positive is already contained in 1-5 review.
 
 Although text mining for customer reviews is a active field of research, usage of such information in the context of churn prediction is way less covered. To the best of author's knowledge, only 2 studies used the data from textual reviews for churn prediction. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique.
- 
+
+@athanassopoulos2000customer 
+
+https://www.jmir.org/2021/1/e22184/ - topic modeling + RNN
+
+#### Overview of existing approaches
+
+#### How did I do it
+
 #### Topic modeling in text reviews
 
 The approach I have used in this study is topic modeling. ... 
@@ -138,9 +147,6 @@ The approach I have used in this study is topic modeling. ...
 
 Topic of the review can serve as a meaningful predictor ...
 
-@athanassopoulos2000customer 
-
-https://www.jmir.org/2021/1/e22184/ - topic modeling + RNN
 
 #### Text reviews preprocessing and methods
 
@@ -167,6 +173,56 @@ TODO: jakiś diagram o attention based??
 I have searched for optimal hyperparameters for all 3 models based on grid search. For LDA, I have tested varying number of topics that the model has to learn (3, 5, 10 and 15). For GSDMM, there are 2 parameters that influence topics coherency in each "cluster". I have run the algorithm for all 16 combinations of both parameters chosen from the values 0.01, 0.1, 0.5 and 0.9. For Attention-Based Aspect Extraction, I have manipulated with the number of topics to learn, from the values 10, 15. Unfortunately, this last model takes a very long time to run (around 3 hours per one set of hyperparameters), I have limited the number of hyperparameters checked compared to LDA model. 
 
 Unfortunately, the evaluation of topic extraction is a hard task. The only reasonable method is human inspection. That is why after running every model I have verified the obtained topic for coherency (whether reviews inside one topic are similar) and distinctiveness (whether there are visible differences between modeled topics).
+
+## Reviews analysis
+
+#### LDA, dlaczego słabe
+
+A go-to model for inferring the topic of a text is Latent Dirchlet Allocation [@blei2003latent]. The method is based on assumption, that each document is a mixture of a small number of topics. At the same time, each topic can be characterized by a distribution of words frequency. 
+
+Unfortunately, LDA approach was created with different purpose in mind. Typically reviews in the aspect of e-commerce are very short. @hong2010empirical showed that LDA is not able to find informative topics in short Twitter posts. Possible reason that LDA does not cope well is that assumption about a document being mixture of topics is false. Short texts probably comprise of very small amount of topics, usually only one [@hong2010empirical]. 
+
+
+#### Movie group process
+
+The drawbacks of LDA in setting of short texts were adressed by [@10.1145/2623330.2623715] . They used Gibbs Sampling algorithm for the Dirichlet Multinomial Mixture model, which is improvement over typical LDA. The authors show that this algorithm provides superior performance compared to basic LDA technique in the context of short texts. 
+
+
+
+#### Aspect attention
+
+More modern approaches to topic modeling were also developed recently. A recent milestone in the whole NLP field was introducing an efficient way to embed the words in a vector space while preserving its meaning, namely word2vec [@mikolov2013efficient]. On this basis, 
+@he2017aspect presented an Attention-based Aspect Extraction model. At first, words embedding using Word2Vec model is created. After that, for each text in the corpus, attention weight for each word is computed using neural network with an attention layer. Then, embedding of the whole sentence is created by computing an average for all words embedding. The words are weighted by their attention weights. Last step of the procedure is creating encoder-decoder model for learning sentence aspect embedding. The reconstruction of the sentence is the linear combination of aspect embeddings, and aspect embeddings are learned by mapping sentence embedding to a lower dimensional space.
+
+Another work worth mentioning is by @tulkens-van-cranenburgh-2020-embarrassingly, who proposed a new type of Attention mechanism, meant especially for aspect recognition task. It's advantage over the one presented by [@he2017aspect] is that instead of a complex neural network, a way simpler approach based on Radial Basis Function kernel is used. Another work presenting new attention mechanism is by @ijcai2019-712 - they use a use a Encoder-Decoder framework with an *Semene Attention* mechanism. 
+
+
+
+The algorithm used by the authors is called Movie Group Process. Short introduction to this algorithm is included below.
+
+Imagine a movie discussion group. There are k tables, and the goal is to assign students to tables according to their similar movie taste. There are 2 preference parameters set for each student:
+
+1. Choose a table with students having similar movie taste. This is meant to introduce homogeneity of the clusters. 
+2. Choose a table with more students in this group. This rule is meant to improve completeness - so to the clusters have a reasonably high number of members.
+
+
+In recent years completely new approaches to Natural Language Processing emerged, thanks to improvement in the area of Neural Network algorithms. Two approaches are especially important as they serve as a baseline for the most recent findings in aspect (topic) recognition area. These two are word vector representations and attention mechanism. A short introduction of these two methods is presented in the section below.
+
+In 2013, word2vec [@mikolov2013efficient] was presented. The goal of this method is to learn a meaningful vector representation of each word in a corpus. Word2vec’s approach is to train a model that predicts all of the neighboring words for every occurrence of every word in an entire body of text (a corpus).
+
+Intuitively, suppose that the model needs to learn embeddings for 3 words: "king", "queen", "orange". The points in the embedding space for the first two words should lay in the proximity, while "orange" should be further. Word2vec approach is to look at the probability, that given word should be placed in particular place in the sentence, given the neighboring words. Suppose we have an incomplete sentence "XXX were usually very rich in the past". Word2vec tries to predict what XXX should be. From the corpus it should understand, that "king" and "queen" are more probable than "orange", that is why puts the embeddings closer.
+
+Creating word embeddings usually serve as a preprocessing phase for next analysis steps, as with the data in numeric form one can use all tools that conventional data analysis has to offer, not being limited anymore by the complicated nature of textual data.
+
+Another concept very helpful in the aspect recognition domain is attention mechanism [@chorowski2015attention]. It is based on attention mechanism in psychology. When a human is trying to understand any content (visual, textual etc.) she is not using all content in the same extent, but only the relevant parts. For example, when a car driver is making a decision whether to cross an intersection, from all the visual signals that she obtains at the moment, the most important (and the only one looked at) is whether the light is red or green. 
+
+This concept can be very useful in the area of aspect prediction, as usually only couple of words from the whole sentence show the topic of it. 
+
+
+An important source of knowledge about e-commerce customers are textual reviews. They can serve as a rich source of feedback for what in the shop or product is liked and what needs change. Also, in the textual reviews one can get to know customer's opinions way better then using other types of feedback, for example 1-5 rating of a purchase. With these advantages, they come at the expense of increased complexity of such analysis. A big challenge is to extract meaningful information from this type of highly unstructured data.
+
+Two most important types of text mining in text reviews is *sentiment prediction* and *topic mining* (in the context of reviews also often called *aspect mining*). 
+Topic modeling is particularly challenging, as usually one does not have a annotated dataset with topics assigned to each text. That is why an unsupervised approach usually has to be used.
 
 
 ## Variables selection

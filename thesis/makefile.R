@@ -1,7 +1,11 @@
 library(rmarkdown)
 
 include_code <- FALSE
-# HTML
+
+
+rmarkdown::render("thesis/00_thesis.Rmd",output_dir = 'thesis/versions/', output_file = 'thesis_init.docx', params = list(echo=include_code))
+
+x# HTML
 # rmarkdown::render("thesis/01_introduction.Rmd", output_format = "html_document", params = list(echo=include_code))
 rmarkdown::render("thesis/02_literature_review.Rmd", output_format = "html_document", params = list(echo=include_code))
 rmarkdown::render("thesis/03_dataset_description.Rmd", output_format = "html_document", params = list(echo=include_code))

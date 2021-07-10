@@ -127,42 +127,6 @@ https://arxiv.org/pdf/1810.00184.pdf
 
 xai z perspektywy końcowego usera
 
-## Reviews analysis
-
-An important source of knowledge about e-commerce customers are textual reviews. They can serve as a rich source of feedback for what in the shop or product is liked and what needs change. Also, in the textual reviews one can get to know customer's opinions way better then using other types of feedback, for example 1-5 rating of a purchase. With these advantages, they come at the expense of increased complexity of such analysis. A big challenge is to extract meaningful information from this type of highly unstructured data.
-
-Two most important types of text mining in text reviews is *sentiment prediction* and *topic mining* (in the context of reviews also often called *aspect mining*). 
-Topic modeling is particularly challenging, as usually one does not have a annotated dataset with topics assigned to each text. That is why an unsupervised approach usually has to be used.
-
-A go-to model for inferring the topic of a text is Latent Dirchlet Allocation [@blei2003latent]. The method is based on assumption, that each document is a mixture of a small number of topics. At the same time, each topic can be characterized by a distribution of words frequency. 
-
-Unfortunately, LDA approach was created with different purpose in mind. Typically reviews in the aspect of e-commerce are very short. @hong2010empirical showed that LDA is not able to find informative topics in Twitter posts. These posts are bound by the rules of the platform to be shorter than 280 characters long. Possible reason that LDA does not cope well is that assumption about a document being mixture of topics is false. Short texts probably comprise of very small amount of topics, usually only one. 
-
-The drawbacks of LDA in setting of short texts were adressed by [@10.1145/2623330.2623715] . They used Gibbs Sampling algorithm for the Dirichlet Multinomial Mixture model, which is improvement over typical LDA. 
-The algorithm used by the authors is called Movie Group Process. Short introduction to this algorithm is included below.
-
-Imagine a movie discussion group. There are k tables, and the goal is to assign students to tables according to their similar movie taste. There are 2 preference parameters set for each student:
-
-1. Choose a table with students having similar movie taste. This is meant to introduce homogeneity of the clusters. 
-2. Choose a table with more students in this group. This rule is meant to improve completeness - so to the clusters have a reasonably high number of members.
-
-The authors show that this algorithm provides superior performance to vanilla LDA not only when the texts are short, but also in general. 
-
-In recent years completely new approaches to Natural Language Processing emerged, thanks to improvement in the area of Neural Network algorithms. Two approaches are especially important as they serve as a baseline for the most recent findings in aspect (topic) recognition area. These two are word vector representations and attention mechanism. A short introduction of these two methods is presented in the section below.
-
-In 2013, word2vec [@mikolov2013efficient] was presented. The goal of this method is to learn a meaningful vector representation of each word in a corpus. Word2vec’s approach is to train a model that predicts all of the neighboring words for every occurrence of every word in an entire body of text (a corpus).
-
-Intuitively, suppose that the model needs to learn embeddings for 3 words: "king", "queen", "orange". The points in the embedding space for the first two words should lay in the proximity, while "orange" should be further. Word2vec approach is to look at the probability, that given word should be placed in particular place in the sentence, given the neighboring words. Suppose we have an incomplete sentence "XXX were usually very rich in the past". Word2vec tries to predict what XXX should be. From the corpus it should understand, that "king" and "queen" are more probable than "orange", that is why puts the embeddings closer.
-
-Creating word embeddings usually serve as a preprocessing phase for next analysis steps, as with the data in numeric form one can use all tools that conventional data analysis has to offer, not being limited anymore by the complicated nature of textual data.
-
-Another concept very helpful in the aspect recognition domain is attention mechanism [@chorowski2015attention]. It is based on attention mechanism in psychology. When a human is trying to understand any content (visual, textual etc.) she is not using all content in the same extent, but only the relevant parts. For example, when a car driver is making a decision whether to cross an intersection, from all the visual signals that she obtains at the moment, the most important (and the only one looked at) is whether the light is red or green. 
-
-This concept can be very useful in the area of aspect prediction, as usually only couple of words from the whole sentence show the topic of it. 
-
-@he2017aspect presented an Attention-based Aspect Extraction model. At first, words embedding using Word2Vec model is created. After that, for each text in the corpus, attention weight for each word is computed using neural network with an attention layer. Then, embedding of the whole sentence is created by computing an average for all words embedding. The words are weighted by their attention weights. Last step of the procedure is creating encoder-decoder model for learning sentence aspect embedding. The reconstruction of the sentence is the linear combination of aspect embeddings, and aspect embeddings are learned by mapping sentence embedding to a lower dimensional space.
-
-Another work worth mentioning is by @tulkens-van-cranenburgh-2020-embarrassingly, who proposed a new type of Attention mechanism, meant especially for aspect recognition task. It's advantage over the one presented by [@he2017aspect] is that instead of a complex neural network, a way simpler approach based on Radial Basis Function kernel is used. Another work presenting new attention mechanism is by @ijcai2019-712 - they use a use a Encoder-Decoder framework with an *Semene Attention* mechanism. 
 
 <!-- ## Churn analysis do śmieci? -->
 
