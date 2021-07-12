@@ -1,7 +1,7 @@
 ---
 title: "Results analysis"
 output: html_document
-# output: word_document
+# output: bookdown::word_document2
 # TODO: zamienić tabelke z tematami na output nie-html, pozniej usunac ten agrument
 always_allow_html: true
 params:

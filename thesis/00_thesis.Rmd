@@ -1,7 +1,7 @@
 ---
 title: "Thesis"
 output: 
-  word_document:
+  bookdown::word_document2:
     reference_docx: resources/styles_template.docx
     number_sections: true
 # output: html_document
@@ -19,9 +19,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r child = '01_introduction.Rmd'}
 ```
 
-&nbsp;
+<!-- &nbsp; -->
 
-\pagebreak
+<!-- \pagebreak -->
 
 # Literature review
 ```{r child = '02_literature_review.Rmd'}

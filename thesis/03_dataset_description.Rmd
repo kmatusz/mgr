@@ -1,13 +1,16 @@
 ---
 title: "Dataset description"
-output: html_document
-# output: word_document
+# output: html_document
+output: 
+  bookdown::word_document2:
+    reference_docx: resources/styles_template.docx
+    number_sections: true
 params:
   echo: False
 ---
 
 ```{r include=FALSE}
-knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 6, fig.height = 4)
+knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4, fig.height = 2)
 ```
 
 
@@ -67,6 +70,13 @@ library(here)
 library(readxl)
 ```
 
+```{r}
+custom_theme <- theme(axis.title = element_text(size=9),
+        legend.title = element_text(size=9)
+  )
+```
+
+
 ```{r cache=T}
 load(here('run_all_models_cache/to_model_train.Rdata'))
 load(here('run_all_models_cache/to_model_test.Rdata'))
@@ -80,7 +90,7 @@ df <- to_model_train[c(vars_basic, 'if_second_order')]
 
 #### Statistics in a table
 
-```{r cache=T}
+```{r cache=T, caption='aaa'}
 summarise_numeric_custom <- function(x){
   
   list(
@@ -102,7 +112,8 @@ df %>%
 stats_table$Variable = df %>%select_if(is.numeric) %>% names
 stats_table <- stats_table %>% select(Variable, everything())
 stats_table %>%
-  flextable::flextable()
+  flextable::flextable() %>%
+  flextable::set_caption("mtcars data")#, autonum = autonum)
 
 ```
 
@@ -118,14 +129,15 @@ TODO: wkleić te info gdzieś do tekstu o sidra
 
 #### Payment value
 
-On the plot ... the values of payment for each order are presented.  I have used the Kernel Density Estimation technique to smoothen the plot. As the distribution is highly right-skewed, I have logarithmed the values. The density plot is grouped by the fact whether the particular customer also created a second order later. It can be seen that the 2 densities almost overlap. This means that payment value would not be a good predictor in an univariate approach - although maybe it can be interacted with other features and start having predictive power.
+On the plot \@ref(fig:payment) the values of payment for each order are presented.  I have used the Kernel Density Estimation technique to smoothen the plot. As the distribution is highly right-skewed, I have logarithmed the values. The density plot is grouped by the fact whether the particular customer also created a second order later. It can be seen that the 2 densities almost overlap. This means that payment value would not be a good predictor in an univariate approach - although maybe it can be interacted with other features and start having predictive power.
 
 
-```{r cache=T}
+```{r payment, cache=T, fig.cap='aaa'}
 df %>% 
   ggplot(aes(x =payment_value, fill= if_second_order)) +
   geom_density(alpha=0.5) +
-  scale_x_log10()
+  scale_x_log10() +
+  custom_theme
 ```
 
 #### Review score
@@ -146,7 +158,8 @@ df %>%
 
 ggplot(df, aes(x = review_score)) +
   geom_bar(aes(y = (..count..)/sum(..count..))) +
-  labs(y = 'Percentage') + coord_flip() -> pl1
+  labs(y = 'Percentage') + coord_flip() +
+  custom_theme -> pl1
 
 
 df %>% 
@@ -156,7 +169,8 @@ df %>%
   mutate(percent_second_order = cnt_second_order/n) %>%
   ggplot(aes(x = review_score, y = percent_second_order)) +
   geom_col() +
-  coord_flip() -> pl2
+  coord_flip() +
+  custom_theme -> pl2
 
 gridExtra::grid.arrange(pl1, pl2, ncol=2)
 
@@ -175,7 +189,8 @@ ggplot(df %>% filter(no_items<7), aes(x = no_items)) +
   geom_bar(aes(y = (..count..)/sum(..count..))) +
   labs(y = 'Percentage') +
   scale_x_reverse()+
-  coord_flip() -> pl1
+  coord_flip() +
+  custom_theme -> pl1
 
 df %>%
   filter(if_second_order=='yes') %>%
@@ -191,7 +206,8 @@ df %>%
   ggplot(aes(x = no_items, y = percent_second_order)) +
   geom_col() +
   scale_x_reverse()+
-  coord_flip() -> pl2
+  coord_flip() +
+  custom_theme -> pl2
 
 gridExtra::grid.arrange(pl1, pl2, ncol=2)
 
@@ -210,13 +226,18 @@ An interesting thing to check is the relationship between the value of the order
 df %>% 
   ggplot(aes(x = sum_freight, fill=if_second_order)) +
   geom_density(alpha=0.5) +
-  scale_x_log10()
+  scale_x_log10() +
+  custom_theme
 ```
 
 
 #### Maps
 
-![](resources/brazil_population_density.png)
+<!-- ![](resources/brazil_population_density.png){width=4, height=2} -->
+
+```{r out.width=300, out.height=300}
+knitr::include_graphics("resources/brazil_population_density.png")
+```
 
 On the picture .., map of Brazil population density is presented (source: https://www.gifex.com/detail2-en/2018-12-15-15407/Population_density_of_Brazil.html). The most densely populated areas are located in souther part of the country. There also the biggest cities like São Paulo and Rio de Janeiro are located. Another populated area is on the eastern coast. North-western part of the country is the least populated. The distribution of the customers (as expected) follows this density, that is why I did not include the map of customers density. 
 
@@ -389,7 +410,8 @@ st_coordinates(df_map) %>%
   ggplot(aes(x=X, y=Y)) +
   geom_density2d_filled(alpha = 0.7) +
   geom_point(size=0.05) +
-  theme_minimal()
+  theme_minimal() +
+  custom_theme
 ```
 
 prawie nic nie widać, raczej do wyrzucenia (??)

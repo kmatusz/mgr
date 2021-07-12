@@ -3,7 +3,7 @@ title: "Methods description"
 bibliography: resources/bib.bibtex
 # output: html_document
 output:
-  word_document:
+  bookdown::word_document2:
     reference_docx: resources/styles_template.docx
     number_sections: true
 params:
