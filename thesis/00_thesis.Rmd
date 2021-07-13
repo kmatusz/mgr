@@ -1,5 +1,6 @@
 ---
-title: "Thesis"
+title: "Machine Learning for churn prediction"
+author: Kamil Matuszelański
 output: 
   bookdown::word_document2:
     reference_docx: resources/styles_template.docx
@@ -19,9 +20,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r child = '01_introduction.Rmd'}
 ```
 
-<!-- &nbsp; -->
+&nbsp;
 
-<!-- \pagebreak -->
+\pagebreak
 
 # Literature review
 ```{r child = '02_literature_review.Rmd'}

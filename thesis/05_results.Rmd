@@ -1,18 +1,83 @@
 ---
 title: "Results analysis"
-# output: html_document
 output: 
-  bookdown::word_document2:
-    reference_docx: resources/styles_template.docx
-    number_sections: true
+  html_document:
+    toc: true
+    toc_depth: 5
+# output: 
+#   bookdown::word_document2:
+#     reference_docx: resources/styles_template.docx
+#     number_sections: true
 
 # TODO: zamienić tabelke z tematami na output nie-html, pozniej usunac ten agrument
 always_allow_html: true
 params:
   echo: False
+bibliography: resources/bib.bibtex
 ---
 
 <!-- TODO: *W części 05 trzeba do każdej analizy dać dwa typy opisów: metodologiczne (co wyszło, co nie wyszło etc) i marketingowe (co to znaczy dla CRM).* -->
+
+## Hypotheses to check:
+
+- Main hypothesis - machine learning modeling can be helpful in ranking customers by their propensity to churn
+- I have tested 2 hypotheses. (1) The amount of money spent on the first purchase positively influences customer probability of buying for the second time. (2) categories bought by the customer can influence the customer probability to stay with the company.
+- A hypothesis worth checking is if tendency to churn is dependent on whether the customer is living in a densely populated area.
+- A hypothesis I would like to check is if social structure of the customer’s environment can serve as a valuable predictor of churn tendency.
+- My hypothesis is that both the numeric review, as well as topic of the textual review can be useful predictors of customer loyalty.
+
+Jakie analizy:
+
+- AUC comparison in table, bootstrapping AUC (if ML is able to discriminate non-churners, if model choice is justified)
+- Lift curve (how good is ML model able to discriminate non-churners (better interpretation))
+- Variable importances (if variables have predictive power)
+- cateris paribus (what is the direction and strength of influence of variables on prediction)
+- break down of prediction (???)
+
+
+### Questions answered
+
+2 parts of results, pre-modeling and after-modeling
+
+Pre-modeling:
+
+- Topic extraction from the reviews
+  - CRM: use in daily dashboards - monitoring of new reviews, monitoring of sentiment based on the topic, customer segmentation, direct marketing (send message based on the review topic)
+  - Methods: attention-based extraction shown superior to classic LDA approach in this domain
+- DBSCAN on lon/lat, PCA on demographic
+  - methodological: potential impact on model performance, shown by previous literature to be useful, reduction of dimensionality succesful (demographic+PCA better than demographic, lot of variance explained)
+  - CRM: nie ma zbyt zastosowania
+  - TODO przenieść dbscan i pca do methods description? bo bardzo krótkie i niewiele wnoszące rezultaty
+
+After-modeling
+
+- OK Model performance- AUC values for all models
+  - methodological:
+  - which ML model suits the task better (XGB)
+  - which variables give the best score
+  - CRM:
+  - Most important: the model has predictive power
+  - which parts of the dataset should be observed after putting model to production (drift analysis)
+- OK Model performance- Bootstrap, K-S test, density plots
+  - Methodological: Another tool for the best model search (complementing AUC on test set)
+  - no importance for CRM
+- Model performance- Lift curve, lift analysis
+  - Methodological: a way to show how the model performs in a way that is understandable by non-technical adopters, a way of quantifying a potential revenue from using the model
+  - OK CRM: a way to enhance targeting strategies (which customers should be more/less targeted based on apriori probability of buying second time), a more meaningful baseline to assessing A/B testing strategies (probability to buy from the model vs. share of customers that bought)
+  - Customer Lifetime Value for new customers - probability to buy second time from the model \* average buy second time
+  - OK Model performs better for almost all the cohorts of probabilities
+  - OK segmentation+targeting - a way to reduce customer aquisition cost
+  - OK Segmenation based on probability to buy second time
+- XAI on model level (VI plots, cateris paribus plots)
+- XAI on customer level (break-down plots)
+
+- CRM:
+  - a way to verify if the intuition and know-how present in the marketing department is compliant with the one that the model used to do predictions
+  - in the case of complaints about model prediction a way to assess why the model did particular decision
+  - increase of trust in the model from non-technical part of the company, better comunication between business and IT
+- Methodology - że może poprawiać przewidywania modelu, że można testować hipotezy (TODO jak już wymyślę hipotezy do przetestowania)
+
+
 
 
 ```{r include=FALSE}
@@ -207,7 +272,7 @@ ggplot(pca_to_plot, aes(x=PC, y=value)) +
 ### Introduction (TODO)
 
 
-### AUC performance tables (XGB, LR)
+#### AUC performance tables (XGB, LR)
 
 ```{r }
 # Create auc-roc tables
@@ -233,7 +298,8 @@ auc_test_table %>%
   left_join(auc_train_table) %>%
   arrange(-AUC_test) %>%
   mutate(AUC_perc_performance_drop = (AUC_test-max(AUC_test))/max(AUC_test)) %>%
-  mutate_if(is.numeric, function(x) sprintf('%.4f', x)) %>%
+  mutate_at(vars(AUC_test, AUC_train), function(x) sprintf('%.4f', x)) %>%
+  mutate_at(vars(AUC_perc_performance_drop), function(x) sprintf('%.2f%%', x*100)) %>%
   flextable::flextable() %>%
   flextable::set_caption("AUC values for XGBoost model") %>%
   flextable_format
@@ -246,8 +312,7 @@ Second best model is the one containing all variables, with demographic variable
 
 The score of the subset of features selected by Boruta algorithm using AUC on the test set is 0.646 - less than the model including all variables. This means that using Boruta algorithm did not bring an additional predictive power to the model. At the same time, this means that the variables indicating reviews topics seem to be relevant for the model performance. 
 
-
-Another thing worth noticing is the fact that AUC on the train set is almost 1 in every model. These values are worrying because this means that the models are highly over-fitted, and that generalization problems can be present. The XGBoost model has some built-in parameters that can be used as a regularization strategies, like the maximum tree depth of single tree trained and number of iterations. In search for a less over-fitted model I have tweaked these parameters in cross-validation. However, although in some cases I was able to make the model overfit less, the performance in 2-fold cross-validation was still the best with a highly over-fitted models.
+Another thing worth noticing is the fact that AUC on the train set is almost 1 in every model. These values are worrying because this means that the models are highly over-fitted, and that generalization problems can be present. The XGBoost model has some built-in parameters that can be used as a regularization strategies, like the maximum tree depth of single tree trained and number of iterations. In search for a less over-fitted model I have tweaked these parameters in cross-validation. However, although in some cases I was able to make the model overfit less, the performance in 2-fold cross-validation was still the best with highly over-fitted models.
 
 I have also created a table .. containing similar information, but this time for Logistic Regression model. Main finding is that even the best LR model (containing product categories and basic features) is worse than the worst XGBoost model (0.586 vs. 0.625, respectively). This means that linear modeling is in general very poorly suited for this prediction task. 
 
@@ -264,7 +329,8 @@ I have also created a table .. containing similar information, but this time for
 load(file=here('run_all_models_cache/auc_table_for_lr.Rdata'))
 
 auc_table_for_lr %>%
-  mutate_if(is.numeric, function(x) sprintf('%.4f', x)) %>%
+  mutate_at(vars(AUC_test, AUC_train), function(x) sprintf('%.4f', x)) %>%
+  mutate_at(vars(AUC_perc_performance_drop), function(x) sprintf('%.2f%%', x*100)) %>%
   flextable::flextable() %>%
   flextable_format
 ```
@@ -280,9 +346,6 @@ From the perspective of CRM, the most important result of the modeling procedure
 
 From the comparison of Logistic Regression and Extreme Gradient Boosting results, the latter one was shown to be superior over the other. Logistic Regression interpretability is an important feature that XGB lacks. 
 Knowing what are the factors that make the customer more likely to stay is important not only for increasing trust about model predictions. Also, such information can serve as an important source of knowledge that can be passed to non-technical marketing workers in the company and potentially help them in their daily work.
-
-
-- TODO: which parts of the dataset should be observed after putting model to production (drift analysis)
 
 
 #### Bootstraping AUC values
@@ -337,41 +400,6 @@ Another reason to choose the model for usage in in production setting is Occam's
 #   ggplot(aes(x = AUC, fill = model, color=model)) +
 #   stat_ecdf()
 ```
-
-#### ROC curve 
-
-TODO: dokładnie ta sama infromacja jest w lift curve. Pytanie czy zostawić roc curve ??
-
-```{r}
-roc_best_model <- calc_roc(models_list$product_categories$model, to_model_test)
-
-tibble(
-thre= roc_best_model$thresholds,
-sens = roc_best_model$sensitivities,
-spec = roc_best_model$specificities
-) -> roc_tibble
-
-roc_tibble %>%
-  mutate(thre= round(thre,1)) %>%
-  filter(thre %in% round(seq(0,1,0.1),1)) %>%
-  group_by(thre) %>%
-  slice_head(n=1) %>%
-  ungroup() -> thresholds
-
-roc_tibble %>%
-  sample_frac(0.1) %>%
-  ggplot(aes(x = spec, y=sens))+ 
-  geom_line() +
-  geom_point(data=thresholds, aes(x = spec, y = sens), color='red')+
-  ggrepel::geom_text_repel(data=thresholds, aes(x = spec, y = sens, label=thre),hjust=0)+
-  scale_x_continuous(trans='reverse') +
-  geom_abline(slope=1, intercept=1, linetype='longdash') +
-  labs(x = 'Specifity', y = 'Sensitivity') +
-  theme_minimal()
-
-```
-
-
 
 ## Analysis of potential revenue - lift etc. 
 
@@ -527,7 +555,13 @@ Despite superior performance in lots of machine learning tasks, the biggest draw
 
 (TODO: opisać trochę więcej)
 
+
 #### Variable importances
+
+Które zostawić?
+
+- Najlepszy model (czy ze zbinowanymi kategoriami produktów?? do zastanowienia)
+- Model ze wszystkimi zmiennymi, zbinowane kategorie do podziału wg tego jak są opisywane w literaturze ALBO wg "setu" zmiennych analizowanych, oba to chyba za dużo
 
 ```{r }
 plot(varImp(models_list$basic_info$model))
@@ -591,6 +625,7 @@ plot(var_imp_all)
 All categories of features at once: (TODO: poc VarImpPlot z ggplota, do zastanowienia czy uspójnić z resztą i w ogóle które zostawić)
 
 ```{r}
+
 var_imp_all <- varImp(models_list$all_with_pca$model, scale=F)
 
 range01 <- function(x){(x-min(x))/(max(x)-min(x))}
@@ -598,13 +633,16 @@ range01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
 var_imp_all$importance %>%
   as_tibble(rownames = 'var') %>%
-  mutate(var2 = ifelse(str_starts(var, 'prod_cat_'), 'prod_categories', var)) %>%
-  mutate(var2 = ifelse(str_starts(var2, 'spatial_'), 'geodemographic', var2)) %>%
-  mutate(var2 = ifelse(str_starts(var2, 'topic_'), 'review_topic', var2)) %>%
-  mutate(var2 = ifelse(str_starts(var2, 'review_'), 'perception', var2)) %>%
-  mutate(var2 = ifelse(str_starts(var2, 'geolocation_'), 'geolocation', var2)) %>%
-  mutate(var2 = ifelse(var2 %in% c('payment_value', 'sum_freight', 'no_items', 'prod_categories'),
-                       'behavioural', var2)) %>%
+  mutate(var2 = case_when(
+    
+    str_starts(var, 'prod_cat_') ~ 'prod_categories',
+    str_starts(var, 'spatial_') ~ 'geodemographic',
+    str_starts(var, 'topic_') ~ 'review_topic',
+    str_starts(var, 'review_') ~ 'perception',
+    str_starts(var, 'geolocation_') ~ 'geolocation',
+    var %in% c('payment_value', 'sum_freight', 'no_items', 'prod_categories') ~ 'behavioural',
+    TRUE ~ var
+  )) %>%
   group_by(var2) %>%
   summarise(Overall = sum(Overall)) %>%
   mutate(Overall = range01(Overall)*100) %>%
@@ -630,6 +668,7 @@ temp_df_imp %>%
 
 
 
+
 # rownames(temp_df_imp) <- temp_df_imp$var2
 # temp_df_imp$var2 <- NULL
 # var_imp_all$importance <- temp_df_imp
@@ -637,13 +676,54 @@ temp_df_imp %>%
 
 ```
 
+Variable importance z modelu ze wszystkimi zmiennymi posegregowane po "setach" zmiennych tak jak zrobiłem model
+
+```{r}
+var_imp_all <- varImp(models_list$all_with_pca$model, scale=F)
+
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
+var_imp_all$importance %>%
+  as_tibble(rownames = 'var') %>%
+  mutate(var2 = case_when(
+    str_starts(var, 'prod_cat_') ~ 'product_categories',
+    str_starts(var, 'spatial_') ~ 'geodemographic',
+    str_starts(var, 'topic_') ~ 'review_topic',
+    str_starts(var, 'agglomeration') ~ 'agglomeration',
+    TRUE ~ 'basic')) %>%
+  group_by(var2) %>%
+  summarise(Overall = sum(Overall)) %>%
+  mutate(Overall = range01(Overall)*100) %>%
+  as.data.frame() -> temp_df_imp
+
+
+temp_df_imp %>%
+  ggplot(aes(x = var2, y = Overall, label = round(Overall))) +
+  geom_point(stat='identity', fill="black", size=7) +
+  geom_segment(aes(y = 0,
+                   x = var2,
+                   yend = Overall,
+                   xend = var2),
+               color = "black") +
+  geom_text(color="white", size=3) +
+  # ylim(-2.5, 2.5) +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    x = 'Variable',
+    y = 'Importance'
+  )
+
+```
+
+
 
 #### Cateris paribus plots
 
 In my analysis I have decided to obtain the ceteris paribus profiles for mean values of each variable [@dalex]. Unfortunately this method is not able to meaningfully analyse dummy variables, that is why I have excluded the variables indicating product categories. Another variables requiring special treatment are the ones indicating geographic location. For them, I have created a 2-way ceteris paribus estimates and plotted them over the Brazil map. This way it is possible to see if it is correlated with presence of bigger cities or small population density (as in the Amazonia area).
 
 ```{r cache=T}
-  explain <- DALEX::explain(model = models_list$product_categories$model,  
+explain <- DALEX::explain(model = models_list$product_categories$model,  
                           data = to_model_test %>% select(-if_second_order),
                           y = to_model_test$if_second_order == "yes", 
                           label = "Product categories",verbose = F)
@@ -660,6 +740,9 @@ preds %>%
   summarise_all(mean) %>%
   mutate_if(is.numeric, round, 3) -> mean_values_top_decile
 
+
+mean_model_response <- predict(models_list$product_categories$model, to_model_test,type = 'prob') %>% .$yes %>% mean
+
 ```
 
 ```{r }
@@ -670,17 +753,69 @@ predict_profile(explainer = explain,
 ```
 
 ```{r }
-plot(profile_all, variables = c("review_score")) + ggtitle("Ceteris-paribus profile", "") 
+# plot(profile_all, variables = c("review_score")) + ggtitle("Ceteris-paribus profile", "") 
 ```
+
+TODO: Wcześniej było cateris paribus dla średniej obserwacji, a teraz jest Partial dependence profile - średnie cateris paribus dla wszystkich obserwacji. Trochę zmienia rezultaty w review score
+
+```{r}
+
+# model_profile(explainer = explain, variables = "review_score") %>%
+# plot() +
+#   scale_x_continuous(n.breaks=10,limits = c(1,5))
+
+model_profile(explainer = explain, variables = "review_score") %>% .$agr_profiles -> profile_review_score
+
+profile_review_score %>%
+  ggplot(aes(x = `_x_`, y = `_yhat_`)) +
+  geom_line(size = 0.7) +
+  scale_x_continuous(n.breaks=10,limits = c(1,5)) + 
+  theme_minimal() +
+  labs(
+    title=NULL, 
+       subtitle = NULL, 
+       caption=NULL,
+       x = 'Review score',
+       y = 'Model response'
+       )
+
+
+```
+
 
 The shape of the ceteris paribus profile for the review score variable for the mean observations has an expected shape. The better the review, the it is probable for the client to purchase for the second time. What is also worth noticing is the fact that the probability increase is non-linear with respect to review score. The biggest probability increase is visible from the score 4 to 5. It is often the case in the customer reviews setting, observed also in the area of recommendation engines [(TODO: znaleźć lepsze cytowanie niż xkcd, z wykładu o recommenders)](https://xkcd.com/1098/). 
 
 ```{r }
-ingredients::ceteris_paribus(explain,
-                             new_observation = mean_values,variables = c('payment_value')) -> profile_payment
+# ingredients::ceteris_paribus(explain,
+#                              new_observation = mean_values,variables = c('payment_value')) -> profile_payment
+# 
+# plot(profile_payment, variables = c("payment_value")) + ggtitle("Ceteris-paribus profile", "") +
+#   scale_x_continuous(n.breaks=10,limits = c(0,500)) + geom_smooth(alpha=0)
 
-plot(profile_payment, variables = c("payment_value")) + ggtitle("Ceteris-paribus profile", "") +
-  scale_x_continuous(n.breaks=10,limits = c(0,500)) + geom_smooth(alpha=0)
+
+# model_profile(explainer = explain, variables = "payment_value") %>%
+# plot() +
+#   scale_x_continuous(n.breaks=10,limits = c(0,500)) + 
+#   geom_smooth(aes(y = `_yhat_`), alpha=0)
+
+model_profile(explainer = explain, variables = "payment_value") %>% .$agr_profiles -> profile_payment_value
+
+profile_payment_value %>%
+  ggplot(aes(x = `_x_`, y = `_yhat_`)) +
+  geom_line(size = 0.7) +
+  scale_x_continuous(n.breaks=10,limits = c(0,500)) + 
+  geom_smooth(aes(y = `_yhat_`), alpha=0) +
+  theme_minimal() +
+  labs(
+    title=NULL, 
+       subtitle = NULL, 
+       caption=NULL,
+       x = 'Payment value',
+       y = 'Model response'
+       )
+
+
+
 
 ```
 
@@ -688,8 +823,27 @@ Model response for ceteris paribus profile is non-monotonous. To facilitate draw
 
 
 ```{r }
-plot(profile_all, variables = c("no_items")) + ggtitle("Ceteris-paribus profile", "") +
-  scale_x_continuous(breaks=1:20)
+# plot(profile_all, variables = c("no_items")) + ggtitle("Ceteris-paribus profile", "") +
+#   scale_x_continuous(breaks=1:20)
+
+# model_profile(explainer = explain, variables = "no_items") %>%
+#   plot()
+
+
+model_profile(explainer = explain, variables = "no_items") %>% .$agr_profiles -> profile_no_items
+
+profile_no_items %>%
+  ggplot(aes(x = `_x_`, y = `_yhat_`)) +
+  geom_line(size = 0.7) +
+  theme_minimal() +
+  labs(
+    title=NULL, 
+       subtitle = NULL, 
+       caption=NULL,
+       x = 'Number of items',
+       y = 'Model response'
+       )
+
 
 ```
 
@@ -854,48 +1008,41 @@ In the case of the prediction for the best customer, almost all variables influe
 The rest of the variables influence the score positively. The biggest gain is from the value of the transport, however number of items equal to 6 has also a large influence. 
 
 
+## Śmieci
 
-<!-- ## Questions answered -->
+#### ROC curve 
 
-<!-- 2 parts of results, pre-modeling and after-modeling -->
+TODO: dokładnie ta sama infromacja jest w lift curve. Pytanie czy zostawić roc curve ??
 
-<!-- Pre-modeling: -->
+```{r}
+roc_best_model <- calc_roc(models_list$product_categories$model, to_model_test)
 
-<!-- - Topic extraction from the reviews -->
-<!--   - CRM: use in daily dashboards - monitoring of new reviews, monitoring of sentiment based on the topic, customer segmentation, direct marketing (send message based on the review topic) -->
-<!--   - Methods: attention-based extraction shown superior to classic LDA approach in this domain -->
-<!-- - DBSCAN on lon/lat, PCA on demographic -->
-<!--   - methodological: potential impact on model performance, shown by previous literature to be useful, reduction of dimensionality succesful (demographic+PCA better than demographic, lot of variance explained) -->
-<!--   - CRM: nie ma zbyt zastosowania -->
-<!--   - TODO przenieść dbscan i pca do methods description? bo bardzo krótkie i niewiele wnoszące rezultaty -->
+tibble(
+thre= roc_best_model$thresholds,
+sens = roc_best_model$sensitivities,
+spec = roc_best_model$specificities
+) -> roc_tibble
 
-<!-- After-modeling -->
+roc_tibble %>%
+  mutate(thre= round(thre,1)) %>%
+  filter(thre %in% round(seq(0,1,0.1),1)) %>%
+  group_by(thre) %>%
+  slice_head(n=1) %>%
+  ungroup() -> thresholds
 
-<!-- - OK Model performance- AUC values for all models -->
-<!--   - methodological: -->
-<!--   - which ML model suits the task better (XGB) -->
-<!--   - which variables give the best score -->
-<!--   - CRM: -->
-<!--   - Most important: the model has predictive power -->
-<!--   - which parts of the dataset should be observed after putting model to production (drift analysis) -->
-<!-- - OK Model performance- Bootstrap, K-S test, density plots -->
-<!--   - Methodological: Another tool for the best model search (complementing AUC on test set) -->
-<!--   - no importance for CRM -->
-<!-- - Model performance- Lift curve, lift analysis -->
-<!--   - Methodological: a way to show how the model performs in a way that is understandable by non-technical adopters, a way of quantifying a potential revenue from using the model -->
-<!--   - OK CRM: a way to enhance targeting strategies (which customers should be more/less targeted based on apriori probability of buying second time), a more meaningful baseline to assessing A/B testing strategies (probability to buy from the model vs. share of customers that bought) -->
-<!--   - Customer Lifetime Value for new customers - probability to buy second time from the model \* average buy second time  -->
-<!--   - OK Model performs better for almost all the cohorts of probabilities -->
-<!--   - OK segmentation+targeting - a way to reduce customer aquisition cost -->
-<!--   - OK Segmenation based on probability to buy second time -->
-<!-- - XAI on model level (VI plots, cateris paribus plots) -->
-<!-- - XAI on customer level (break-down plots) -->
+roc_tibble %>%
+  sample_frac(0.1) %>%
+  ggplot(aes(x = spec, y=sens))+ 
+  geom_line() +
+  geom_point(data=thresholds, aes(x = spec, y = sens), color='red')+
+  ggrepel::geom_text_repel(data=thresholds, aes(x = spec, y = sens, label=thre),hjust=0)+
+  scale_x_continuous(trans='reverse') +
+  geom_abline(slope=1, intercept=1, linetype='longdash') +
+  labs(x = 'Specifity', y = 'Sensitivity') +
+  theme_minimal()
 
-<!-- - CRM: -->
-<!--   - a way to verify if the intuition and know-how present in the marketing department is compliant with the one that the model used to do predictions -->
-<!--   - in the case of complaints about model prediction a way to assess why the model did particular decision -->
-<!--   - increase of trust in the model from non-technical part of the company, better comunication between business and IT -->
-<!-- - Methodology - że może poprawiać przewidywania modelu, że można testować hipotezy (TODO jak już wymyślę hipotezy do przetestowania) -->
+```
+
 
 
 
