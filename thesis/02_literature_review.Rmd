@@ -11,7 +11,7 @@ params:
 knitr::opts_chunk$set(echo=params$echo)
 ```
 
-TODO: *W części 02 z literature review dałabym ilustrację celów, metod i dotychczasowych badań (trochę jak w tym artykule o metodach w CRM), żeby uwypuklić o czym w ogóle mówimy.*
+<!-- TODO: *W części 02 z literature review dałabym ilustrację celów, metod i dotychczasowych badań (trochę jak w tym artykule o metodach w CRM), żeby uwypuklić o czym w ogóle mówimy.* -->
 
 ## Customer churn
 
@@ -99,39 +99,35 @@ Another way to include demographics data in the churn prediction model was shown
 
 Last category of variables used for churn prediction specified by @BUCKINX2005252 is customer perception about the company. According to @kracklauer2001mutual, customer satisfaction is the most important factor driving customer retention. However, although such features could have potentially high predictive power, they are usually hard to observe and quantify meaningfully. Most widely used approach is asking the customers for direct feedback using questionnaires or providing a way to post a review on the purchase. This kind of feedback can be obtained in different forms, one of them being a textual reviews. Couple of previous studies were aimed at extracting meaningful features from such reviews using different text mining methods. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique. In both studies the results using such methods were superior compared to the models without including such information.
 
-## XAI
+## Explainable Artificial Intelligence
 
+TODO: Na tą chwilę tylko konspekt. Jest świetna książka z mnóstwem przykładów i cytowań do wykorzystania na temat XAI: https://ema.drwhy.ai/introduction.html 
+
+- Explainability-performance trade off
+- What is XAI
+- Benefits of explainability
+- Review of methods
+  - dataset level
+  - instance level
+- XAI in marketing
+  - 2 papery które znalazłem:
+  - https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q  - wyzwania dla marketingu przy stosowaniu AI - nie tylko o XAI
+  - https://link.springer.com/article/10.1007/s11747-019-00710-5  -  Głównie opisane zalety korzystania z XAI w modelach do marketingu
+  
 ### Explainability-performance trade off
 
-While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like boosting or neural networks, usually present superior performance to more basic approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees.
-
-### Benefits of explainability
-### Review of methods
+While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like boosting or neural networks, usually present superior performance to more basic approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees...
 
 
+<!-- https://www.kdnuggets.com/2018/10/enterprise-explainable-ai.html -->
 
+<!-- TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf -->
 
-co możesz napisać?
+<!-- https://blog.goodaudience.com/holy-grail-of-ai-for-enterprise-explainable-ai-xai-6e630902f2a0 -->
 
-- Dlaczego 
+<!-- https://arxiv.org/pdf/1810.00184.pdf -->
 
-- AI jest black box
-- co to XAI
-- 
-https://www.kdnuggets.com/2018/10/enterprise-explainable-ai.html
-
-TODO: Coś dać o tym że XAI jest ważne dla rozpowszechniania używania modelu i predykcji - tutaj link do jakiegoś badania nt. kultury w organizacji po wprowadzeniu ML: https://www.bastagroup.nl/wp-content/uploads/2019/01/the-state-of-machine-learning-adoption-in-the-enterprise.pdf
-
-
-
-https://blog.goodaudience.com/holy-grail-of-ai-for-enterprise-explainable-ai-xai-6e630902f2a0
-
-https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q
-challenge dla marketingu przy stosowaniu AI
-
-https://arxiv.org/pdf/1810.00184.pdf
-
-xai z perspektywy końcowego usera
+<!-- xai z perspektywy końcowego usera -->
 
 
 <!-- ## Churn analysis do śmieci? -->

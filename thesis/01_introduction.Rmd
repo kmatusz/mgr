@@ -1,0 +1,40 @@
+---
+title: "Dataset description"
+# output: html_document
+output: 
+  bookdown::word_document2:
+    reference_docx: resources/styles_template.docx
+    number_sections: true
+params:
+  echo: False
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4, fig.height = 2)
+```
+
+
+Konspekt, co opisać:
+
+- Intro do problemu - co to churn, zalety predykcji
+- Main hypothesis - machine learning modeling can be helpful in ranking customers by their propensity to churn
+
+Contributions:
+
+- Use a wide range of predictors from different categories
+- Use topic modeling to extract info from text review - first usage in churn prediction ever
+- Use geodemographic variables - in previous studies the results were ambiguous whether they improve prediction
+- First that extensive usage of XAI tools to explain model's predictions in churn - previous works only variable importance or more basic algorithms like LR
+
+
+
+
+
+
+
+
+
+
+
+
+

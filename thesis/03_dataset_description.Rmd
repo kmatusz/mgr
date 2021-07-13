@@ -14,7 +14,7 @@ knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4,
 ```
 
 
-TODO: *W części 03 przydadzą się ilustracje jak wygląda zbiór danych, statystyki zmiennych etc + solidne mapowanie. Rzeczywiście ostatnia mapa chyba ciekawiej może wyglądać jako grid (dałabym obie). Zupełnie brakuje prostych statystyk sprzedażowych zwizualizowanych na mapie (jako grid): ilu klientów, ile transakcji, wartość transakcji - w ujęciu nominalnym, ale też w odniesieniu do populacji (żeby lepiej rozumieć rozkład transakcji i klientów) + jego density (w gglot można zrobić kernel density punktów i zmapować).*
+<!-- TODO: *W części 03 przydadzą się ilustracje jak wygląda zbiór danych, statystyki zmiennych etc + solidne mapowanie. Rzeczywiście ostatnia mapa chyba ciekawiej może wyglądać jako grid (dałabym obie). Zupełnie brakuje prostych statystyk sprzedażowych zwizualizowanych na mapie (jako grid): ilu klientów, ile transakcji, wartość transakcji - w ujęciu nominalnym, ale też w odniesieniu do populacji (żeby lepiej rozumieć rozkład transakcji i klientów) + jego density (w gglot można zrobić kernel density punktów i zmapować).* -->
 
 ## Olist
 
@@ -111,9 +111,16 @@ df %>%
 
 stats_table$Variable = df %>%select_if(is.numeric) %>% names
 stats_table <- stats_table %>% select(Variable, everything())
+# stats_table %>%
+#   flextable::flextable() %>%
+#   flextable::set_caption("mtcars data")#, autonum = autonum)
+
 stats_table %>%
   flextable::flextable() %>%
-  flextable::set_caption("mtcars data")#, autonum = autonum)
+  flextable::set_caption("Basic statistics") %>%
+  flextable::font(fontname = 'Times New Roman', part = 'all') %>%
+  flextable::fontsize(size = 12) %>%
+  flextable::autofit()
 
 ```
 
@@ -445,18 +452,24 @@ to_model_train %>%
 
 to_model_train %>%
   select_at(vars(starts_with('prod_cat'), if_second_order)) %>%
+  # nie wiem dlaczego ale niektóre prod categories nie byłY 0,1
+  mutate_if(is.numeric, function(x) ifelse(!(x %in% c(0,1)), 1, x)) %>% 
   summarise_if(is.numeric, sum) %>%
   pivot_longer(1:15) %>%
   mutate(category = str_replace(name, 'prod_cat_', '')) %>%
   rename(no_items = value) %>%
   mutate(percentage = no_items/sum(no_items)) %>%
   select(category, no_items, percentage) -> product_categories_temp1
-  
+
 product_categories_temp1 %>%
   left_join(product_categories_temp2) %>%
   arrange(-percent_second_order) %>%
   mutate_if(is.numeric, round,3) %>%
-  flextable::flextable()
+  flextable::flextable() %>%
+  flextable::set_caption("Product categories") %>%
+  flextable::font(fontname = 'Times New Roman', part = 'all') %>%
+  flextable::fontsize(size = 12) %>%
+  flextable::autofit()
 
 ```
 

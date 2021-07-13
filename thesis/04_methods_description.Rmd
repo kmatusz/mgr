@@ -14,27 +14,28 @@ params:
 knitr::opts_chunk$set(echo=params$echo)
 ```
 
-TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.*
+<!-- TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.* -->
 
 
 ## Introduction
 
-3 Parts:
+Methodology used in this study can be divided into 3 broad categories:
 
-- Modeling approach
-- Used variables and applied preprocessing
-- Variables selection methoid
+- Machine Learning methods - choice of model, cross-validation, upsampling etc.;
+- Preprocessing applied to the variables present in the dataset;
+- Methods used for variable selection.
+
+In following sections I have described these categories in greater detail.
 
 ## Modeling methods
 
-I have used a simple train-test split of the dataset, with 70% of the observations belonging to the training dataset. On the training dataset, I have searched for optimal hyperparameters using 3-fold cross-validation on training dataset. I have defined search space simply as a grid of all possible combinations of the hyperparameters. 
+In this study I have compared Logistic Regression and XGBoost models. The reasons for choice of these particular models are as follows. Logistic Regression is relatively simple and explainable, and was used in the task of churn modeling in previous studies [@nie2011credit; @dalvi2016analysis]. On the other hand, XGBoost model was shown to give superior performance in all kinds of modeling using tabular data, also in the context of churn prediction [@gregory2018predicting]. It can also learn non-linearities and interactions between the variables on its own, contrary to LR where such features should be introduced to the model manually. 
+
+Regarding cross-validation, I have used a simple train-test split of the dataset, with 70% of the observations belonging to the training dataset. On the training dataset, I have searched for optimal hyperparameters using 3-fold cross-validation on training dataset. I have defined search space simply as a grid of all possible combinations of the hyperparameters. 
 
 One important problem with this dataset is its very high target classes imbalance. Only 3% of the customers have decided to buy for the second time. To handle this issue I have used upsampling of the minority class on the training dataset to obtain equal class proportions. Also, the choice of an appropriate metric to optimize is very important in imbalanced dataset, as some metrics (like accuracy) are very biased in these cases. That is why I have decided to optimize Area-Under-Curve metric, as it weights the performance on the minority and majority classes equally.
 
-I have used Logistic Regression and XGBoost models. The reason is that Logistic Regression is relatively simple and explainable, and was used in the task of churn modeling in previous studies [@nie2011credit; @dalvi2016analysis]. On the other hand, XGBoost model was shown to give superior performance in all kinds of modeling using tabular data, also in the context of churn prediction [@gregory2018predicting]. It can also learn non-linearities and interactions between the variables on its own, contrary to LR where such features should be introduced to the model manually. 
-
-
-## Variables used
+## Variables preprocessing
 
 In this study I have separated 3 groups of variables analyzed:
 
@@ -79,7 +80,7 @@ To the best of authors knowledge, no studies on churn prediction conducted befor
 
 In this study, I have simply included longitude/latitude data about each customer directly to the model formulation. This is to check, if propensity to churn can be explained by customer location.
 
-#### Rural vs. urban
+#### Rural vs. urban customer location
 
 Generally, there is a consensus among researchers that there is a difference in customer behaviours between rural and urban areas [@sun2004consumption]. In particular, couple of studies in FMCG sector have found that rural customers tend to be more loyal to the previously chosen company [@jha2003understanding; @sharma2021impact]. The potential reason for such finding provided by the authors is smaller choice of other options in the rural shops compared to urban ones. However, up to date there were no studies that were meant to assess the differences between customer loyalty in urban and rural areas, but aimed at e-commerce sector. The findings from FMCG sector does not have to translate directly, as in online setting the customers are generally not limited by the availability of the brand in their area. 
 
@@ -96,7 +97,7 @@ A typical rule-of-thumb for deciding k and epsilon parameters is to first set k,
 
 In my work I have decided somehow arbitrarily that minimal number of customers in the cluster is 100, and the maximum  distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. However, this kind of decision in a real company setting can (and should be) consulted with the company's domain experts in marketing. 
 
-#### Geodemographics
+#### Geodemographics approach
 
 Geodemographics is the "analysis of people by where they live" [@harris2005geodemographics]. In this paradigm, it is assumed that people living in the same area share similar characteristics, like their social status, income etc. Such type of data was used extensively in previous studies. However, as pointed by @singleton2014past, its usage was mostly in public sector areas, mainly public health and law enforcement. Publicly available research in usage of geodemographics in context of marketing, or specifically churn prediction is almost non-existent. This has its reasons in confidential nature of research done in individual companies [@webber2004targeting]. The only publicly available study was conducted by @zhao2005customer. They found that geodemographic features were significant in the churn prediction model.
 
@@ -110,7 +111,7 @@ Because of that, I have decided to process this part of the dataset using Princi
 
 One decision regarding PCA transformation is whether to use a standard version, or the one with rotated loadings [@corner2009choosing]. The trade-off between these two methods is that rotated loadings allows for interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in case of this study, because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
 
-### Perception
+### Perception features
 
 <!-- #### Definition of the category -->
 
@@ -119,7 +120,7 @@ Unfortunately, customer satisfaction is an immeasurable variable. Different prox
 
 In e-commerce settings, an industry standard is to provide a way for the customers to express their opinions about the purchase [@lucini2020text]. The company has to decide, in how structured way it would like to collect them. Text reviews can provide way richer information about the customer experience, as they are not limited to describing the experience in predefined dimensions. On the other hand, extracting meaningful information from sometimes millions of text reviews is a very challenging task to which no universally acclaimed solutions exist [@felbermayr2016role; @zhao2019predicting]. 
 
-In the case of the dataset analyzed in this study, there are 2 proxies of customer perception avaliable. One is a customer review on a scale from 1 to 5. The other is a textual review of the purchase. Using numeric review in the modeling is straightforward and doesn't require further explanation. In the next sections I have presented ...
+In the case of the dataset analyzed in this study, there are 2 proxies of customer perception avaliable. One is a customer review on a scale from 1 to 5. The other is a textual review of the purchase. Using numeric review in the modeling is straightforward and doesn't require further explanation. In the next sections I have described the preprocessing of textual reviews in greater detail.
 
 #### Ways of analyzing textual reviews
 
@@ -138,7 +139,7 @@ In the case of this study, I have focused only on extracting the topic from the 
 
 <!-- ##### LDA, dlaczego słabe -->
 
-Undoubtly the most popular model for inferring the topic of a text is Latent Dirchlet Allocation [@blei2003latent]. The method is based on assumption that each document is a mixture of a small number of topics. At the same time, each topic can be characterized by a distribution of words frequency.
+Undoubtedly the most popular model for inferring the topic of a text is Latent Dirchlet Allocation [@blei2003latent]. The method is based on assumption that each document is a mixture of a small number of topics. At the same time, each topic can be characterized by a distribution of words frequency.
 
 @hong2010empirical argues that short texts (as in the case of customer reviews) comprise of very small amount of topics, usually only one. Because of that, LDA should not be used in such settings as its assumptions are violated. This claim is supported by empirical study of short texts from Tweeter, in which LDA has failed to find informative topics.
 
@@ -224,36 +225,30 @@ Unfortunately, the evaluation of topic extraction is a hard task, as no model-ag
 <!-- Topic modeling is particularly challenging, as usually one does not have a annotated dataset with topics assigned to each text. That is why an unsupervised approach usually has to be used. -->
 
 
-## Variables selection
-
-TODO: Introduction dlaczego takie sety zmiennych a nie inne, opisać listy 1 zdaniem
-
-Previous studies usually used RFM variables as basic ones, adding other types as additional ones.
+## Variables selection methods
 
 ### Sets of conceptual features (?? lepszy tytuł)
 
-Sets of features:
+To summarise, from variable preprocessing I have obtained these 6 sets of features:
 
 - basic information - value of the purchase, geolocation in raw format lat/lng, value of the package, number of items in the package, review score (6 variables)
-- demographic features for the region from which the customer is - age structure, percentage of population in urban area, income structure, number of immigrants (35 variables)
-- demographic features transformed using PCA - (10 variables/components)
+- geodemographic features for the region from which the customer is - age structure, percentage of population in urban area, income structure, number of immigrants (35 variables)
+- geodemographic features transformed using PCA - (10 variables/components)
 - indicator whether the customer is in an agglomeration area obtained from DBSCAN on location data (1 variable)
 - product categories that the customer has bought in the purchase (15 dummy variables)
-- main topic that the customer has mentioned in the review (15 dummy variables)
+- main topic that the customer has mentioned in the review (15 dummy variables).
 
-Models tested:
+An approach used by @churnthesis for assesment of the new feature previously untested in the churn prediction was to compare 2 models, one containing only basic RFM features, and the other RFM features and also this new feature. I have used a similar approach. Namely, first I have included basic features that didn't require any preprocessing. This model served as a baseline. Then, for each of the sets of features that I have computed, I have estimated a model containing these features + basic features. Lastly, I have created one model containing all the variables. This resulted in the following 7 feature sets tested:
 
 - basic features
-- demographic + basic
-- demographic with PCA + basic
-- agglomeration + basic
-- product categories + basic
-- review topic + basic
-- all variables - demographic features transformed with PCA
+- geodemographic + basic features
+- geodemographic with PCA + basic features
+- agglomeration + basic features
+- product categories + basic features
+- review topic + basic features
+- all variables - (with geodemographic features transformed with PCA) ^[I have not run the model containing all variables with demographic features without PCA preprocessing. There are 2 reasons for that - one is that number of variables in this set is very big, what poses performance reasons - model training simply would take a very long time. Assuming that the PCA set of features would give better score can be also supported by the fact that the model with only included PCA demographic variables is performing better than the full set of variables.]  
 
-I have not run the model containing all variables with demographic features without PCA preprocessing. There are 2 reasons for that - one is that number of variables in this set is very big, what poses performance reasons - model training simply would take a very long time. Assuming that the PCA set of features would give better score can be also supported by the fact that the model with only included PCA demographic variables is performing better than the full set of variables.  
-
-### Boruta
+### Automatic feature selection - Boruta algorithm
 
 To remove the human judgement about which predictors should be used, I have also used a Boruta algorithm for feature selection [@kursa2010feature]. It is widely popular among machine learning practitioners [@kumar2017empirical]. The algorithm belongs to category of wrapper feature selection algorithms, and Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. In this way one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and Random Forest model is trained. 
 

@@ -1,3 +1,20 @@
+temp_df_imp %>%
+  ggplot(aes(x = var2, y = Overall, label = round(Overall))) +
+  geom_point(stat='identity', fill="black", size=7) +
+  geom_segment(aes(y = 0,
+                   x = var2,
+                   yend = Overall,
+                   xend = var2),
+               color = "black") +
+  geom_text(color="white", size=3) +
+  # ylim(-2.5, 2.5) +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    x = 'Variable',
+    y = 'Importance'
+  )
+  
 
 ### DUMP ----
 
