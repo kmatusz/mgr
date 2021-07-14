@@ -1,47 +1,23 @@
-var_imp_all <- varImp(models_list$all_with_pca$model, scale=F)
+tm_shape(brazil_map) +
+  tm_polygons(col = "white") +
+  tm_shape(df[which(lengths(st_within(df, brazil_map)) != 0), ]%>%rename(`Prediction quantile`=a)) +
+  tm_symbols(size = 0.4,
+             col = "yhat",
+             palette = RColorBrewer::brewer.pal(9, 'Greens'),
+             # style = "fixed",
+             # breaks = c(45, 60, 75, 90),
+             border.lwd = NA,
+             n = 10,
+             alpha = 0.8) +
+  tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
+  tm_symbols(size = 0.4,
+             col = "red",
+             # style = "fixed",
+             # breaks = c(45, 60, 75, 90),
+             border.lwd = NA,
+             alpha = 0.8) +
+  tm_text(text='city', just='top')
 
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-
-rownames(var_imp_all$importance)
-
-var_imp_all$importance %>%
-  as_tibble(rownames = 'var') %>%
-  mutate(var2 = case_when(
-    str_starts(var, 'prod_cat_') ~ 'product_categories',
-    str_starts(var, 'spatial_') ~ 'geodemographic',
-    str_starts(var, 'topic_') ~ 'review_topic',
-    str_starts(var, 'agglomeration') ~ 'agglomeration',
-    TRUE ~ 'basic')) %>%
-  group_by(var2) %>%
-  summarise(Overall = sum(Overall)) %>%
-  mutate(Overall = range01(Overall)*100) %>%
-  as.data.frame() -> temp_df_imp
-
-
-temp_df_imp %>%
-  ggplot(aes(x = var2, y = Overall, label = round(Overall))) +
-  geom_point(stat='identity', fill="black", size=7) +
-  geom_segment(aes(y = 0,
-                   x = var2,
-                   yend = Overall,
-                   xend = var2),
-               color = "black") +
-  geom_text(color="white", size=3) +
-  # ylim(-2.5, 2.5) +
-  coord_flip() +
-  theme_minimal() +
-  labs(
-    x = 'Variable',
-    y = 'Importance'
-  )
-
-
-
-###################
-
-plot(varImp(models_list$basic_info$model))
-
-variable_importance(explain)
 
 ### DUMP ----
 

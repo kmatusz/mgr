@@ -1,14 +1,13 @@
 ---
 title: "Results analysis"
-output: 
-  html_document:
-    toc: true
-    toc_depth: 5
 # output: 
-#   bookdown::word_document2:
-#     reference_docx: resources/styles_template.docx
-#     number_sections: true
-
+  # bookdown::html_document2:
+  #   toc: true
+  #   toc_depth: 5
+output:
+  bookdown::word_document2:
+    reference_docx: resources/styles_template.docx
+    number_sections: true
 # TODO: zamienić tabelke z tematami na output nie-html, pozniej usunac ten agrument
 always_allow_html: true
 params:
@@ -549,191 +548,140 @@ The shape of the plot resembles the one of the function 1/x. Values of lift are 
 
 ## Model explanations
 
-#### Intro
+<!-- Despite superior performance in lots of machine learning tasks, the biggest drawback of Extreme Gradient Boosting models is its black-box nature, meaning lack of interpretability of predictions and parameters. This problem can be mitigated by usage of Explainable AI tools. One of such tools is ceteris-paribus analysis. The idea is to set all variables except the variable(s) of interest as constants, and create a new set of observations by manipulating only one or to variables. Such analysis can give a similar information to the values of coefficients in Logistic Regression models.  -->
 
-- Logistic Regression is an interpretable model by design - one can simply look at the model coefficients and infer about strength and direction of particular feature on the final prediction. However, as shown in the previous sections it is inferior to XGBoost with regards to predictions quality.
-- XGB is however a *black box model*, meaning that its structore is too complex to be directly.
-- To be able to infer hyptheses about importances and direction of influence for model prediction, XAI tools have to be used.
-- In this study I have used 2 (3) techniques of XAI, namely Variable Importance (VI) and Partial Dependence Profile (PDP).
-- The first one can answer the question which variables (or categories of variables) influences the predictions the most. 
-- While the second - what is the direction of this influence?
+#### Introduction
 
-#### Description of the methods
+In this study I have analysed Logistic Regression and XGBoost algorithms for the task of churn prediction. Logistic Regression is an interpretable model by design - one can simply look at the model coefficients and infer about strength and direction of particular feature influencd on the final prediction. However, as shown in the previous sections it is inferior to XGBoost with regards to predictions quality. XGB is a *black box model*, meaning that its structure is too complex to be directly inspected. To be able to test hyptheses about importances and direction of influence for model prediction, XAI tools have to be used.
 
-- In this study I have used Permutation Feature importance method. At first, performance score (in this case AUC) is computed on the whole dataset. Then, each of the variables is randomly permuted one-by-one, and predictions are made using such "blinded" variable. Later, the drop in model performance for each of the blinded features serves as its importance. 
-- Partial Dependence Profile is based on Cateris Paribus technique. This technique is meant to perform "what-if" analysis for one observation x and one feature f. For this observation, the variable of interest is changed and the model predicts the response for each of these changes. Partial Dependence Profile is simply averaged value of such Cateris Paribus analysis for each of the observations from the dataset. 
+In this study I have used 2 techniques of XAI, namely Variable Importance (VI) and Partial Dependence Profile (PDP). The first one can answer the question "which variables (or categories of variables) influences the predictions the most?", while the second - "What is the direction and strength of this influence?" 
 
+#### Influence of features groups on customer churn (Variable importances)
 
-### Introduction 
+In this study I have used Permutation Feature importance method. At first, performance score (in this case AUC) is computed on the whole dataset. Then, each of the variables is randomly permuted one-by-one, and predictions are made using such "blinded" variable. Later, the drop in model performance for each of the blinded features serves as its importance. TODO: cytowanie
 
+I have examined variable importances for two of the XGB models from this study - one for the best set of variables (with included product categories), and another - with all variables included. The first one served ... (TODO: po co go opisywać w ogóle? Poza inspekcją modelu).
 
-Despite superior performance in lots of machine learning tasks, the biggest drawback of Extreme Gradient Boosting models is its black-box nature, meaning lack of interpretability of predictions and parameters. This problem can be mitigated by usage of Explainable AI tools. One of such tools is ceteris-paribus analysis. The idea is to set all variables except the variable(s) of interest as constants, and create a new set of observations by manipulating only one or to variables. Such analysis can give a similar information to the values of coefficients in Logistic Regression models. 
+The latter one can help to check, which of the sets of variables from all of the tested ones were significant for model predictions.
 
-#### Variable importances
+##### Best model with unbinned and binned product categories
 
-Które zostawić?
-
-- Najlepszy model (czy ze zbinowanymi kategoriami produktów?? do zastanowienia)
-- Model ze wszystkimi zmiennymi, zbinowane kategorie do podziału wg tego jak są opisywane w literaturze ALBO wg "setu" zmiennych analizowanych, oba to chyba za dużo
-
-```{r }
-plot(varImp(models_list$basic_info$model))
-```
-
-On the plot .. the variables importances from XGB model for basic variables are presented. The best one is the value of the payment. Also, high importance scores are obtained by vanilla geolocation variables and the transportation cost for the value. Surprisingly, the review score of the purchase is not very important variable. Number of items bought has the smallest variable importance. One should remember that although the shown variable importance is equal to 0, this doesn't mean that the variable was not used in growing trees in XGB model. Rather, the variable importances are simply scaled to the range 0-100 on the plot.
-
-```{r }
-plot(varImp(models_list$product_categories$model))
-```
-
-
-```{r}
-var_imp_cat <- varImp(models_list$product_categories$model, scale=F)
-
+```{r varimp-categories, fig.width = 7, fig.height=5,  fig.cap="Variable importance plots for the model with included product categories. Left subplot shows single variables, while right one - binned product categories and geolocation features."}
+# FUNS
 range01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
+plot_varimp <- function(df){
+  df %>% 
+    ggplot(aes(x = reorder(var2,Overall), y = Overall, label = round(Overall,2))) +
+    geom_point(stat='identity', fill="black", size=7) +
+    geom_segment(aes(y = 0,
+                     x = var2,
+                     yend = Overall,
+                     xend = var2),
+                 color = "black") +
+    geom_text(color="white", size=3) +
+    # ylim(-2.5, 2.5) +
+    coord_flip() +
+    theme_minimal() +
+    labs(
+      x = 'Variable',
+      y = 'Importance'
+    )
+}
+
+var_imp_cat <- varImp(models_list$product_categories$model, scale=F)
+
+
+# Not binned at all
+var_imp_cat$importance %>%
+  as_tibble(rownames = 'var2') %>%
+  # mutate(Overall = range01(Overall)*100) %>%
+  plot_varimp() -> pl_varimp_raw
+
+# binned by category and geolocation
 
 var_imp_cat$importance %>%
   as_tibble(rownames = 'var') %>%
   mutate(var2 = ifelse(str_starts(var, 'prod_cat_'), 'prod_categories', var)) %>%
+  mutate(var2 = ifelse(str_starts(var, 'geolocation'), 'geolocation', var2)) %>%
   group_by(var2) %>%
   summarise(Overall = sum(Overall)) %>%
-  mutate(Overall = range01(Overall)*100) %>%
-  as.data.frame() -> temp_df_imp
+  # mutate(Overall = range01(Overall)*100) %>%
+  as.data.frame() -> temp_df_imp_cat
 
+pl_varimp_binned <- plot_varimp(temp_df_imp_cat)
 
-rownames(temp_df_imp) <- temp_df_imp$var2
-temp_df_imp$var2 <- NULL
-var_imp_cat$importance <- temp_df_imp
-plot(var_imp_cat)
-
+gridExtra::grid.arrange(pl_varimp_raw, pl_varimp_binned, ncol=2)
 ```
 
-Second variable importance plot contains importances for the best model - with included product categories. Top 6 best predictors are the basic information, while the variables indicating product categories are the least important ones. Just from this information one could wonder, why despite product categories are relatively unimportant variables, they lead to 2.5% gain in AUC compared to the model without them. The reason is that all product categories variables in reality encode one variable. That is why variable importances of these variables should be treated jointly, which can be done simply by summing up the importances and scaling all importances to 0-100 range. This is presented on the plot .. . Now, product categories has become 5th most important variable, with importance bigger than review score. 
+On the left of figure \@ref(fig:varimp-categories) the unbinned variables importances from XGB model for the best variables (with included product categories) are presented. The values on the plot are scaled - meaning that the variable with the score 100 had the biggest influence, while with 0 - the smallest.
+The most important one is the value of the payment. Also, high importance scores are obtained by vanilla geolocation variables and the transportation cost for the value. 
+The review score of the purchase was not a very important variable.
 
-```{r}
-var_imp_all <- varImp(models_list$all_with_pca$model, scale=F)
+All of the dummies indicating product categories were in the later part of the ranking. One could wonder, why despite these features are relatively unimportant variables, they lead to 2.5% gain in AUC compared to the model without them.
+This is because of the fact that conceptually all of the dummies indicating product categories encode one information, these variables' importances should be treated jointly. The same can be argued about geographic coordinates. To account for this, I have simply summarised variables' importances to bin them into 2 variables sets "geolocation" and "prod_categories". This information is presented on the right subfigure. 
+After this operation, it can be seen that product categories gained in relative importance - now they are 4th variable. Also, geolocation variables set became a more important than payment value on its own.
 
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+TODO: Doszlifować wykres, teraz brzydko się najeżdżają etykiety kategorii
 
+##### Model with all variables
 
-var_imp_all$importance %>%
-  as_tibble(rownames = 'var') %>%
-  mutate(var2 = ifelse(str_starts(var, 'prod_cat_'), 'prod_categories', var)) %>%
-  # mutate(var2 = ifelse(str_starts(var2, 'spatial_'), 'geodemographic', var2)) %>%
-  # mutate(var2 = ifelse(str_starts(var2, 'topic_'), 'review_topic', var2)) %>%
-  group_by(var2) %>%
-  summarise(Overall = sum(Overall)) %>%
-  mutate(Overall = range01(Overall)*100) %>%
-  as.data.frame() -> temp_df_imp
-
-
-rownames(temp_df_imp) <- temp_df_imp$var2
-temp_df_imp$var2 <- NULL
-var_imp_all$importance <- temp_df_imp
-plot(var_imp_all)
-```
-
-
-All categories of features at once: (TODO: poc VarImpPlot z ggplota, do zastanowienia czy uspójnić z resztą i w ogóle które zostawić)
-
-```{r}
+```{r varimp-all, fig.cap = "Variable importance plots for the model with all variables."}
 
 var_imp_all <- varImp(models_list$all_with_pca$model, scale=F)
 
 range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-
 
 var_imp_all$importance %>%
   as_tibble(rownames = 'var') %>%
   mutate(var2 = case_when(
-    
-    str_starts(var, 'spatial_') ~ 'geodemographic',
+    str_starts(var, 'spatial_') ~ 'geo - demographic',
+    str_starts(var, 'geolocation_') ~ 'geo - raw location',
+    str_starts(var, 'agglomeration') ~ 'geo - density',
     str_starts(var, 'topic_') ~ 'perception',
     str_starts(var, 'review_') ~ 'perception',
-    str_starts(var, 'geolocation_') ~ 'geolocation',
     str_starts(var, 'prod_cat_') ~ 'behavioural (first transaction)',
     var %in% c('payment_value', 'sum_freight', 'no_items', 'prod_categories') ~ 'behavioural (first transaction)',
     TRUE ~ var
   )) %>%
   group_by(var2) %>%
   summarise(Overall = sum(Overall)) %>%
-  mutate(Overall = range01(Overall)*100) %>%
+  # mutate(Overall = range01(Overall)*100) %>%
   as.data.frame() -> temp_df_imp
 
-
-temp_df_imp %>%
-  ggplot(aes(x = var2, y = Overall, label = round(Overall))) +
-  geom_point(stat='identity', fill="black", size=7) +
-  geom_segment(aes(y = 0,
-                   x = var2,
-                   yend = Overall,
-                   xend = var2),
-               color = "black") +
-  geom_text(color="white", size=3) +
-  # ylim(-2.5, 2.5) +
-  coord_flip() +
-  theme_minimal() +
-  labs(
-    x = 'Variable',
-    y = 'Importance'
-  )
-
-
-
-
-# rownames(temp_df_imp) <- temp_df_imp$var2
-# temp_df_imp$var2 <- NULL
-# var_imp_all$importance <- temp_df_imp
-# plot(var_imp_all)
+plot_varimp(temp_df_imp)
 
 ```
 
-Variable importance z modelu ze wszystkimi zmiennymi posegregowane po "setach" zmiennych tak jak zrobiłem model
+On figure \@ref(fig:varimp-all) variables' categories importances for the model with all variables are presented. I have grouped the variables into 3 categories:
 
-```{r}
-var_imp_all <- varImp(models_list$all_with_pca$model, scale=F)
+- variables describing first transaction of the customer - payment value, product categories etc.
+- variables describing perception - namely 1-5 review and dummies for topic of the textual review
+- geographic variables - with 3 subgroups:
+  - variables describing demographics of the region that the customer is in 
+  - raw location - simply lon/lat coordinates
+  - density - variable indicating whether the customer is in a densely-populated area.
+  
+The best set of variables is the one containing behavioural features. Next 2 sets of variables, namely geodemographic and spatial location have similar influence. The lowest impact on the model predictions have perception variables and density population indicator.
 
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+From these values one can validate the hypotheses stated earlier. Customer's propensity to churn **depends on**:
 
-var_imp_all$importance %>%
-  as_tibble(rownames = 'var') %>%
-  mutate(var2 = case_when(
-    str_starts(var, 'prod_cat_') ~ 'product_categories',
-    str_starts(var, 'spatial_') ~ 'geodemographic',
-    str_starts(var, 'topic_') ~ 'review_topic',
-    str_starts(var, 'agglomeration') ~ 'agglomeration',
-    TRUE ~ 'basic')) %>%
-  group_by(var2) %>%
-  summarise(Overall = sum(Overall)) %>%
-  mutate(Overall = range01(Overall)*100) %>%
-  as.data.frame() -> temp_df_imp
+- Payment value for the first order, number of items bought, transport cost of the package
+- Categories of the products bought 
+- Demographic environment of the customer
+- Customer's location.
 
+At the same time, customer's propensity to churn is not (or is only very mildly) influenced by the following factors:
 
-temp_df_imp %>%
-  ggplot(aes(x = var2, y = Overall, label = round(Overall))) +
-  geom_point(stat='identity', fill="black", size=7) +
-  geom_segment(aes(y = 0,
-                   x = var2,
-                   yend = Overall,
-                   xend = var2),
-               color = "black") +
-  geom_text(color="white", size=3) +
-  # ylim(-2.5, 2.5) +
-  coord_flip() +
-  theme_minimal() +
-  labs(
-    x = 'Variable',
-    y = 'Importance'
-  )
+- population density in the area
+- 1-5 review of the purchase
+- topic of the textual review
 
-```
+In the following section I have tried to answer the questions about the  direction of the influence of predictors of customer churn.
 
+#### Direction and strength of features influence on customer churn (Partial Dependence Plots)
 
-
-#### Cateris paribus plots
-
-In my analysis I have decided to obtain the ceteris paribus profiles for mean values of each variable [@dalex]. Unfortunately this method is not able to meaningfully analyse dummy variables, that is why I have excluded the variables indicating product categories. Another variables requiring special treatment are the ones indicating geographic location. For them, I have created a 2-way ceteris paribus estimates and plotted them over the Brazil map. This way it is possible to see if it is correlated with presence of bigger cities or small population density (as in the Amazonia area).
+Partial Dependence Profile is based on Cateris Paribus technique. This technique is meant to perform "what-if" analysis for one observation x and one feature f. For this observation, the variable of interest is changed and the model predicts the response for each of these changes. Partial Dependence Profile is simply averaged value of such Cateris Paribus analysis for each of the observations from the dataset. 
 
 ```{r cache=T}
 explain <- DALEX::explain(model = models_list$product_categories$model,  
@@ -759,59 +707,20 @@ mean_model_response <- predict(models_list$product_categories$model, to_model_te
 ```
 
 ```{r }
-# plot(varImp(models_list$product_categories$model))
 predict_profile(explainer = explain, 
                 new_observation = mean_values) -> profile_all
-
 ```
+
+
+##### Payment value
 
 ```{r }
-# plot(profile_all, variables = c("review_score")) + ggtitle("Ceteris-paribus profile", "") 
-```
-
-TODO: Wcześniej było cateris paribus dla średniej obserwacji, a teraz jest Partial dependence profile - średnie cateris paribus dla wszystkich obserwacji. Trochę zmienia rezultaty w review score
-
-```{r}
-
-# model_profile(explainer = explain, variables = "review_score") %>%
-# plot() +
-#   scale_x_continuous(n.breaks=10,limits = c(1,5))
-
-model_profile(explainer = explain, variables = "review_score") %>% .$agr_profiles -> profile_review_score
-
-profile_review_score %>%
-  ggplot(aes(x = `_x_`, y = `_yhat_`)) +
-  geom_line(size = 0.7) +
-  scale_x_continuous(n.breaks=10,limits = c(1,5)) + 
-  theme_minimal() +
-  labs(
-    title=NULL, 
-       subtitle = NULL, 
-       caption=NULL,
-       x = 'Review score',
-       y = 'Model response'
-       )
-
-
-```
-
-
-The shape of the ceteris paribus profile for the review score variable for the mean observations has an expected shape. The better the review, the it is probable for the client to purchase for the second time. What is also worth noticing is the fact that the probability increase is non-linear with respect to review score. The biggest probability increase is visible from the score 4 to 5. It is often the case in the customer reviews setting, observed also in the area of recommendation engines [(TODO: znaleźć lepsze cytowanie niż xkcd, z wykładu o recommenders)](https://xkcd.com/1098/). 
-
-```{r }
-# ingredients::ceteris_paribus(explain,
-#                              new_observation = mean_values,variables = c('payment_value')) -> profile_payment
-# 
-# plot(profile_payment, variables = c("payment_value")) + ggtitle("Ceteris-paribus profile", "") +
-#   scale_x_continuous(n.breaks=10,limits = c(0,500)) + geom_smooth(alpha=0)
-
-
-# model_profile(explainer = explain, variables = "payment_value") %>%
-# plot() +
-#   scale_x_continuous(n.breaks=10,limits = c(0,500)) + 
-#   geom_smooth(aes(y = `_yhat_`), alpha=0)
 
 model_profile(explainer = explain, variables = "payment_value") %>% .$agr_profiles -> profile_payment_value
+
+to_model_test$payment_value %>%
+  quantile(c(0.1, 0.25, 0.5, 0.75, 0.9)) %>%
+  as_tibble(rownames = 'a') -> quantiles_payment
 
 profile_payment_value %>%
   ggplot(aes(x = `_x_`, y = `_yhat_`)) +
@@ -821,27 +730,25 @@ profile_payment_value %>%
   theme_minimal() +
   labs(
     title=NULL, 
-       subtitle = NULL, 
-       caption=NULL,
-       x = 'Payment value',
-       y = 'Model response'
-       )
-
-
-
+    subtitle = NULL, 
+    caption=NULL,
+    x = 'Payment value',
+    y = 'Model response'
+  ) +
+  geom_vline(data = quantiles_payment, aes(xintercept = value), color = 'red') +
+  geom_text(data = quantiles_payment, aes(label = a, x = value, y = 0),angle = 90, nudge_x = -10)
 
 ```
 
-Model response for ceteris paribus profile is non-monotonous. To facilitate drawing conclusions I have included smoothing line used *loess* technique. From analysis of this smoothed model response one can say that the model response is increasing to the point of around 100. This value is a median payment value in the whole dataset. After this threshold the probability to buy second time is falling up to the level of around 175, and then rise a little bit again. 
+To facilitate drawing conclusions from PDP plot for payment value I have included smoothing line used *loess* technique. Also, I have added vertical red ?? lines indicating quantiles of the this variable's values in the dataset.
 
+Model response for payment value is non-monotonous.  From an analysis of smoothed model response one can say that it is increasing to the point of around 100. This value is a median payment value in the whole dataset. After this threshold the probability to buy second time is falling slowly. 
+
+TODO: dlaczego takie wyniki, czy potwierdza tezę
+
+##### No. items
 
 ```{r }
-# plot(profile_all, variables = c("no_items")) + ggtitle("Ceteris-paribus profile", "") +
-#   scale_x_continuous(breaks=1:20)
-
-# model_profile(explainer = explain, variables = "no_items") %>%
-#   plot()
-
 
 model_profile(explainer = explain, variables = "no_items") %>% .$agr_profiles -> profile_no_items
 
@@ -855,12 +762,18 @@ profile_no_items %>%
        caption=NULL,
        x = 'Number of items',
        y = 'Model response'
-       )
+       ) +
+  scale_x_continuous(breaks=1:20,minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(0, 0.18, 0.02),minor_breaks = NULL,limits = c(0, NA))
 
 
 ```
 
-Number of items bought in the first purchase negatively influences the probability of the second purchase. This effect is visible only for the smallest numbers of items, while the model response for no_items>4 stays roughly the same. 
+Relationship betwen the number of items bought in the first purchase and the probability of the second purchase is in general negative. However, the model response stays roughly the same for 1 and 2 items. The most abrupt drop in model response is visible from 2 to 6 items - the model response drops 4-fold. Later the response is relatively stable.
+
+For CRM, information about such relationship can lead to a following trade off. The more the customer buys in the first purchase, the bigger are the chances that they will not make a second purchase. This can have implications in cross-selling campaigns. The company can try to maximize the revenue from the first transaction by making the customer buy more, buy then there is bigger possibility that the customer will not make the second purchase. 
+
+<!-- In previous studies the number of items bought per purchase for the customer was not analyzed. -->
 
 ```{r }
 # Predictions for geo data
@@ -881,6 +794,7 @@ profile_geo %>%
 profile_geo$yhat <- predict(models_list$all_with_pca$model, profile_geo,type='prob')[,2]
 ```
 
+##### Location
 
 ```{r cache=F}
 library(sf)
@@ -889,7 +803,7 @@ library(readxl)
 ```
 
 
-```{r fig.width = 5, fig.height = 3}
+```{r}
 # 2-d map ceteris paribus
 profile_geo %>%
   select(geolocation_lat, geolocation_lng, yhat) %>%
@@ -901,21 +815,6 @@ profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lat <=
 profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lng >= -73.98283055,]
 profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lat >= -33.75116944,]
 profile_geo_to_plot = profile_geo_to_plot[profile_geo_to_plot$geolocation_lng <=  -34.79314722,]
-
-
-# pal <- colorFactor(RColorBrewer::brewer.pal(9, 'Greens'), domain = levels(profile_geo_to_plot$a))
-# 
-# profile_geo_to_plot %>%
-#   rename(lat = geolocation_lat, lng = geolocation_lng) %>%
-#   leaflet() %>%  
-#   addTiles() %>%
-#   # addProviderTiles('Stamen.Toner') %>%
-#   addCircleMarkers(
-#     color = ~pal(a),
-#     stroke = FALSE, fillOpacity = 0.5,
-#     radius = 4
-#   )
-
 
 tmap_mode("plot")
 brazil_map <- brazilmaps::get_brmap("Brazil")
@@ -934,30 +833,63 @@ brasil_cities_coords <- sf::st_as_sf(brasil_cities_coords, coords = c(3,2))
 st_crs(brasil_cities_coords) <- st_crs(brazil_map)
 
 
+```
+
+```{r fig.width = 5, fig.height = 3}
+
 tm_shape(brazil_map) +
   tm_polygons(col = "white") +
-  tm_shape(df[which(lengths(st_within(df, brazil_map)) != 0), ]%>%rename(`Prediction quantile`=a)) +
+  tm_shape(df[which(lengths(st_within(df, brazil_map)) != 0), ]%>%rename(`Model response`=yhat)) +
   tm_symbols(size = 0.4,
-             col = "Prediction quantile",
+             col = "Model response",
              palette = RColorBrewer::brewer.pal(9, 'Greens'),
-             # style = "fixed",
-             # breaks = c(45, 60, 75, 90),
              border.lwd = NA,
+             n = 10,
              alpha = 0.8) +
-  tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(20)) +
+  tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
   tm_symbols(size = 0.4,
              col = "red",
-             # style = "fixed",
-             # breaks = c(45, 60, 75, 90),
              border.lwd = NA,
              alpha = 0.8) +
   tm_text(text='city', just='top')
 
 ```
 
-In the case of geolocation data, I have created 2-d ceteris paribus estimates .. and visualized it on the map. To facilitate the analysis I have marked 10 most populated Brazilian cities. They are mostly located along the coast, with the exception of Brasilia (new capital of the country) and Manaus (the biggest city in Amazonia region). It can be seen that the predictions are the highest in two distinct large spots - one having center close to Brasilia, and the other one same latitude, but closer to the western country border. 
+In the case of geolocation data, I have created 2-d partial dependence estimates and visualized it on the figure ... . To facilitate the analysis I have marked 10 most populated Brazilian cities. It can be seen that the predictions are the highest in two distinct large spots - one having center close to Brasilia (new capital of the country), and the other one same latitude, but closer to the western country border. 
 
 It can be seen that the predictions form a very visible pattern in stripes. As was noticed by @behrens2018spatial, it comes from the limitation of the model underlying XGBoost method, that is decision trees. The vanilla decision tree algorithm works by partitioning the feature space on a discrete basis, and a typical output of that model on 2-d space are visible rectangles. And as XGBoost is simply stacked decision trees, the resulting partition pattern is a bit more complex, but still decision-tree-typical artifacts are visible. 
+
+ <!-- They are mostly located along the coast, with the exception of Brasilia (new capital of the country) and Manaus (the biggest city in Amazonia region). -->
+
+##### Review score 
+
+```{r}
+
+set.seed(13)
+model_profile(explainer = explain, variables = "review_score") %>% .$agr_profiles -> profile_review_score
+
+profile_review_score %>%
+  ggplot(aes(x = `_x_`, y = `_yhat_`)) +
+  geom_line(size = 0.7) +
+  theme_minimal() +
+  labs(
+    title=NULL, 
+       subtitle = NULL, 
+       caption=NULL,
+       x = 'Review score',
+       y = 'Model response'
+       ) +
+  scale_x_continuous(minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(0, 0.18, 0.02),minor_breaks = NULL,limits = c(0, NA))
+
+```
+
+Analysis of model responses in the case of review score should be treated with caution, as the analysis of variable importance shown it to be a relatively non-important variable. However, I have still tried to analyze PDP plots, to check the expectation of this relationship being positive. One the plot .. such PDP is presented. The model response is relatively flat in reaction to changes in review score. For reviews 1 and 2 the response is not changing at all - meaning that it doesn't matter *how bad* the review is. Rather, that unsatisfied customers will not buy again in general. From 2 to 5 the model response expectedly monotonically increases. 
+
+From analysis of both variable importance plot and PDP plot one can conclude that customer satisfaction positively influences customer's propensity to buy again. However, the strength of this relationship is very week compared to other variables present in the model.
+
+<!-- However, a unexpected behaviour can be noticed when the tested review changes from 1 to 2 - the model response drops. This means that not the customers with the most negative reviews have the biggest probability to buy second time but rather the ones with "moderately-negative". -->
+
 
 ## Śmieci
 
@@ -993,6 +925,12 @@ roc_tibble %>%
   theme_minimal()
 
 ```
+
+#### Cateris paribus review score
+
+The shape of the ceteris paribus profile for the review score variable for the mean observations has an expected shape. The better the review, the it is probable for the client to purchase for the second time. What is also worth noticing is the fact that the probability increase is non-linear with respect to review score. The biggest probability increase is visible from the score 4 to 5. It is often the case in the customer reviews setting, observed also in the area of recommendation engines [(TODO: znaleźć lepsze cytowanie niż xkcd, z wykładu o recommenders)](https://xkcd.com/1098/). 
+
+
 
 
 #### Break down of average prediction 
