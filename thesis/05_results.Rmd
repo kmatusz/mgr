@@ -549,12 +549,25 @@ The shape of the plot resembles the one of the function 1/x. Values of lift are 
 
 ## Model explanations
 
+#### Intro
+
+- Logistic Regression is an interpretable model by design - one can simply look at the model coefficients and infer about strength and direction of particular feature on the final prediction. However, as shown in the previous sections it is inferior to XGBoost with regards to predictions quality.
+- XGB is however a *black box model*, meaning that its structore is too complex to be directly.
+- To be able to infer hyptheses about importances and direction of influence for model prediction, XAI tools have to be used.
+- In this study I have used 2 (3) techniques of XAI, namely Variable Importance (VI) and Partial Dependence Profile (PDP).
+- The first one can answer the question which variables (or categories of variables) influences the predictions the most. 
+- While the second - what is the direction of this influence?
+
+#### Description of the methods
+
+- In this study I have used Permutation Feature importance method. At first, performance score (in this case AUC) is computed on the whole dataset. Then, each of the variables is randomly permuted one-by-one, and predictions are made using such "blinded" variable. Later, the drop in model performance for each of the blinded features serves as its importance. 
+- Partial Dependence Profile is based on Cateris Paribus technique. This technique is meant to perform "what-if" analysis for one observation x and one feature f. For this observation, the variable of interest is changed and the model predicts the response for each of these changes. Partial Dependence Profile is simply averaged value of such Cateris Paribus analysis for each of the observations from the dataset. 
+
+
 ### Introduction 
 
+
 Despite superior performance in lots of machine learning tasks, the biggest drawback of Extreme Gradient Boosting models is its black-box nature, meaning lack of interpretability of predictions and parameters. This problem can be mitigated by usage of Explainable AI tools. One of such tools is ceteris-paribus analysis. The idea is to set all variables except the variable(s) of interest as constants, and create a new set of observations by manipulating only one or to variables. Such analysis can give a similar information to the values of coefficients in Logistic Regression models. 
-
-(TODO: opisać trochę więcej)
-
 
 #### Variable importances
 
@@ -635,12 +648,12 @@ var_imp_all$importance %>%
   as_tibble(rownames = 'var') %>%
   mutate(var2 = case_when(
     
-    str_starts(var, 'prod_cat_') ~ 'prod_categories',
     str_starts(var, 'spatial_') ~ 'geodemographic',
-    str_starts(var, 'topic_') ~ 'review_topic',
+    str_starts(var, 'topic_') ~ 'perception',
     str_starts(var, 'review_') ~ 'perception',
     str_starts(var, 'geolocation_') ~ 'geolocation',
-    var %in% c('payment_value', 'sum_freight', 'no_items', 'prod_categories') ~ 'behavioural',
+    str_starts(var, 'prod_cat_') ~ 'behavioural (first transaction)',
+    var %in% c('payment_value', 'sum_freight', 'no_items', 'prod_categories') ~ 'behavioural (first transaction)',
     TRUE ~ var
   )) %>%
   group_by(var2) %>%
@@ -946,6 +959,41 @@ In the case of geolocation data, I have created 2-d ceteris paribus estimates ..
 
 It can be seen that the predictions form a very visible pattern in stripes. As was noticed by @behrens2018spatial, it comes from the limitation of the model underlying XGBoost method, that is decision trees. The vanilla decision tree algorithm works by partitioning the feature space on a discrete basis, and a typical output of that model on 2-d space are visible rectangles. And as XGBoost is simply stacked decision trees, the resulting partition pattern is a bit more complex, but still decision-tree-typical artifacts are visible. 
 
+## Śmieci
+
+#### ROC curve 
+
+TODO: dokładnie ta sama infromacja jest w lift curve. Pytanie czy zostawić roc curve ??
+
+```{r}
+roc_best_model <- calc_roc(models_list$product_categories$model, to_model_test)
+
+tibble(
+thre= roc_best_model$thresholds,
+sens = roc_best_model$sensitivities,
+spec = roc_best_model$specificities
+) -> roc_tibble
+
+roc_tibble %>%
+  mutate(thre= round(thre,1)) %>%
+  filter(thre %in% round(seq(0,1,0.1),1)) %>%
+  group_by(thre) %>%
+  slice_head(n=1) %>%
+  ungroup() -> thresholds
+
+roc_tibble %>%
+  sample_frac(0.1) %>%
+  ggplot(aes(x = spec, y=sens))+ 
+  geom_line() +
+  geom_point(data=thresholds, aes(x = spec, y = sens), color='red')+
+  ggrepel::geom_text_repel(data=thresholds, aes(x = spec, y = sens, label=thre),hjust=0)+
+  scale_x_continuous(trans='reverse') +
+  geom_abline(slope=1, intercept=1, linetype='longdash') +
+  labs(x = 'Specifity', y = 'Sensitivity') +
+  theme_minimal()
+
+```
+
 
 #### Break down of average prediction 
 
@@ -1006,42 +1054,6 @@ preds[c(models_list$product_categories$vars_used, 'prob')] %>%
 In the case of the prediction for the best customer, almost all variables influence the prediction positively. The only variable doing otherwise is payment value. The influence is however minor compared to the other variables. This negative influence can be analyzed in connection with ceteris-paribus plot for that variable analyzed before. On the plot ... it can be seen that the model response has a small drop for the values around 500. 
 
 The rest of the variables influence the score positively. The biggest gain is from the value of the transport, however number of items equal to 6 has also a large influence. 
-
-
-## Śmieci
-
-#### ROC curve 
-
-TODO: dokładnie ta sama infromacja jest w lift curve. Pytanie czy zostawić roc curve ??
-
-```{r}
-roc_best_model <- calc_roc(models_list$product_categories$model, to_model_test)
-
-tibble(
-thre= roc_best_model$thresholds,
-sens = roc_best_model$sensitivities,
-spec = roc_best_model$specificities
-) -> roc_tibble
-
-roc_tibble %>%
-  mutate(thre= round(thre,1)) %>%
-  filter(thre %in% round(seq(0,1,0.1),1)) %>%
-  group_by(thre) %>%
-  slice_head(n=1) %>%
-  ungroup() -> thresholds
-
-roc_tibble %>%
-  sample_frac(0.1) %>%
-  ggplot(aes(x = spec, y=sens))+ 
-  geom_line() +
-  geom_point(data=thresholds, aes(x = spec, y = sens), color='red')+
-  ggrepel::geom_text_repel(data=thresholds, aes(x = spec, y = sens, label=thre),hjust=0)+
-  scale_x_continuous(trans='reverse') +
-  geom_abline(slope=1, intercept=1, linetype='longdash') +
-  labs(x = 'Specifity', y = 'Sensitivity') +
-  theme_minimal()
-
-```
 
 
 

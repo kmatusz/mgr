@@ -114,6 +114,13 @@ TODO: Na tą chwilę tylko konspekt. Jest świetna książka z mnóstwem przykł
   - https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q  - wyzwania dla marketingu przy stosowaniu AI - nie tylko o XAI
   - https://link.springer.com/article/10.1007/s11747-019-00710-5  -  Głównie opisane zalety korzystania z XAI w modelach do marketingu
   
+### Ogólny opis 
+
+Despite superior performance in lots of machine learning tasks, the biggest drawback of Extreme Gradient Boosting models is its black-box nature, meaning lack of interpretability of predictions and parameters. This problem can be mitigated by usage of Explainable AI tools. One of such tools is ceteris-paribus analysis. The idea is to set all variables except the variable(s) of interest as constants, and create a new set of observations by manipulating only one or to variables. Such analysis can give a similar information to the values of coefficients in Logistic Regression models. 
+
+(TODO: opisać trochę więcej)
+  
+  
 ### Explainability-performance trade off
 
 While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like boosting or neural networks, usually present superior performance to more basic approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees...
