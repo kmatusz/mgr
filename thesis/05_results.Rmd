@@ -366,7 +366,8 @@ rbind(
   ggplot(aes(x = AUC, fill = model)) +
   geom_density(alpha=0.5) +
   scale_x_continuous(breaks = seq(0.5, 0.7, 0.01)) +
-  theme_minimal()
+  theme_minimal() +
+  scale_fill_brewer(palette = 'Set1')
 
 ```
 
@@ -709,7 +710,7 @@ profile_payment_value %>%
   ggplot(aes(x = `_x_`, y = `_yhat_`)) +
   geom_line(size = 0.7) +
   scale_x_continuous(n.breaks=10,limits = c(0,500)) + 
-  geom_smooth(aes(y = `_yhat_`), alpha=0) +
+  geom_smooth(aes(y = `_yhat_`), alpha=0, color = RColorBrewer::brewer.pal(9, 'Set1')[2]) +
   theme_minimal() +
   labs(
     title=NULL, 
@@ -718,7 +719,7 @@ profile_payment_value %>%
     x = 'Payment value',
     y = 'Model response'
   ) +
-  geom_vline(data = quantiles_payment, aes(xintercept = value), color = 'red') +
+  geom_vline(data = quantiles_payment, aes(xintercept = value), color = RColorBrewer::brewer.pal(9, 'Set1')[1]) +
   geom_text(data = quantiles_payment, aes(label = a, x = value, y = 0),angle = 90, nudge_x = -10)
 
 ```
@@ -825,16 +826,16 @@ tm_shape(brazil_map) +
   tm_shape(df[which(lengths(st_within(df, brazil_map)) != 0), ]%>%rename(`Model response`=yhat)) +
   tm_symbols(size = 0.4,
              col = "Model response",
-             palette = RColorBrewer::brewer.pal(9, 'Greens'),
+             # palette = RColorBrewer::brewer.pal(9, 'Greens'),
              border.lwd = NA,
              n = 10,
              alpha = 0.8) +
   tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
-  tm_symbols(size = 0.4,
-             col = "red",
-             border.lwd = NA,
-             alpha = 0.8) +
-  tm_text(text='city', just='top')
+  tm_symbols(size = 0.2,
+               col = "black",
+               border.lwd = NA,
+               alpha = 0.8)  +
+  tm_text(text='city', just='top',size = 0.8)
 
 ```
 

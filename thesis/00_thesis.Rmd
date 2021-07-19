@@ -5,6 +5,8 @@ output:
   bookdown::word_document2:
     reference_docx: resources/styles_template.docx
     number_sections: true
+    # toc: true
+    # toc_depth: 4
 # output: html_document
 bibliography: resources/bib.bibtex
 always_allow_html: true

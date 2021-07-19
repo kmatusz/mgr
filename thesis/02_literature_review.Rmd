@@ -129,11 +129,11 @@ TODO: Na tą chwilę tylko konspekt - rozwinąć. Jest świetna książka z mnó
   
 <!-- #### Explainability-performance trade off -->
 
-While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like boosting or neural networks, usually present superior performance to less flexible approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees or Logistic Regression. 
+While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like bagging, boosting or neural networks, usually present superior performance to less flexible approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees or Logistic Regression. 
 
 <!-- #### What is XAI -->
 
-Explainable Artificial Intelligence is a set of tools aimed at explaining predictions of otherwise unexplainable models. This area started gaining popularity for multiple reasons. 
+Explainable Artificial Intelligence is a set of tools aimed at explaining predictions of otherwise unexplainable models. This area started gaining popularity among Machine Learning researchers to somehow transfer the advantages of simple models to the approaches that provide superior performance. 
 
 <!-- #### Benefits of explainability -->
 
@@ -143,25 +143,33 @@ Explainable Artificial Intelligence is a set of tools aimed at explaining predic
 - robustness - whether the algorithm can provide correct predictions when the parameters change
 - trust - whether the final users of the algorithm trust the model's predictions
 
-Machine learning practitioners when deciding on the methodology to apply have to assess which of the requirements are important in a particular task. For example, in CRM settings the trust in the model's predictions is way less important than in medical areas. 
+Machine learning practitioners when deciding on the methodology to apply have to assess which of the requirements are important in a particular task. For example, in CRM settings the trust in the model's predictions is way less important than in medical areas, but still can be of crucial for a wide adoption of modeling across the company. On the other hand, sometimes the explainability is important only for the person developing the model, to understand its limitations and be able to improve upon it. 
 
-The tools of XAI can help in addressing these issues, without losing the performance gain from uninterpretable models
+The tools of XAI can help in addressing the aforementioned issues, without losing the usual performance gain from black-box models.
 
 
 ### Review of XAI methods
 
-XAI methods can be divided into 2 categories - model-level and instance-level. 
+XAI methods can be broadly divided into 2 categories - model-level and instance-level. The methods from the first category help in understanding the model's behavior in general, for all istances. While the second can help understanding model's reasoning about the particular observation. 
+
+For an overview of existing XAI methods, see @biecek2021explanatory.
+
+- general prediction
+- which variables contribute to the prediction(s) and in what way
+- how one particular variable influence the prediction(s)
+- how well is the model fitting?
+
+
 
 ### XAI in marketing
 
-Research on Explainable Artificial Intelligence in Marketing domain is not very developed.
+Research on Explainable Artificial Intelligence in Marketing domain is not very developed. (Nie znalazłem ani jednego papera !! ??)
 
-@rai2020explainable specifies potential areas for future research:
+To the best of the author's knowledge, the only study touching the subject of XAI in the context of marketing is by @rai2020explainable. In their commentary, they specify potential areas for future research in this field:
 
-- understanding, what are acceptable requirements regarding explainability compared to accuracy in different marketing tasks
-- Making AI trustworthy - to understand how the eagerness to use AI system's predictions grows in the company when various explainability tools are made available to the end-users
-- How model explanations should be presented to various groups of system's users. For example, a Machine Learning expert is interested in very detailed and complex explanations, while the company's customer may simply want a 1 sentence summary of what was taken into account while making predictions.
-
+- understanding, what are acceptable requirements regarding explainability compared to accuracy in different marketing tasks;
+- making AI trustworthy - to understand how the eagerness to use AI system's predictions grows in the company when various explainability tools are made available to the end-users;
+- How model explanations should be presented to various groups of system's users. For example, a Machine Learning expert is interested in very detailed and complex explanations, while the company's customer may simply want a 1 sentence summary of what was taken into account while making predictions;
 
 
 <!-- https://www.kdnuggets.com/2018/10/enterprise-explainable-ai.html -->

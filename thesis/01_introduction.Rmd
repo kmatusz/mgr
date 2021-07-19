@@ -34,7 +34,7 @@ Skrawki zdań:
 - Customer loyalty is an important thing for every business
 - Studies have shown that it is very profitable
 - Multiple studies have been conducted to help businesses retain customers..
-- However, most of them were based on contractual settings, where most of the customers stay with the company. A very different challenge is making the customer stay in the situation of non-contractual settings. 
+- However, most of them were based on contractual settings, where most of the customers stay with the company. A very different challenge is making the customer stay in the situation of non-contractual settings.
 - In my study I analyze such non-contractual business, namely an e-commerce retail site operating in Brazil. 
 - A challenge that to the best of authors knowledge was not addressed in the previous studies is a very low rate of the customers that actually stay with the company. In this case almost 97% of the customers don't come back to the company. 
 - Also, this study is a first approach to predict customer loyalty not using the whole customer's history, but only the first transaction. 

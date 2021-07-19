@@ -130,14 +130,16 @@ df %>%
   scale_x_log10() +
   custom_theme +
   theme(legend.position = 'none') +
-  labs(x = 'Payment value') -> pl_payment
+  labs(x = 'Payment value') +
+  scale_fill_brewer(palette = 'Set1') -> pl_payment
 
 df %>% 
   ggplot(aes(x = sum_freight, fill=if_second_order)) +
   geom_density(alpha=0.5) +
   scale_x_log10() +
   custom_theme +
-  labs(x = 'Transportation cost') -> pl_transportation
+  labs(x = 'Transportation cost') +
+  scale_fill_brewer(palette = 'Set1') -> pl_transportation
 
 gridExtra::grid.arrange(pl_payment, pl_transportation, ncol = 2, widths = c(1,1.7))
 ```
@@ -398,8 +400,6 @@ plot_map <- function(variable, title){
     tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
     tm_symbols(size = 0.2,
                col = "black",
-               # style = "fixed",
-               # breaks = c(45, 60, 75, 90),
                border.lwd = NA,
                alpha = 0.8) +
     tm_text(text='city', just='top',size = 0.8) +
