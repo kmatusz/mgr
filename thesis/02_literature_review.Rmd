@@ -20,14 +20,14 @@ knitr::opts_chunk$set(echo=params$echo)
 
 ## Customer churn
 
-### Introduction
+<!-- ### Introduction -->
 
 <!-- #### Churn in context of CRM -->
 
 Customer Relationship Management is defined as a process, in which the business manages its interactions with the customers using data integration from various sources and data analysis [@bardicchia2020digital]. 
-@churnthesis provides 4 areas in which CRM approaches can be of use:
+@churnthesis specifies 4 areas in which CRM approaches can be of use and what questions do they aim to answer:
 
-- Customer identification (acquisition) - determining who can be a potential customer?
+- Customer identification (acquisition) - who can be a potential customer?
 - Customer attraction - how can one make this person a customer?
 - Customer development - how can one make a customer more profitable?
 - Customer retention - how can one make the customer stay with the company?
@@ -40,8 +40,8 @@ Improving the loyalty of the customer base is profitable to the company. This ha
 
 <!-- #### Different approaches when tackling potential churners -->
 
-There are 2 basic approaches for the company to deal with customer churn. The first one is an "untargeted" approach. The company seeks to improve its product quality and relies on mass advertising to reduce the churn. The other way is a "targeted" approach - the company tries to address aim their marketing campaigns at the customers that are more likely to churn [@burez2007crm]. This approach can be divided further, by how targeted customers are chosen. The company can target only those that have already decided to resign from a further relationship. For example, in contractual settings, this can mean canceling the subscription or breaching the contract. 
-The other way to approach the churn problem is to try to predict, which customers are likely to churn soon. This has the advantage of having lower cost, as the customers that are about to leave are likely to have higher demands from the last-minute deal proposed to them [@tamaddoni2010modeling]. 
+There are 2 basic approaches for the company to deal with customer churn. The first one is an "untargeted" approach. The company seeks to improve its product quality and relies on mass advertising to reduce the churn. The other way is a "targeted" approach - the company tries to address aim their marketing campaigns at the customers that are more likely to churn [@burez2007crm]. This approach can be divided further, by how the targeted customers are chosen. The company can target only those that have already decided to resign from a further relationship. For example, in contractual settings, this can mean canceling the subscription or breaching the contract. 
+The other way to approach the churn problem is to try to predict, which customers are likely to churn soon. This has the advantage of having lower cost, as the customers that are about to leave are likely to have high demands from the last-minute deal proposed to them [@tamaddoni2010modeling]. 
 
 <!-- #### Non-contractual churn prediction -->
 
@@ -64,7 +64,7 @@ If the company can successfully predict, which customers are most likely to leav
 
 Churn prediction fits well with the framework of classification, as the variable that one would like to predict is binary (churn-no churn). However, not only such binary prediction is valuable for later retention campaign efforts. As noted by @1255389, equally important is that the machine learning model can predict the likelihood of the customer leaving. After such prediction, the customers can be ranked from the most to the least likely to churn. 
 
-This has two benefits. First, the company can decide what percentage of the customers to target in the retention campaign and is not bound by how many customers the model will predict as potential churners. Second, the company can decide how strong the targeting should be based on the likelihood to leave. For example, based on cost-benefit analysis of various targeting approaches, one could decide that for the top 10% of the most likely to leave customers the company should offer big discounts for the next purchase, while for the top 30% - only send an encouraging email. 
+This has two benefits. First, the company can decide what percentage of the customers to target in the retention campaign and is not bound by how many customers the model will predict as potential churners. Second, the company can decide how strong the targeting should be based on the likelihood to leave. For example, based on cost-benefit analysis of various targeting approaches, one could decide that for the top 10% of the most "risky" customers the company should offer big discounts for the next purchase, while for the top 30% - only send an encouraging email. 
 
 <!-- #### Challenges to be addressed -->
 
@@ -79,9 +79,8 @@ An important feature of both of them is that they are relatively simple, and bec
 However, these two methods often give sub-optimal results compared to more advanced and recent approaches like Neural Networks or Random Forests [@murthy1998automatic; @churnthesis]. Moreover, this was shown not only in the case of churn prediction setting but also in more general benchmarks that used multiple datasets and comparison metrics [@caruana2006empirical].
 
 Recently, the XGBoost algorithm [@chen2015xgboost] has been gaining popularity in multiple prediction tasks.
-XGBoost main strengths are the ability to infer non-linear relationships from the data, and relative speed, which allows the researcher to try out multiple hyperparameters and decide on the best ones [@chen2015xgboost]. Because of that, it is considered a go-to standard for machine learning challenges, and very often solutions based on it achieve the best results in various competitions and benchmarks  [@xgblist]. In the context of churn prediction, XGBoost was used by @gregory2018predicting. It achieved superior performance compared to other techniques, like Logistic Regression and Random Forests.
+XGBoost's main strengths are the ability to infer non-linear relationships from the data, and relative speed, which allows the researcher to try out multiple hyperparameters and decide on the best ones [@chen2015xgboost]. Because of that, it is considered a go-to standard for machine learning challenges, and very often solutions based on it achieve the best results in various competitions and benchmarks  [@xgblist]. In the context of churn prediction, XGBoost was used by @gregory2018predicting. It achieved superior performance compared to other techniques, specifically Logistic Regression and Random Forests.
 
-<!-- #### Review of previous churn studies for variables/categories of variables used -->
 #### Variables used in previous churn prediction studies
 
 Previous churn prediction studies used a variety of variables to include in the model formulation. @BUCKINX2005252 divided them into 3 broad categories - behavioral, demographic, and perception. 
@@ -90,7 +89,7 @@ Previous churn prediction studies used a variety of variables to include in the 
 
 The first category of variables tries to describe how the customer has interacted with the company before. Typical features belonging to this category are recency, frequency, and monetary value, which constitute the basis of the RFM customer segmentation framework. These features are used in multiple studies [@churnthesis; @bhattacharya1998customers], and typically accompany more complex variables that are the main focus of particular studies.
 Besides these basic features, some studies focus on other areas of customer behavior.
-Particular products that the customer has bought in previous purchases were shown to be useful for churn prediction [@BUCKINX2005252; @athanassopoulos2000customer].
+For instance, dummies indicating particular products that the customer has bought in previous purchases were shown to be a useful predictor for churn prediction [@BUCKINX2005252; @athanassopoulos2000customer].
 
 Some of the variables studied previously are available only in some of the domains. For example, one possibility of analyzing customer behavior in the context of e-commerce shopping is analyzing the customer behavior while interacting with the company's website. @koehn2020predicting analyzed such click-stream sequential data using Recurrent Neural Networks. They found that such information can serve as a good predictor of customer churn. Similar studies were performed by @8627369 and @yu2011extended, however, the clickstream data was aggregated and preprocessed manually, instead of using a sequential modeling approach.
 
@@ -98,7 +97,7 @@ Some of the variables studied previously are available only in some of the domai
 
 The second category of features used in churn prediction constitutes of demographic variables about the customer, such as age, gender or address. Such variables were shown to be good predictors of customer churn in multiple studies (for an overview see @verbeke2011building). However, the availability of such predictors to use in modeling is very often limited for multiple reasons. In non-contractual settings, customers don't have to always provide such data to the company. Moreover, usage of such personal data can be in some cases considered unethical, and lead to predictions biased against particular age or gender. 
 
-Another way to include demographics data in the churn prediction model was shown by @zhao2005customer. They used the data obtained from the statistical office for particular regions that the customer is residing in. Such variables were shown to be useful in churn prediction.
+Another way to include demographics data in the churn prediction model was shown by @zhao2005customer. They successfully used the census data obtained from the statistical office for particular regions that the customer is residing in.
 
 ##### Perception features
 
@@ -129,11 +128,9 @@ TODO: Na tą chwilę tylko konspekt - rozwinąć. Jest świetna książka z mnó
   
 <!-- #### Explainability-performance trade off -->
 
-While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like bagging, boosting or neural networks, usually present superior performance to less flexible approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees or Logistic Regression. 
+While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like bagging, boosting or neural networks, very often present superior performance to less flexible approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees or Linear Regression. 
 
-<!-- #### What is XAI -->
-
-Explainable Artificial Intelligence is a set of tools aimed at explaining predictions of otherwise unexplainable models. This area started gaining popularity among Machine Learning researchers to somehow transfer the advantages of simple models to the approaches that provide superior performance. 
+Explainable Artificial Intelligence (XAI) is a set of tools aimed at explaining predictions of these highly flexible models. This area started gaining popularity among Machine Learning researchers to somehow transfer the advantages of simple models to the approaches that provide superior performance. 
 
 <!-- #### Benefits of explainability -->
 
