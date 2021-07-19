@@ -20,9 +20,9 @@ bibliography: resources/bib.bibtex
 ## Hypotheses to check:
 
 - Main hypothesis - machine learning modeling can be helpful in ranking customers by their propensity to churn
-- I have tested 2 hypotheses. (1) The amount of money spent on the first purchase positively influences customer probability of buying for the second time. (2) categories bought by the customer can influence the customer probability to stay with the company.
-- A hypothesis worth checking is if tendency to churn is dependent on whether the customer is living in a densely populated area.
-- A hypothesis I would like to check is if social structure of the customer’s environment can serve as a valuable predictor of churn tendency.
+- I have tested 2 hypotheses. (1) The amount of money spent on the first purchase positively influences the customer probability of buying for the second time. (2) categories bought by the customer can influence the customer's probability to stay with the company.
+- A hypothesis worth checking is if a tendency to churn is dependent on whether the customer is living in a densely populated area.
+- A hypothesis I would like to check is if the social structure of the customer’s environment can serve as a valuable predictor of churn tendency.
 - My hypothesis is that both the numeric review, as well as topic of the textual review can be useful predictors of customer loyalty.
 
 Jakie analizy:
@@ -241,11 +241,11 @@ topics_table_to_paper %>%
 
 ### DBSCAN for long/lat data
 
-In the case of epsilon equal to 50 kilometers range, DBSCAN found 78 clusters, and 18 thousand noise points. After a quick visual inspection of the points colored by cluster association, I have concluded that the clusters boundaries overlap with bigger cities boundaries, which proves that the clustering has discovered a valuable information from the data. 
+In the case of epsilon equal to 50 kilometers range, DBSCAN found 78 clusters and 18 thousand noise points. After a quick visual inspection of the points colored by cluster association, I have concluded that the boundaries of the clusters overlap with bigger cities' boundaries, which proves that the clustering has discovered valuable information from the data. 
 
-I have also tried running the clustering with the epsilon obtained from using the elbow method, namely 2. Only 2 clusters were created, of which one of them contaied 99.97% of observations. The probable reason for that is that 2 would roughly translate to 500 kilometers of cluster range, which is way to large radius to model information about the population density on a country-level.
+I have also tried running the clustering with the epsilon obtained from using the elbow method, namely 2. Only 2 clusters were created, of which one of them contained 99.97% of observations. The probable reason for that is that 2 would roughly translate to 500 kilometers of cluster range, which is a way too large radius to model information about the population density on a country level.
 
-To the final dataset I have added only one variable indicating whether the point belongs to the cluster or is one of the noise points. 
+To the final dataset, I have added only one variable indicating whether the point belongs to the cluster or is one of the noise points. 
 
 
 ### PCA for demographic data
@@ -307,13 +307,13 @@ auc_test_table %>%
 
 Table .. shows the performance of the XGB models using various sets of variables. The best AUC score on the test set is obtained by the model containing basic features combined with dummies indicating product categories that the customer has bought during the first purchase. AUC is greater than 0.5, which means that the model has predictive power better than random guessing. 
 
-Second best model is the one containing all variables, with demographic variables transformed with PCA. It is worth noticing that this model also contains the features containing product categories information, so similar performance is not a surprise. The percentage drop in AUC is very small (0.6%). The model with only basic information is worse for about 2.5%. 
+The second-best model is the one containing all variables, with demographic variables transformed with PCA. It is worth noticing that this model also contains the features containing product categories information, so similar performance is not a surprise. The percentage drop in AUC is very small (0.6%). The model with only basic information is worse for about 2.5%. 
 
-The score of the subset of features selected by Boruta algorithm using AUC on the test set is 0.646 - less than the model including all variables. This means that using Boruta algorithm did not bring an additional predictive power to the model. At the same time, this means that the variables indicating reviews topics seem to be relevant for the model performance. 
+The score of the subset of features selected by the Boruta algorithm using AUC on the test set is 0.646 - less than the model including all variables. This means that using the Boruta algorithm did not bring additional predictive power to the model. At the same time, this means that the variables indicating reviews topics seem to be relevant for the model performance. 
 
-Another thing worth noticing is the fact that AUC on the train set is almost 1 in every model. These values are worrying because this means that the models are highly over-fitted, and that generalization problems can be present. The XGBoost model has some built-in parameters that can be used as a regularization strategies, like the maximum tree depth of single tree trained and number of iterations. In search for a less over-fitted model I have tweaked these parameters in cross-validation. However, although in some cases I was able to make the model overfit less, the performance in 2-fold cross-validation was still the best with highly over-fitted models.
+Another thing worth noticing is the fact that AUC on the train set is almost 1 in every model. These values are worrying because this means that the models are highly over-fitted, and that generalization problems can be present. The XGBoost model has some built-in parameters that can be used as regularization strategies, like the maximum tree depth of a single tree trained and a number of iterations. In search of a less over-fitted model, I have tweaked these parameters in cross-validation. However, although in some cases I was able to make the model overfit less, the performance in 2-fold cross-validation was still the best with highly over-fitted models.
 
-I have also created a table .. containing similar information, but this time for Logistic Regression model. Main finding is that even the best LR model (containing product categories and basic features) is worse than the worst XGBoost model (0.586 vs. 0.625, respectively). This means that linear modeling is in general very poorly suited for this prediction task. 
+I have also created a table .. containing similar information, but this time for the Logistic Regression model. The main finding is that even the best LR model (containing product categories and basic features) is worse than the worst XGBoost model (0.586 vs. 0.625, respectively). This means that linear modeling is in general very poorly suited for this prediction task. 
 
 
 ```{r }
@@ -334,14 +334,14 @@ auc_table_for_lr %>%
   flextable_format
 ```
 
-AUC values for the test set oscillating below 0.6 mean that the model is very poorly fitting to the data. For the worst model containing only agglomeration feature it is at the value of 0.546. It is that close to the level of random classifier (0.5), that one could wonder if this model has any predictive power at all.
+AUC values for the test set oscillating below 0.6 mean that the model is very poorly fitted to the data. For the worst model containing only the agglomeration feature, it is at the value of 0.546. It is that close to the level of random classifier (0.5), that one could wonder if this model has any predictive power at all.
 
-Interesting remark is that judging my AUC values, both LR and XGBoost select the same 2 models as the best ones - namely the one with product categories and with all variables. From the fact that 2 such different models arrived to the same conclusion in terms of which variables should be included, this means that these variables simply provide the biggest predictive power, regardless of the model used.
+An interesting remark is that judging my AUC values, both LR and XGBoost select the same 2 models as the best ones - namely the one with product categories and with all variables. From the fact that 2 such different models arrived at the same conclusion in terms of which variables should be included, this means that these variables simply provide the biggest predictive power, regardless of the model used.
 
-Comparison of performance for *agglomeration* set of features is particularly interesting. In XGBoost model this feature is rated as the 3rd best one (after excluding Boruta set to compare meaningfully with LR table). In LR case it is scored as the worst one. One possible explanation is that it's because of inherent ability of XGBoost to create interactions between variables, while these interactions should be included in LR model manually. 
+Comparison of performance for *agglomeration* set of features is particularly interesting. In the XGBoost model, this feature is rated as the 3rd best one (after excluding Boruta set to compare meaningfully with LR table). In the LR case, it is scored as the worst one. One possible explanation is that it's because of the inherent ability of XGBoost to create interactions between variables, while these interactions should be included in the LR model manually. 
 
 
-From the perspective of CRM, the most important result of the modeling procedure is that the created model has predictive power in the task of churn prediction. This means that using model's predictions the marketing department can understand which of the customers are most likely to place the second order and can be encouraged further. And on the other hand, which customers have a very low probability to buy, and thus the company can restrain from losing money on targeting them.
+From the perspective of CRM, the most important result of the modeling procedure is that the created model has predictive power in the task of churn prediction. This means that using the model's predictions the marketing department can understand which of the customers are most likely to place the second order and can be encouraged further. And on the other hand, which customers have a very low probability to buy, and thus the company can restrain from losing money on targeting them.
 
 From the comparison of Logistic Regression and Extreme Gradient Boosting results, the latter one was shown to be superior over the other. Logistic Regression interpretability is an important feature that XGB lacks. 
 Knowing what are the factors that make the customer more likely to stay is important not only for increasing trust about model predictions. Also, such information can serve as an important source of knowledge that can be passed to non-technical marketing workers in the company and potentially help them in their daily work.
@@ -349,9 +349,9 @@ Knowing what are the factors that make the customer more likely to stay is impor
 
 #### Bootstraping AUC values
 
-The AUC test value in the above table is shown for the whole test set. However, these point estimates cannot tell whether the performance would still be the same for sightly different test set. This is especially crucial in the case of the 2 best models - as the difference in AUC values is so small that it is not clear if it is reproducible, or just obtained by random chance. 
+The AUC test value in the above table is shown for the whole test set. However, these point estimates cannot tell whether the performance would still be the same for a slightly different test set. This is especially crucial in the case of the 2 best models - as the difference in AUC values is so small that it is not clear if it is reproducible, or just obtained by random chance. 
 
-A standard way to compare the models performance is using bootstrap technique to obtain different test sets. I have sampled with replacement observations from the test set and calculated AUC measure for the models of choice. Specifically, I have done 100 re-sample rounds, and the models chosen were the best one (product categories + basic information), second best (all variables), and the one with only basic information. The picture .. shows density estimates of these 3 empirical AUC score distributions. 
+A standard way to compare the models' performance is using a bootstrap technique to obtain different test sets. I have sampled with replacement observations from the test set and calculated the AUC measure for the models of choice. Specifically, I have done 100 re-sample rounds, and the models chosen were the best one (product categories + basic information), second-best (all variables), and the one with only basic information. The picture .. shows density estimates of these 3 empirical AUC score distributions. 
 
 ```{r cache=T, fig.width = 5, fig.height = 3}
 bootstrap_auc_best = bootstrap_auc(models_list$product_categories$model, to_model_test,no_resamples = 100)
@@ -370,7 +370,7 @@ rbind(
 
 ```
 
-The curve for the model with basic features is standing out of the others. However, the difference between 1st best and 2nd best models is not as clear - it looks like the better model has slightly better AUC, but this should be investigated more thoroughly. That is why I have used Kolmorogov-Smirnov test to check if the empirical distributions can come from the same probability distribution. I have run the test twice using 2 alternative hypotheses. First one with `H1: auc_best =/= auc_2nd_best`, and the second one: `H1: auc_best > auc_2nd_best`.
+The curve for the model with basic features is standing out of the others. However, the difference between 1st best and 2nd best models is not as clear - it looks like the better model has slightly better AUC, but this should be investigated more thoroughly. That is why I have used a Kolmorogov-Smirnov test to check if the empirical distributions can come from the same probability distribution. I have run the test twice using 2 alternative hypotheses. First one with `H1: auc_best =/= auc_2nd_best`, and the second one: `H1: auc_best > auc_2nd_best`.
 
 ```{r}
 ks_1 <- ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best)
@@ -380,12 +380,12 @@ ks_2 <- ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best,alternative = 'less')
 # ks_2
 ```
 
-The p-value for the first hypothesis is `r round(ks_1$p.value,4)` This means that with the level of significance 0.05, 0.01 the performance of the models is distinguishable. At the same time, p-value with 'greater' hypothesis is `r round(ks_2$p.value,4)`. This means that at the levels of significance 0.05, 0.01 one can say that the performance of the first model (only product categories) is better than of the second one (all variables).
+The p-value for the first hypothesis is `r round(ks_1$p.value,4)` This means that with the level of significance 0.05, 0.01 the performance of the models is distinguishable. At the same time, p-value with 'greater' hypothesis is `r round(ks_2$p.value,4)`. This means that at the levels of significance 0.05, 0.01 one can say that the performance of the first model (only product categories) is better than that of the second one (all variables).
 
-Another reason to choose the model for usage in in production setting is Occam's razor heuristic. The model with product categories has 21 variables, while the one with all variables included - 47. If there is no an important reason why the more complex approach should be used, the simpler is usually better. In this case, using simpler approach has the following advantages for the usage in CRM context:
+Another reason to choose the model for usage in the production setting is Occam's razor heuristic. The model with product categories has 21 variables, while the one with all variables included - 47. If there is no important reason why the more complex approach should be used, the simpler is usually better. In this case, using a simpler approach has the following advantages for the usage in the CRM context:
 
 - Faster inference about the new customers - especially in an online prediction setting when the predictions have to be done on the fly
-- The predictions are easier to interpret. Not only the amount of factors taken into account is lower, but also the predictions are made only on the basis of the features that can be directly obtained from the purchase data. On the contrary - variables containing topic information or demographic features are somehow biased and uncertain. In the case of the review topic data it is because of the model imperfections, and in the case of demographic data because of too big generalization
+- The predictions are easier to interpret. Not only the amount of factors taken into account is lower, but also the predictions are made only on the basis of the features that can be directly obtained from the purchases data. On the contrary - variables containing topic information or demographic features are somehow biased and uncertain. In the case of the review topic data, it is because of the model imperfections, and in the case of demographic data because of too big generalization
 - Easier model retraining and serving the final model in the IT infrastructure of the company.
 
 
@@ -408,28 +408,26 @@ TODO: to że prawdopodobieństwa z modelu i prawdopodobieństwa empiryczne z pos
 
 An ultimate goal of customer churn prediction is gaining information, which customers are most likely to buy for the second time. From these insights, the CRM experts can make an informed decision which customers are the most likely to respond positively to targeting efforts. 
 
-As it was stated earlier in this study, a suitable class of Machine Learning models for churn prediction are the ones that are outputing probabilities of the good result. From these, one can create a ranking of customers, in which they are sorted by their likelihood to buy second time. 
+As it was stated earlier in this study, a suitable class of Machine Learning models for churn prediction are the ones that are outputting probabilities of the good result. From these, one can create a ranking of customers, in which they are sorted by their likelihood to buy for the second time. 
 
-For each cumulative *part* of the ranking (top 1% of customers, top 10% etc.), one can compute, which percentage of this part is truly buying for the second time. This type of approach is called lift analysis, and is a go-to tool for measuring the performance of targeting campaigns. Such information is also very easily understandable by the CRM experts without deep knowledge of statistics and machine learning.
+For each cumulative *part* of the ranking (top 1% of customers, top 10%, etc.), one can compute, which percentage of this part is truly buying for the second time. This type of approach is called a lift analysis and is a go-to tool for measuring the performance of targeting campaigns. Such information is also very easily understandable by CRM experts without deep knowledge of statistics and machine learning.
 
-A potential usages of customer ranking based on probability to churn and lift analysis include (but are not limited to):
+Potential usage of customer ranking based on probability to churn and lift analysis include (but are not limited to):
 
-- One strategy of marketing targeting based on lift information is targeting the customers that are the most susceptible to buying second time. This strategy can however generate unnecessary cost of trying to encourage the customers that would buy anyway. In an improved strategy, one can focus on the customers from the middle of the ranking.
-- One can also vary the targeting strategy based on different cutoffs from the ranking. For example don't do anything with top 1%, send encouraging email to top 10%, send discount to top 20%. This can serve as a way to optimize costs of more expensive targeting measures.
-- It can serve as a baseline for various marketing tools in the paradigm of A/B testing - instead of computing the performance of the test group vs. control group, one can replace the performance of control group with more informed guess about the performance, namely the probability obtained from the ranking list.
-- Another interesting insight that can be obtained from a well designed A/B testing experiment is the how the conversion rate of each of the customers group changes after performing some action, for example sending an encouraging email or giving a discount for the next purchase. 
-- A typical approach for judging the effectivity of a targeting campaign is comparing cost of particular targeting effort with potential revenue that can be gained. Only the approaches that still give some positive results should be continued. One could expect that the bigger probability outputed by the model, the more susceptible is the customer to be affected by targeting. This can be tested by using some targeting tools (e.g. gving discount) on a sample of customers selected from each quantile, and compare the performance with the control group per quantile. (TODO: przeformułować ten podpunkt bo chyba jest trochę niejasny)
+- One strategy of marketing targeting based on lift information is targeting the customers that are the most susceptible to buying for the second time. This strategy can however generate an unnecessary cost of trying to encourage the customers that would buy anyway. In an improved strategy, one can focus on the customers from the middle of the ranking.
+- One can also vary the targeting strategy based on different cutoffs from the ranking. For example, don't do anything with the top 1%, send encouraging emails to the top 10%, send discount coupons to the top 20%. This can serve as a way to optimize the costs of more expensive targeting measures.
+- It can serve as a baseline for various marketing tools in the paradigm of A/B testing - instead of computing the performance of the test group vs. the control group, one can replace the performance of the control group with a more informed guess about the performance, namely the probability obtained from the ranking list.
+- Another interesting insight that can be obtained from a well-designed A/B testing experiment is how the conversion rate of each of the customers' groups changes after performing some action, for example sending an encouraging email or giving a discount for the next purchase. 
+- A typical approach for judging the effectiveness of a targeting campaign is comparing the cost of a particular targeting effort with potential revenue that can be gained. Only the approaches that still give some positive results should be continued. One could expect that the bigger the probability output by the model, the more susceptible is the customer to be affected by targeting. This can be tested by using some targeting tools (e.g. giving discount) on a sample of customers selected from each quantile and compare the performance with the control group per quantile. (TODO: przeformułować ten podpunkt bo chyba jest trochę niejasny)
 
-The way to approach the customers is however in the hands of company's marketing experts. Only information about the ranking of customers probabilities to buy second time is not enough to add value for the company. To this, know-how about effectiveness of various marketing tools and cost analysis of each channels that the company can influence customer's choices is needed. Such information is often already available in the marketing departments, if not based on previous market research, then coming from the intuition of the experienced marketing department employees.
-
-TODO: - Customer Lifetime Value for new customers - probability to buy second time from the model \* average buy second time 
+The way to approach the customers is however in the hands of the company's marketing experts. Only information about the ranking of customers' probabilities to buy for the second time is not enough to add value for the company. To this, know-how about the effectiveness of various marketing tools and cost analysis of each channel that the company can influence customer's choices is needed. Such information is often already available in the marketing departments, if not based on previous market research, then coming from the intuition of the experienced marketing department employees.
 
 ### Lift analysis
 
-Later, churn rates of both groups should be compared. *Lift* is defined as test group performance divided by control group performance. 
+Later, the churn rates of both groups should be compared. *Lift* is defined as test group performance divided by control group performance. 
 
-1. Calculate proportion of the customers that have bought for the second time (share_second)
-1. Split the dataset into 100 sub-datasets. The split is done on the basis of quantile of the response from the model y_hat.
+1. Calculate a proportion of the customers that have bought for the second time (share_second)
+1. Split the dataset into 100 sub-datasets. The split is done on the basis of the quantile of the response from the model y_hat.
 2. Calculate true response rate for each subset i (share_second_model_i)
 3. Calculate lift value for each subset i (share_second_model_i/share_second)
 
@@ -453,7 +451,7 @@ score_randomly <- mean(preds2$if_second_order)
 ```
 
 
-Suppose the marketing campaign is meant to target 5% of the customers that has already made the first order. This equals to 1598 customers from the test set. If one would choose the customers to target randomly, on average in this group would be 3.3% of customers that would do the second order anyway. Using the output of the churn prediction, this score would be 17%, which means a performance gain of 416%. One should bear in mind that targeting the customers that would place the second order anyway is useless. However, because the model is able to predict if the customer will buy second time with higher accuracy, it can be assumed that it can also correctly predict the customers that are likely to "almost buy".
+Suppose the marketing campaign is meant to target 5% of the customers that have already made the first order. This corresponds to 1598 customers from the test set. If one would choose the customers to target randomly, on average in this group would be 3.3% of customers that would do the second order anyway. Using the output of the churn prediction, this score would be 17%, which means a performance gain of 416%. One should bear in mind that targeting the customers that would place the second order anyway is useless. However, because the model is able to predict if the customer will buy for the second time with higher accuracy, it can be assumed that it can also correctly predict the customers that are likely to "almost buy".
 
 TODO: tutaj przydałaby się argumentacja z discrete choice. Zakładamy że wynik modelu (albo rankingu) to latent variable, a decyzja czy klient kupuje jest bazowana na jakimś progu. Wtedy kiedy wiemy że model poprawnie przewiduje tych którzy kupili, to możemy zakładać że poprawnie przewiduje też tych którzy "prawie" kupili ??
 
@@ -528,8 +526,8 @@ output_lifts %>%
 
 ```
 
-On the plot .., lift curve is presented. On the x axis, the fraction of the *top* customers judging by probability to buy second time is presented. On the y axis, lift value for this quantile is shown. 
-The shape of the plot resembles the one of the function 1/x. Values of lift are very big for the smallest percentage of the best customers to target, and they are getting smaller very quickly. This means that the more customers the company would like to target based on the model prediction, the less marginal effects it would get from the usage of the model. For example, for top 1% of the customers, the model can predict retention 18.7 times better than the random targeting approach. For top 5%, it is still very effective, being 4.2 times better. However, the improvement for half of the customers is only 0.3. Although this value is less impressive, it is still an improvement over random targeting. 
+On the plot .., a lift curve is presented. On the x-axis, the fraction of the *top* customers judging by probability to buy for the second time is presented. On the y axis, a lift value for this quantile is shown. 
+The shape of the plot resembles the one of the function 1/x. Values of lift are very big for the smallest percentage of the best customers to target, and they are getting smaller very quickly. This means that the more customers the company would like to target based on the model prediction, the less marginal effects it would get from the usage of the model. For example, for the top 1% of the customers, the model can predict retention 18.7 times better than the random targeting approach. For the top 5%, it is still very effective, being 4.2 times better. However, the improvement for half of the customers is only 0.3. Although this value is less impressive, it is still an improvement over random targeting. 
 
 ## Model explanations
 
@@ -537,13 +535,13 @@ The shape of the plot resembles the one of the function 1/x. Values of lift are 
 
 #### Introduction
 
-In this study I have analysed Logistic Regression and XGBoost algorithms for the task of churn prediction. Logistic Regression is an interpretable model by design - one can simply look at the model coefficients and infer about strength and direction of particular feature influencd on the final prediction. However, as shown in the previous sections it is inferior to XGBoost with regards to predictions quality. XGB is a *black box model*, meaning that its structure is too complex to be directly inspected. To be able to test hyptheses about importances and direction of influence for model prediction, XAI tools have to be used.
+In this study, I have analyzed Logistic Regression and XGBoost algorithms for the task of churn prediction. Logistic Regression is an interpretable model by design - one can simply look at the model coefficients and infer about strength and direction of a particular feature influenced on the final prediction. However, as shown in the previous sections it is inferior to XGBoost with regards to predictions quality. XGB is a *black-box model*, meaning that its structure is too complex to be directly inspected. To be able to test hypotheses about importances and direction of influence for model prediction, XAI tools have to be used.
 
-In this study I have used 2 techniques of XAI, namely Variable Importance (VI) and Partial Dependence Profile (PDP). The first one can answer the question "which variables (or categories of variables) influences the predictions the most?", while the second - "What is the direction and strength of this influence?" 
+In this study, I have used 2 techniques of XAI, namely Variable Importance (VI) and Partial Dependence Profile (PDP). The first one can answer the question "which variables (or categories of variables) influence the predictions the most?", while the second - "What is the direction and strength of this influence?" 
 
 #### Influence of features groups on customer churn (Variable importances)
 
-In this study I have used Permutation Feature importance method. At first, performance score (in this case AUC) is computed on the whole dataset. Then, each of the variables is randomly permuted one-by-one, and predictions are made using such "blinded" variable. Later, the drop in model performance for each of the blinded features serves as its importance. TODO: cytowanie
+In this study, I have used a Permutation Feature importance method. At first, the performance score (in this case AUC) is computed on the whole dataset. Then, each of the variables is randomly permuted one-by-one, and predictions are made using such a "blinded" variable. Later, the drop in model performance for each of the blinded features serves as its importance. TODO: cytowanie
 
 I have examined variable importances for two of the XGB models from this study - one for the best set of variables (with included product categories), and another - with all variables included. The first one served ... (TODO: po co go opisywać w ogóle? Poza inspekcją modelu).
 
@@ -599,13 +597,13 @@ pl_varimp_binned <- plot_varimp(temp_df_imp_cat)
 gridExtra::grid.arrange(pl_varimp_raw, pl_varimp_binned, ncol=2)
 ```
 
-On the left of figure \@ref(fig:varimp-categories) the unbinned variables importances from XGB model for the best variables (with included product categories) are presented. The values on the plot are scaled - meaning that the variable with the score 100 had the biggest influence, while with 0 - the smallest.
+On the left of figure \@ref(fig:varimp-categories) the unbinned variables importances from the XGB model for the best variables (with included product categories) are presented. The values on the plot are scaled - meaning that the variable with the score of 100 had the biggest influence, while 0 - the smallest.
 The most important one is the value of the payment. Also, high importance scores are obtained by vanilla geolocation variables and the transportation cost for the value. 
 The review score of the purchase was not a very important variable.
 
-All of the dummies indicating product categories were in the later part of the ranking. One could wonder, why despite these features are relatively unimportant variables, they lead to 2.5% gain in AUC compared to the model without them.
-This is because of the fact that conceptually all of the dummies indicating product categories encode one information, these variables' importances should be treated jointly. The same can be argued about geographic coordinates. To account for this, I have simply summarised variables' importances to bin them into 2 variables sets "geolocation" and "prod_categories". This information is presented on the right subfigure. 
-After this operation, it can be seen that product categories gained in relative importance - now they are 4th variable. Also, geolocation variables set became a more important than payment value on its own.
+All of the dummies indicating product categories were in the latter part of the ranking. One could wonder, why despite these features are relatively unimportant variables, they lead to a 2.5% gain in AUC compared to the model without them.
+This is because of the fact that conceptually all of the dummies indicating product categories encode one information, these variables' importances should be treated jointly. The same can be argued about geographic coordinates. To account for this, I have simply summarised variables' importances to bin them into 2 variables sets "geolocation" and "prod_categories". This information is presented in the right subfigure. 
+After this operation, it can be seen that product categories gained in relative importance - now they are the 4th variable. Also, geolocation variables set became more important than payment value on its own.
 
 TODO: Doszlifować wykres, teraz brzydko się najeżdżają etykiety kategorii
 
@@ -638,18 +636,18 @@ plot_varimp(temp_df_imp)
 
 ```
 
-On figure \@ref(fig:varimp-all) variables' categories importances for the model with all variables are presented. I have grouped the variables into 3 categories:
+In the figure \@ref(fig:varimp-all) variables' categories importances for the model with all variables are presented. I have grouped the variables into 3 categories:
 
-- variables describing first transaction of the customer - payment value, product categories etc.
-- variables describing perception - namely 1-5 review and dummies for topic of the textual review
+- variables describing the first transaction of the customer - payment value, product categories, etc.
+- variables describing perception - namely 1-5 review and dummies for a topic of the textual review
 - geographic variables - with 3 subgroups:
   - variables describing demographics of the region that the customer is in 
   - raw location - simply lon/lat coordinates
-  - density - variable indicating whether the customer is in a densely-populated area.
+  - density - variable indicating whether the customer is in a densely populated area.
   
-The best set of variables is the one containing behavioural features. Next 2 sets of variables, namely geodemographic and spatial location have similar influence. The lowest impact on the model predictions have perception variables and density population indicator.
+The best set of variables is the one containing behavioral features. The next 2 sets of variables, namely geodemographic and spatial location have a similar influence. The lowest impact on the model predictions have perception variables and density population indicator.
 
-From these values one can validate the hypotheses stated earlier. Customer's propensity to churn **depends on**:
+From these values, one can validate the hypotheses stated earlier. Customer's propensity to churn **depends on**:
 
 - Payment value for the first order, number of items bought, transport cost of the package
 - Categories of the products bought 
@@ -662,11 +660,11 @@ At the same time, customer's propensity to churn is not (or is only very mildly)
 - 1-5 review of the purchase
 - topic of the textual review
 
-In the following section I have tried to answer the questions about the  direction of the influence of predictors of customer churn.
+In the following section, I have tried to answer the questions about the direction of the influence of predictors of customer churn.
 
 #### Direction and strength of features influence on customer churn (Partial Dependence Plots)
 
-Partial Dependence Profile is based on Cateris Paribus technique. This technique is meant to perform "what-if" analysis for one observation x and one feature f. For this observation, the variable of interest is changed and the model predicts the response for each of these changes. Partial Dependence Profile is simply averaged value of such Cateris Paribus analysis for each of the observations from the dataset. 
+Partial Dependence Profile is based on the Cateris Paribus technique. This technique is meant to perform a "what if" analysis for one observation x and one feature f. For this observation, the variable of interest is changed and the model predicts the response for each of these changes. Partial Dependence Profile is simply averaged value of such Cateris Paribus analysis for each of the observations from the dataset. 
 
 ```{r cache=T}
 explain <- DALEX::explain(model = models_list$product_categories$model,  
@@ -725,9 +723,9 @@ profile_payment_value %>%
 
 ```
 
-To facilitate drawing conclusions from PDP plot for payment value I have included smoothing line used *loess* technique. Also, I have added vertical red ?? lines indicating quantiles of the this variable's values in the dataset.
+To facilitate drawing conclusions from the PDP plot for payment value I have included a smoothing line using *loess* technique. Also, I have added vertical red ?? lines indicating quantiles of this variable's values in the dataset.
 
-Model response for payment value is non-monotonous.  From an analysis of smoothed model response one can say that it is increasing to the point of around 100. This value is a median payment value in the whole dataset. After this threshold the probability to buy second time is falling slowly. 
+Model response for payment value is non-monotonous.  From an analysis of smoothed model response, one can say that it is increasing to the point of around 100. This value is a median payment value in the whole dataset. After this threshold, the probability to buy for the second time is falling slowly. 
 
 <!-- TODO: dlaczego takie wyniki, czy potwierdza tezę -->
 
@@ -754,11 +752,11 @@ profile_no_items %>%
 
 ```
 
-Relationship betwen the number of items bought in the first purchase and the probability of the second purchase is in general negative. However, the model response stays roughly the same for 1 and 2 items. The most abrupt drop in model response is visible from 2 to 6 items - the model response drops 4-fold. Later the response is relatively stable.
+The relationship between the number of items bought in the first purchase and the probability of the second purchase is in general negative. However, the model response stays roughly the same for 1 and 2 items. The most abrupt drop in model response is visible from 2 to 6 items - the model response drops 4-fold. Later the response is relatively stable.
 
-For CRM, information about such relationship can lead to a following trade off. The more the customer buys in the first purchase, the bigger are the chances that they will not make a second purchase. This can have implications in cross-selling campaigns. The company can try to maximize the revenue from the first transaction by making the customer buy more, buy then there is bigger possibility that the customer will not make the second purchase. 
+For CRM, information about such a relationship can lead to the following trade-off. The more the customer buys in the first purchase, the bigger are the chances that they will not make a second purchase. This can have implications in cross-selling campaigns. The company can try to maximize the revenue from the first transaction by making the customer buy more, but then there is a bigger possibility that the customer will not make the second purchase. 
 
-<!-- In previous studies the number of items bought per purchase for the customer was not analyzed. -->
+<!-- In previous studies, the number of items bought per purchase for the customer was not analyzed. -->
 
 ```{r }
 # Predictions for geo data
@@ -840,11 +838,11 @@ tm_shape(brazil_map) +
 
 ```
 
-In the case of geolocation data, I have created 2-d partial dependence estimates and visualized it on the figure ... . To facilitate the analysis I have marked 10 most populated Brazilian cities. It can be seen that the predictions are the highest in two distinct large spots - one having center close to Brasilia (new capital of the country), and the other one same latitude, but closer to the western country border. 
+In the case of geolocation data, I have created 2-d partial dependence estimate and visualized it on the figure ... . To facilitate the analysis I have marked the 10 most populated Brazilian cities. It can be seen that the predictions are the highest in two distinct large spots - one having its center close to Brasilia (new capital of the country), and the other one same latitude, but closer to the western country border. 
 
-It can be seen that the predictions form a very visible pattern in stripes. As was noticed by @behrens2018spatial, it comes from the limitation of the model underlying XGBoost method, that is decision trees. The vanilla decision tree algorithm works by partitioning the feature space on a discrete basis, and a typical output of that model on 2-d space are visible rectangles. And as XGBoost is simply stacked decision trees, the resulting partition pattern is a bit more complex, but still decision-tree-typical artifacts are visible. 
+It can be seen that the predictions form a very visible pattern in stripes. As was noticed by @behrens2018spatial, it comes from the limitation of the model underlying the XGBoost method, that is decision trees. The vanilla decision tree algorithm works by partitioning the feature space on a discrete basis, and typical output of that model on 2-d space are visible rectangles. And as XGBoost is simply stacked decision trees, the resulting partition pattern is a bit more complex, but still, decision-tree-typical artifacts are visible. 
 
- <!-- They are mostly located along the coast, with the exception of Brasilia (new capital of the country) and Manaus (the biggest city in Amazonia region). -->
+ <!-- They are mostly located along the coast, with the exception of Brasilia (new capital of the country) and Manaus (the biggest city in the Amazonia region). -->
 
 ##### Review score 
 
@@ -871,9 +869,9 @@ profile_review_score %>%
 
 Analysis of model responses in the case of review score should be treated with caution, as the analysis of variable importance shown it to be a relatively non-important variable. However, I have still tried to analyze PDP plots, to check the expectation of this relationship being positive. One the plot .. such PDP is presented. The model response is relatively flat in reaction to changes in review score. For reviews 1 and 2 the response is not changing at all - meaning that it doesn't matter *how bad* the review is. Rather, that unsatisfied customers will not buy again in general. From 2 to 5 the model response expectedly monotonically increases. 
 
-From analysis of both variable importance plot and PDP plot one can conclude that customer satisfaction positively influences customer's propensity to buy again. However, the strength of this relationship is very week compared to other variables present in the model.
+From the analysis of both the variable's importance plot and the PDP plot, one can conclude that customer satisfaction positively influences customer's propensity to buy again. However, the strength of this relationship is very week compared to other variables present in the model.
 
-<!-- However, a unexpected behaviour can be noticed when the tested review changes from 1 to 2 - the model response drops. This means that not the customers with the most negative reviews have the biggest probability to buy second time but rather the ones with "moderately-negative". -->
+<!-- However, an unexpected behaviour can be noticed when the tested review changes from 1 to 2 - the model response drops. This means that not the customers with the most negative reviews have the biggest probability to buy for the second time but rather the ones with "moderately-negative". -->
 
 
 ## Śmieci/do appendixa
