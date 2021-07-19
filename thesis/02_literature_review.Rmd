@@ -1,7 +1,12 @@
 ---
 title: "Literature review"
 # output: word_document
-output: html_document
+# output: html_document
+output: 
+  bookdown::word_document2:
+    reference_docx: resources/styles_template.docx
+    number_sections: true
+
 bibliography: resources/bib.bibtex
 params:
   echo: False
@@ -101,7 +106,7 @@ Last category of variables used for churn prediction specified by @BUCKINX200525
 
 ## Explainable Artificial Intelligence
 
-TODO: Na tą chwilę tylko konspekt. Jest świetna książka z mnóstwem przykładów i cytowań do wykorzystania na temat XAI: https://ema.drwhy.ai/introduction.html 
+TODO: Na tą chwilę tylko konspekt - rozwinąć. Jest świetna książka z mnóstwem przykładów i cytowań do wykorzystania na temat XAI: https://ema.drwhy.ai/introduction.html 
 
 - Explainability-performance trade off
 - What is XAI
@@ -114,16 +119,49 @@ TODO: Na tą chwilę tylko konspekt. Jest świetna książka z mnóstwem przykł
   - https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q  - wyzwania dla marketingu przy stosowaniu AI - nie tylko o XAI
   - https://link.springer.com/article/10.1007/s11747-019-00710-5  -  Głównie opisane zalety korzystania z XAI w modelach do marketingu
   
-### Ogólny opis 
+<!-- ### Ogólny opis  -->
 
-Despite superior performance in lots of machine learning tasks, the biggest drawback of Extreme Gradient Boosting models is its black-box nature, meaning lack of interpretability of predictions and parameters. This problem can be mitigated by usage of Explainable AI tools. One of such tools is ceteris-paribus analysis. The idea is to set all variables except the variable(s) of interest as constants, and create a new set of observations by manipulating only one or to variables. Such analysis can give a similar information to the values of coefficients in Logistic Regression models. 
+<!-- Despite superior performance in lots of machine learning tasks, the biggest drawback of Extreme Gradient Boosting models is its black-box nature, meaning lack of interpretability of predictions and parameters. This problem can be mitigated by usage of Explainable AI tools. One of such tools is ceteris-paribus analysis. The idea is to set all variables except the variable(s) of interest as constants, and create a new set of observations by manipulating only one or to variables. Such analysis can give a similar information to the values of coefficients in Logistic Regression models.  -->
 
-(TODO: opisać trochę więcej)
+<!-- (TODO: opisać trochę więcej) -->
   
+### Introduction
   
-### Explainability-performance trade off
+<!-- #### Explainability-performance trade off -->
 
-While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like boosting or neural networks, usually present superior performance to more basic approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees...
+While deciding on the type of Machine Learning algorithm, one usually faces the explainability-performance trade-off [@nanayakkara2018characterising]. More flexible models, like boosting or neural networks, usually present superior performance to less flexible approaches. On the other hand, their predictions cannot be explained as easily as in the case of for example Decision Trees or Logistic Regression. 
+
+<!-- #### What is XAI -->
+
+Explaiable Artificial Intelligence is a set of tools aimed at explaininig predictions of otherwise unexplainable models. This area started gainig popularity for multiple reasons. 
+
+<!-- #### Benefits of explainability -->
+
+@doshi2017towards specifies some of the machine learning model's traits that can accompany typical requirement of achieving the best accuracy:
+
+- fairness - whether the algorithm is biased against particular gender, age, race etc.
+- robustness - whether the algorithm is able to provide correct predictions when the parameters change
+- trust - whether the final users of the algorithm trust the model's predictions
+
+Machine learning practitioners when deciding on the methodology to apply have to assess which of the requirements are important in particular task. For example, in CRM settings the trust in model's predictions is way less important than in medical areas. 
+
+The tools of XAI can help in addressing these issues, without losing the performance gain from uninterpretable models
+
+
+### Review of XAI methods
+
+XAI methods can be divided into 2 categories - model-level and instance-level. 
+
+### XAI in marketing
+
+Research on Explainable Artificial Intelligence in Marketing domain is not very developed.
+
+@rai2020explainable specifies potential areas for future research:
+
+- understanding, what are acceptable requirements regarding explainability compared to accuracy in different marketing tasks
+- Making AI trustworthy - to understand how the eagerness to use AI system's predictions grows in the company when various explainability tools are made avaliable to the end users
+- How model explanations should be presented to various groups of system user. For example, Machine Learning expert is interested in a very detailed and complex explanations, while the company's customer may simply want a 1 sentence summary of what was taken into account while making predictions.
+
 
 
 <!-- https://www.kdnuggets.com/2018/10/enterprise-explainable-ai.html -->

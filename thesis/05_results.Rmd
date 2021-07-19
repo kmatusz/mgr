@@ -488,21 +488,6 @@ for (quant in seq(0.99, 0.01, -0.01)){
 }
 ```
 
-#### Table with selected quantiles
-
-TODO: wykres i tabela pokazują prawie te same informacje, tabelę może dać do appendixa??
-
-```{r }
-quantiles_to_show <- c(0.99, 0.98, 0.97, 0.96, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5)
-output_lifts %>% 
-  select(-score_randomly, -performance_gain_over_randomly) %>%
-  filter(fraction_of_customers %in% (1-quantiles_to_show)) %>%
-  mutate_if(is.numeric, round, 2) %>%
-  mutate(fraction_of_customers = scales::percent(fraction_of_customers,accuracy = 1)) %>%
-  flextable::flextable() %>%
-  flextable_format
-```
-
 #### Lift curve
 
 ```{r fig.width = 6, fig.height = 4}
@@ -744,7 +729,7 @@ To facilitate drawing conclusions from PDP plot for payment value I have include
 
 Model response for payment value is non-monotonous.  From an analysis of smoothed model response one can say that it is increasing to the point of around 100. This value is a median payment value in the whole dataset. After this threshold the probability to buy second time is falling slowly. 
 
-TODO: dlaczego takie wyniki, czy potwierdza tezę
+<!-- TODO: dlaczego takie wyniki, czy potwierdza tezę -->
 
 ##### No. items
 
@@ -891,7 +876,7 @@ From analysis of both variable importance plot and PDP plot one can conclude tha
 <!-- However, a unexpected behaviour can be noticed when the tested review changes from 1 to 2 - the model response drops. This means that not the customers with the most negative reviews have the biggest probability to buy second time but rather the ones with "moderately-negative". -->
 
 
-## Śmieci
+## Śmieci/do appendixa
 
 #### ROC curve 
 
@@ -925,6 +910,23 @@ roc_tibble %>%
   theme_minimal()
 
 ```
+
+
+#### Table with selected quantiles
+
+TODO: wykres i tabela pokazują prawie te same informacje, tabelę może dać do appendixa??
+
+```{r }
+quantiles_to_show <- c(0.99, 0.98, 0.97, 0.96, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5)
+output_lifts %>% 
+  select(-score_randomly, -performance_gain_over_randomly) %>%
+  filter(fraction_of_customers %in% (1-quantiles_to_show)) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  mutate(fraction_of_customers = scales::percent(fraction_of_customers,accuracy = 1)) %>%
+  flextable::flextable() %>%
+  flextable_format
+```
+
 
 #### Cateris paribus review score
 

@@ -5,10 +5,12 @@ output:
   bookdown::word_document2:
     reference_docx: resources/styles_template.docx
     number_sections: true
+    # toc: true
 params:
   echo: False
 bibliography: resources/bib.bibtex
 ---
+
 
 ```{r include=FALSE}
 knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4, fig.height = 2)
@@ -17,33 +19,27 @@ knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4,
 
 <!-- TODO: *W części 03 przydadzą się ilustracje jak wygląda zbiór danych, statystyki zmiennych etc + solidne mapowanie. Rzeczywiście ostatnia mapa chyba ciekawiej może wyglądać jako grid (dałabym obie). Zupełnie brakuje prostych statystyk sprzedażowych zwizualizowanych na mapie (jako grid): ilu klientów, ile transakcji, wartość transakcji - w ujęciu nominalnym, ale też w odniesieniu do populacji (żeby lepiej rozumieć rozkład transakcji i klientów) + jego density (w gglot można zrobić kernel density punktów i zmapować).* -->
 
-## Olist
+## Data sources
 
-TODO: Opis firmy w oderwaniu od datasetu, zamienić podpunkty na paragraf
+In this study I have used the data from 2 sources. Main one is e-commerce store transactions data. Olist company is operating in Brazil, and the dataset was made available online for public use^[https://www.kaggle.com/olistbr/brazilian-ecommerce ; access 14.03.2020]. The other source is census data obtained from Brazilian Statistical Office^[https://sidra.ibge.gov.br/tabela/3548 access 26.09.2020].
 
-- (https://www.kaggle.com/olistbr/brazilian-ecommerce access 14.03.2020)
-- Brazilian company
-- The dataset was published by the company for public use
-- Contains information about 100 thousand orders made on the e-commerce shop site from 2016 to 2018
-- Very rich dataset - contains information about the order, customer and review
+### Transaction dataset
 
-In particular, there were 96180 transactions (96%) from the customers that never previously bought in this shop. 
+The Olist company dataset contains information about 100 thousand orders made on the e-commerce shop site from 2016 to 2018. Besides technical variables indicating keys to join multiple tables from the dataset, it also contains the following features groups:
 
-In this study I am mostly interested in analysing these transactions, and trying to predict just after first transaction, if the customer is likely to buy second time. Changing the customer attitude after buying for the second time is out of the scope of this study. One reason is the lack of data to properly conduct modeling. The other is that usually making customer buy for the second time is the hardest. In particular in this e-commerce store, in the group of the customers that bought for the first time, only 3.2% of them will buy for the second time. However, in the group of the customers that already bought for the second time, 8.6% will buy third time. The same measure is 18.7% for going from third to fourth time. This is a proof that the very first step of retaining the customer is the most important one, and further it is easier and easier to stop the churn.
-
-The primary key in the dataset in the case of almost all features is order number. However, as in the final dataset I'm including the full information only about the first order of each customer, one observation is equal both to one order and one customer. 
-
-The Olist dataset has the following features groups:
-
-- payment value transportation value - value of the order in Brazilian Reals excluding the transportation cost
+- payment value - value of the order in Brazilian Reals 
+- transportation value
 - number of items the customer bought in particular order
-- review of the order - after the finished order the customer can provide the review of the order in 2 forms - 1-5 score or textual review. In the dataset codebook the authors stated that not all of the customers in real life put any review, but this dataset was sampled in such a way that the records without 1-5 review were excluded. On the contrary, the textual review is filled only in ~50%. The data about 1-5 review can be included to the models as-is. Textual review requires however more intense preprocessing, which is described in the *methods* section of this study.
-- location of the customer - the main table containing customer information contains 5-digit ZIP code of the customer's home. The company provided also a mapping table, in which each ZIP code is assigned to multiple latitude/longitude coordinates. Probably this was done because of anonimisation reasons - so that one cannot connect the customer from the dataset with the exact house location. To obtain an exact one-to-one customer-geolocation mapping, to each zip code, I have assigned the most central geolocation from the mapping table. To obtain the most central point, I have used Clustering Around Medoids algorithm with only one cluster, and ran the algorithm separately for each ZIP code. 
+- review of the order - after the finished order the customer can provide the review of the order in 2 forms - 1-5 score or textual review. In the dataset codebook the authors stated that not all of the customers in real life put any review, but this dataset was sampled in such a way that the records without 1-5 review were excluded. On the contrary, the textual review is filled only in ~50%. The data about 1-5 review can be included to the models as-is. Textual review requires however more advanced preprocessing, which is described in the *methods* section of this study.
+- location of the customer - the main table containing customer information contains 5-digit ZIP code of the customer's home. The company provided also a mapping table, in which each ZIP code is assigned to multiple latitude/longitude coordinates. Probably this was done because of anonimisation reasons - so that one cannot connect the customer from the dataset with the exact house location. To obtain an exact one-to-one customer-geolocation mapping, to each zip code I have assigned the most central geolocation from the mapping table. To obtain the most central point, I have used Clustering Around Medoids algorithm with only one cluster, and ran the algorithm separately for each ZIP code. 
 - products bought - the dataset contains information about how many items there were in the package, as well as product category of each item - in the form of raw text. In total there were 74 categories, but the top 15 accounted for 80% of all the purchases. To limit the number of the variables for the modeling process, I have decided to change the label of all the least popular categories to "others".
 
-## SIDRA
+The main goal of this study is trying to predict just after first transaction, if the customer is likely to buy second time. 
+**In the dataset there were 96180 transactions (96.6%) from the customers that never previously bought in this shop. **
 
-The dataset about the population statistics was obtained from Instituto Brasileiro de Geografia e Estatística web service called SIDRA (https://sidra.ibge.gov.br/tabela/3548 access 26.09.2020). In this study I have used the data obtained from 2010 general census. The dataset is avaliable in aggregation to microregions (a Brasilian administrative unit, it has similar level of aggregation to NUTS 3 european classification). 558 microregions were avaliable. In particular, I have chosen the following 36 variables from the dataset:
+### Geodemographic dataset
+
+The dataset about the population statistics was obtained from Instituto Brasileiro de Geografia e Estatística web service called SIDRA. In this study I have used the data obtained from 2010 general census. The dataset is available in aggregation to microregions (a Brazilian administrative unit, it has similar level of aggregation to NUTS 3 European classification). 558 microregions were available. In particular, I have chosen the following 36 variables from the dataset:
 
 - total population of the microregion - 1 variable
 - age structure - percentage of people in particular age bin (with the width of the bins equal to 5 years) - 20 variables
@@ -51,7 +47,12 @@ The dataset about the population statistics was obtained from Instituto Brasilei
 - percentage of immigrants compared to total microregion population - 1 variable
 - earnings structure - share of the people that earn between x0\*minimum_wage and x1\*minimum_wage - 11 variables
 
-## EDA
+TODO: Czy dodać też mapki/wykresy z tymi zmiennymi? To trochę trudne bo jest ich sporo które oznaczają jedną informację.
+
+
+## Quantitative analysis
+
+### Univariate analysis
 
 ```{r cache=F}
 library(readr)
@@ -72,7 +73,8 @@ library(readxl)
 ```
 
 ```{r}
-custom_theme <- theme(axis.title = element_text(size=9),
+custom_theme <- theme_minimal() +
+  theme(axis.title = element_text(size=9),
         legend.title = element_text(size=9)
   )
 ```
@@ -89,74 +91,78 @@ vars_basic <- c("payment_value", "review_score", "geolocation_lat",
 df <- to_model_train[c(vars_basic, 'if_second_order')]
 ```
 
-#### Statistics in a table
+<!-- #### Dependent variable -->
 
-```{r cache=T, caption='aaa'}
-summarise_numeric_custom <- function(x){
-  
-  list(
-    "min" = min(x, na.rm = TRUE),
-    "Q1" = quantile(x, 0.25, na.rm = TRUE),
-    "median" = quantile(x, 0.5, na.rm = TRUE),
-    "mean" = mean(x, na.rm = TRUE),
-    "Q3" = quantile(x, 0.75, na.rm = TRUE),
-    "max" = max(x, na.rm = TRUE)
-  ) %>% 
-    as_tibble() %>%
-    mutate_all(round,2)
-}
+In table ... statistics about customer's orders divided by sequential order number are presented. In the whole dataset there are 96 thousand of orders that were the customer's first order. Then, the number of orders falls abruptly, and there are only 47 orders in the dataset that were customer's 5th or later order.
+Mean value of transaction does not change with the order number. This means that if the company is able to make the customer place second order, it would gain about the same revenue as from the customer's first order. 
+In the last column, percentages of stage-to-stage movement are presented. For example, probability that customers who bought one time will also buy second time is 3%. The same value, but from second to third order is 8.5%. This means that encouraging the customer to buy for the second time is the hardest task the company faces. With next purchases, the customers are becoming more and more loyal.
 
-df %>%
-  select_if(is.numeric) %>%
-  map_df(~summarise_numeric_custom(.)) -> stats_table
+```{r}
+load(here('data/05_dependent_var_stats.Rdata'))
 
-stats_table$Variable = df %>%select_if(is.numeric) %>% names
-stats_table <- stats_table %>% select(Variable, everything())
-# stats_table %>%
-#   flextable::flextable() %>%
-#   flextable::set_caption("mtcars data")#, autonum = autonum)
-
-stats_table %>%
+dependent_var_stats %>%
+  mutate(mean_payment = sprintf('%.0f', mean_payment),
+         percent = ifelse(is.na(percent), '-', sprintf('%.2f%%',percent*100))
+         ) %>%
+  rename(
+    `Order number` = order_no,
+    `No. of orders` = no_orders,
+    `Mean value` = mean_payment, 
+    `Proportion from previous stage` = percent
+  ) %>%
   flextable::flextable() %>%
-  flextable::set_caption("Basic statistics") %>%
+  flextable::set_caption("Sequential orders analysis") %>%
   flextable::font(fontname = 'Times New Roman', part = 'all') %>%
   flextable::fontsize(size = 12) %>%
   flextable::autofit()
 
+
 ```
 
-TODO: opisać? Czy do appendixa??
+<!-- #### Payment value, transportation cost -->
 
-#### if_second_order 
+On the plot \@ref(fig:payment-transportation) the density estimation of the values of payment (left) and transport (right) for each order are presented. I have used the Kernel Density Estimation technique to smoothen the plots. As the distribution is highly right-skewed, I have logarithmed the values. The density plot is grouped by the fact whether the particular customer also placed a second order later. It can be seen that for both variables the 2 densities almost overlap. This means that payment value and transportation cost probably would not be good predictors in an univariate approach - although maybe they can be interacted with other features and start having predictive power.
 
-TODO: wkleić te info gdzieś do tekstu o sidra
-
-- że 97% (?) klientów nie kupuje drugi raz
-- że 50% klientów kupuje max do miesiąca po ostatnim zakupie (tabela z kwantylami?)
-
-
-#### Payment value
-
-On the plot \@ref(fig:payment) the values of payment for each order are presented.  I have used the Kernel Density Estimation technique to smoothen the plot. As the distribution is highly right-skewed, I have logarithmed the values. The density plot is grouped by the fact whether the particular customer also created a second order later. It can be seen that the 2 densities almost overlap. This means that payment value would not be a good predictor in an univariate approach - although maybe it can be interacted with other features and start having predictive power.
-
-
-```{r payment, cache=T, fig.cap='aaa'}
+```{r payment-transportation, cache = T, fig.cap='Payment value and transportation cost. x-axis is log-transformed.', fig.width = 6, fig.height = 2}
 df %>% 
   ggplot(aes(x =payment_value, fill= if_second_order)) +
   geom_density(alpha=0.5) +
   scale_x_log10() +
-  custom_theme
+  custom_theme +
+  theme(legend.position = 'none') +
+  labs(x = 'Payment value') -> pl_payment
+
+df %>% 
+  ggplot(aes(x = sum_freight, fill=if_second_order)) +
+  geom_density(alpha=0.5) +
+  scale_x_log10() +
+  custom_theme +
+  labs(x = 'Transportation cost') -> pl_transportation
+
+gridExtra::grid.arrange(pl_payment, pl_transportation, ncol = 2, widths = c(1,1.7))
 ```
 
-#### Review score
+An interesting thing to check is whether the value of the ordered products and the transportation cost are correlated. Pearson correlation between these two is `r sprintf('%.3f', cor(select(df, payment_value, sum_freight))[1,2])`, meaning that the value of the items ordered somehow influences the rest of the costs. I have also plotted these two against each other on the figure \@ref(fig:payment-transportation-corr). Again, I have logarithmed both axes. 
 
-On the plot .. percentages of orders that were given x stars in the review are shown. On the right subplot percentages of the customers that made a second order are presented. Most of the reviews are positive - the scores 4 and 5 make up for 75% of the whole dataset. Another thing worth noticing is the tendency to the negative score polarization - if the customer is unsatisfied with the order, it is more likely for her to give the lowest review. 
+```{r payment-transportation-corr, cache=T, fig.cap='Scatterplot of transportation value and order value. Both axes are logarithmed for better plot clarity.', fig.width = 3, fig.height = 3}
+df %>%
+  sample_frac(0.1) %>%
+  ggplot(aes(y = sum_freight, x = payment_value)) +
+  geom_point(alpha = 0.1) +
+  geom_abline(slope = 1, intercept = 0) +
+  scale_x_log10() +
+  scale_y_log10() +
+  custom_theme +
+  labs(x = 'Payment value', y = 'Transportation cost')
+```
 
-The Relationship between making a second order and review score for the first one is somehow surprising. One would expect that if the client is unsatisfied for the first time, she will never buy in this store again. In the case of this dataset it is the opposite - the customers that gave one-star review are also the most likely to make the second order. It is worth noting is that the differences between the groups are very small - between 2.9% for review 4 (smallest one), and 3.45% for review 1. One can wonder if this can come simply from random reasons, and that the review score does not influence the probability to come back at all. In particular, the difference between the percentages for the scores 1 and 5 (0.003%) is that small that it most likely for random reasons.
+The relationship is very clear here. For particular value of the package, the transportation fee is almost never bigger than the value itself. I have added a line with a slope 1 to highlight that. This probably comes from the company's policy - that it limits transportation cost on purpose, because customers wouldn't buy the company's products if the transportation would cost more than the product itself. 
 
-One should bear in mind that the observations avaliable in the dataset are not the complete customers data that the Olist company has. Rather, they were somehow sampled. The dataset authors claim that it represents the customers base in a complete manner. However, there was some sampling bias introduced while creating the dataset that is based on the value of the review score. Namely, in real life case customers do not have to provide star review of every order. The authors of the dataset sampled the orders database in such a way that they excluded the orders, for which the review was not given. One should bear in mind that the analysis of review score is incomplete because of that - one would wonder if there are factors that influence the customer to provide the review, and the very fact of providing the review changes the probability to buy for the second time for that particular customer.
+<!-- #### Review score -->
 
-```{r cache=T}
+On the plot \@ref(fig:review-score) percentages of orders that were given x stars in the review are shown. On the right subplot percentages of the customers that made a second order are presented. Most of the reviews are positive - the scores 4 and 5 make up for 75% of the whole dataset. Another thing worth noticing is the tendency to the negative score polarization - if the customer is unsatisfied with the order, it is more likely for her to give the lowest review. 
+
+```{r review-score, cache=T, fig.cap = 'Number of orders grouped by 1-5 review of the purchase (left) and percentage of such orders that resulted in second order (right).'}
 
 df %>%
   filter(if_second_order=='yes') %>%
@@ -166,8 +172,11 @@ df %>%
 
 ggplot(df, aes(x = review_score)) +
   geom_bar(aes(y = (..count..)/sum(..count..))) +
-  labs(y = 'Percentage') + coord_flip() +
-  custom_theme -> pl1
+  labs(y = 'Percentage in the dataset') + 
+  coord_flip() +
+  custom_theme +
+  labs(x = 'Review score') +
+  scale_y_continuous(n.breaks = 5,labels = scales::percent_format(accuracy = 1)) -> pl1
 
 
 df %>% 
@@ -178,76 +187,118 @@ df %>%
   ggplot(aes(x = review_score, y = percent_second_order)) +
   geom_col() +
   coord_flip() +
-  custom_theme -> pl2
+  custom_theme +
+  labs(y = 'Percentage of second order') +
+  scale_y_continuous(n.breaks = 5,labels = function(x) sprintf('%.1f%%', x*100)) -> pl2
 
 gridExtra::grid.arrange(pl1, pl2, ncol=2)
 
-
 ```
 
-#### Items - numbers and percentage
+The relationship between making a second order and review score for the first one is somehow surprising. One would expect that if the client is unsatisfied for the first time, she will never buy in this store again. In the case of this dataset it is the opposite - the customers that gave one-star review are also the most likely to make the second order. It is worth noting is that the differences between the groups are very small - between 2.9% for review 4 (smallest one), and 3.45% for review 1. One can wonder if this can come simply from random reasons, and that the review score does not influence the probability to come back at all. In particular, the difference between the percentages for the scores 1 and 5 (0.003%) is that small that it most likely for random reasons.
 
-On the plot .. analysis of number of items in the order is presetned. There were also orders with number of items above 6, however they make up for 0.2% of the dataset only, that is why I excluded them for clarity of the plot. On the left subplot is shown the percentage share in the full dataset, while on the right one - percentage of the customers that put second order after ordering x items for the first time.
+<!-- #### Items - numbers and percentage -->
 
-A trend is clearly visible - the more items the customer has bought in the first order, the more likely she is to also put the second order. This difference is pretty strong - between 1 and 6 items the percentage increase in the response is almost 150%. However, one should bear in mind that big orders are extremely rare - 93% of the customers buy one or two items only. 
+On the plot \@ref(fig:items-numbers) analysis of number of items in the order is presented. I have binned all orders with number of items more than 4 to one category. On the left subplot is shown the percentage share in the full dataset, while on the right one - percentage of the customers that put second order after ordering x items for the first time.
 
-```{r cache=T}
+```{r items-numbers, cache=T, fig.cap='Number of items in an order (left) and percentage of orders that resulted in second order grouped by number of items (right).'}
 # less than 7 - 99.7% of orders
-ggplot(df %>% filter(no_items<7), aes(x = no_items)) +
+
+df %>%
+  mutate(no_items = ifelse(no_items<5, no_items, 5))%>%
+ggplot(aes(x = no_items)) +
   geom_bar(aes(y = (..count..)/sum(..count..))) +
-  labs(y = 'Percentage') +
-  scale_x_reverse()+
+  scale_x_reverse(labels = function(x) ifelse(x ==5, '>4', x))+
   coord_flip() +
-  custom_theme -> pl1
+  custom_theme +
+  labs(y = 'Percentage of orders', x = 'No. of items') +
+  scale_y_continuous(n.breaks = 5, labels = function(x) sprintf('%.0f%%', x*100)) -> pl1
 
 df %>%
   filter(if_second_order=='yes') %>%
   group_by(no_items) %>%
   tally(name = 'cnt_second_order') -> tmp2
 
+
 df %>% 
+  mutate(no_items = ifelse(no_items<5, no_items, 5))%>%
   group_by(no_items) %>%
   tally() %>%
   left_join(tmp2) %>%
   mutate(percent_second_order = cnt_second_order/n) %>%
-  filter(no_items<7) %>%
   ggplot(aes(x = no_items, y = percent_second_order)) +
   geom_col() +
-  scale_x_reverse()+
+  scale_x_reverse(labels = function(x) ifelse(x ==5, '>4', x))+
   coord_flip() +
-  custom_theme -> pl2
+  custom_theme +
+  labs(x = 'No. of items', y = 'Percentage of second order') +
+  scale_y_continuous(n.breaks = 5,labels = function(x) sprintf('%.1f%%', x*100)) -> pl2
 
 gridExtra::grid.arrange(pl1, pl2, ncol=2)
 
+```
+
+A trend is visible - the more items the customer has bought in the first order, the more likely she is to also put the second order. This difference is pretty strong - between 1 and 4 items the percentage increase in the response is 100%. For more items than 4, this relation is not visible anymore, however, these orders make up for very small percentage of the dataset.
+
+<!-- #### Product categories -->
+
+In the table .., summary statistics about product categories are presented. The most popular category, "bed, bath and tables" accounts for 12% of all items bought in the shop. The table is ordered by the percentage of the customers that in first purchase bought particular category, and later decided to buy in the shop for the second time. The difference in the percentages is clearly visible. For "the best" category, it is 13.8%, while for the worst one - only 1.3%. This is a very promising result, and a signal that the dummy variables indicating product category can serve as important features in the modeling phase. 
+
+```{r}
+to_model_train %>%
+  select_at(vars(starts_with('prod_cat'), if_second_order)) %>%
+  group_by(if_second_order) %>%
+  summarise_if(is.numeric, mean) %>%
+  filter(if_second_order =='yes') %>%
+  pivot_longer(2:16) %>%
+  select(-if_second_order) %>%
+  mutate(category = str_replace(name, 'prod_cat_', '')) %>%
+  rename(percent_second_order = value) %>%
+  select(category, percent_second_order) -> product_categories_temp2
+
+to_model_train %>%
+  select_at(vars(starts_with('prod_cat'), if_second_order)) %>%
+  # nie wiem dlaczego ale niektóre prod categories nie byłY 0,1
+  mutate_if(is.numeric, function(x) ifelse(!(x %in% c(0,1)), 1, x)) %>% 
+  summarise_if(is.numeric, sum) %>%
+  pivot_longer(1:15) %>%
+  mutate(category = str_replace(name, 'prod_cat_', '')) %>%
+  rename(no_items = value) %>%
+  mutate(percentage = no_items/sum(no_items)) %>%
+  select(category, no_items, percentage) -> product_categories_temp1
+
+product_categories_temp1 %>%
+  left_join(product_categories_temp2) %>%
+  arrange(-percent_second_order) %>%
+  mutate_if(is.numeric, round,3) %>%
+  mutate_at(vars(starts_with('perc')), ~sprintf('%.1f%%', .x*100)) %>%
+  rename(
+    `Product category` = category,
+    `No. items` = no_items,
+    `Percentage` = percentage,
+    `Percentage of\n second order` = percent_second_order
+  ) %>%
+  flextable::flextable() %>%
+  flextable::set_caption("Product categories") %>%
+  flextable::font(fontname = 'Times New Roman', part = 'all') %>%
+  flextable::fontsize(size = 12) %>%
+  flextable::autofit()
+
 
 ```
 
-#### Transportation cost  
+### Spatial analysis
 
-Sum of the final transportation costs that the customer had to make. The distribution is highly right-skewed, so for clarity I have log-transformed the values. 
+On the picture below, map of Brazil population density is presented^[source: https://www.gifex.com/detail2-en/2018-12-15-15407/Population_density_of_Brazil.html]. The most densely populated areas are located in the Southern part of the country. There also the biggest cities like São Paulo and Rio de Janeiro are located. Another populated area is on the Eastern coast. North-Western part of the country is the least populated. The distribution of the customers follows this density very closely (with correlation 93%), that is why I did not include the map of customers density.
 
-No clear distinction between two groups of observations are apparent. 
-
-An interesting thing to check is the relationship between the value of the ordered products and the transportation cost. Pearson correlation between these two is 0.5, meaning that the value of the items ordered somehow influences the rest of the costs.
-
-```{r cache=T}
-df %>% 
-  ggplot(aes(x = sum_freight, fill=if_second_order)) +
-  geom_density(alpha=0.5) +
-  scale_x_log10() +
-  custom_theme
-```
-
-
-#### Maps
 
 <!-- ![](resources/brazil_population_density.png){width=4, height=2} -->
 
-```{r out.width=300, out.height=300}
+```{r out.width=300, out.height=300, }
 knitr::include_graphics("resources/brazil_population_density.png")
 ```
 
-On the picture .., map of Brazil population density is presented (source: https://www.gifex.com/detail2-en/2018-12-15-15407/Population_density_of_Brazil.html). The most densely populated areas are located in souther part of the country. There also the biggest cities like São Paulo and Rio de Janeiro are located. Another populated area is on the eastern coast. North-western part of the country is the least populated. The distribution of the customers (as expected) follows this density, that is why I did not include the map of customers density. 
+On the maps in the figure \@ref(fig:maps-stats), basic statistics about spatial distribution of the features are presented - in aggregation to microregion level. Such binning is relatively coarse - because of that, some of the statistics can be not reliable in the regions with a very small number of customers. That is why I have decided to remove from the map these microregions, in which number of customers was less than 5. 
 
 
 ```{r cache=T}
@@ -282,30 +333,6 @@ brasil_cities_coords <- sf::st_as_sf(brasil_cities_coords, coords = c(3,2))
 st_crs(brasil_cities_coords) <- st_crs(brazil_map)
 
 ```
-
-```{r cache=T}
-tm_shape(brazil_map) +
-  tm_polygons(col = "white") +
-  tm_shape(df_map %>% filter(if_second_order!='yes')) +
-  tm_symbols(size = 0.1,
-             col = "if_second_order",
-             palette = RColorBrewer::brewer.pal(3, 'Dark2')[1:2],
-             # palette = c('red', ''),
-             # style = "fixed",
-             # breaks = c(45, 60, 75, 90),
-             border.lwd = NA,
-             alpha = 0.5)+
-  tm_shape(df_map %>% filter(if_second_order=='yes')) +
-  tm_symbols(size = 0.1,
-             col = "if_second_order",
-             palette = RColorBrewer::brewer.pal(3, 'Dark2')[2],
-             # palette = c('red', ''),
-             # style = "fixed",
-             # breaks = c(45, 60, 75, 90),
-             border.lwd = NA,
-             alpha = 0.5)
-```
-
 
 
 ```{r cache=T}
@@ -380,26 +407,56 @@ plot_map <- function(variable, title){
 }
 
 w1 <- plot_map('no_customers_per_10000_pop', 'No. customers per 10 thousand inhabitants')
-w2 <- plot_map('mean_review_score', 'Mean review score')
-w3 <- plot_map('percent_second_order', 'Percentage of customers that placed second order')
+w2 <- plot_map('percent_second_order', 'Percentage of customers that placed second order')
+w3 <- plot_map('mean_review_score', 'Mean review score')
 w4 <- plot_map('mean_payment_value', 'Mean payment value')
 ```
 
-```{r cache = T, fig.width=9, fig.height=7}
+```{r maps-stats, cache = T, fig.width=9, fig.height=7, fig.cap='Cartograms presenting customers statistics by microregion.'}
 tmap_arrange(w1, w2, w3, w4, nrow=2)
 ```
 
-On the figure .., basic statistics about spatial distribution of the features are presented - in aggregation to microregion level. Such binning is relatively coarse - because of that, some of the statistics can be not reliable in the regions with a very small number of customers. That is why I have decided to remove from the map these microregions, in which number of customers was less than 5. Because of hight correlation between number of customers in the region and total population (~93%), a more meaningful statistic than total number of customers is the number of customers per 10 thousand of inhabitants. It is presented on the plot .. . It is visible that bigger shares of customers appear in the southern part of the country, concentrated in the triangle between São Paulo, Rio de Janeiro and Belo Horizonte agglomerations. 
 
-Mean transaction value is bigger in the northern, more desolated part of Brazil. One explanation could be that in these parts deliveries of the packages are more complicated/expensive/take more time, and thus the customers are more eager to place one bigger order than few small ones. Other possibility is that in the northern part the competition between e-commerce sites is smaller, and thus the customers are pushed to buiyng more items at one supplier. 
+Top-left map shows number of customers per 10 thousand of inhabitants. It is visible that bigger shares of customers appear in the southern part of the country, concentrated in the triangle between São Paulo, Rio de Janeiro and Belo Horizonte agglomerations. 
 
-It is could be argued that in the northern part of the country the people that placed second order are a bit higher. However, this relationship is rather weak. Similar things can be said about mean review score - there is no clear pattern visible.
+Top-right map hows percentages of customers that placed a second order in each microregion. It is could be argued that in the northern part of the country the people this percentage is a bit higher. However, this relationship is rather weak. The same can be said about mean review score (bottom-left map) - there is no clear pattern visible.
 
-TODO: Dalsze mapy raczej do wyrzucenia, wprost wynikają z gęstości populacji ??
+Mean transaction value (bottom-right) is bigger in the northern, more desolated part of Brazil (because of Amazon rain forest). One explanation could be that in these parts deliveries of the packages are more complicated/expensive/take more time, and thus the customers are more eager to place one bigger order than few small ones. Other possibility is that in the northern part the competition between e-commerce sites is smaller, and thus the customers are pushed to buying more items at one supplier. 
+
+### Śmieci (TODO: spojrzeć na te kawałki i raczej wyrzucić)
+
+One should bear in mind that the observations available in the dataset are not the complete customers data that the Olist company has. Rather, they were somehow sampled. The dataset authors claim that it represents the customers base in a complete manner. However, there was some sampling bias introduced while creating the dataset that is based on the value of the review score. Namely, in real life case customers do not have to provide star review of every order. The authors of the dataset sampled the orders database in such a way that they excluded the orders, for which the review was not given. One should bear in mind that the analysis of review score is incomplete because of that - one would wonder if there are factors that influence the customer to provide the review, and the very fact of providing the review changes the probability to buy for the second time for that particular customer.
+
+#### map if second order
+
+```{r cache=T}
+tm_shape(brazil_map) +
+  tm_polygons(col = "white") +
+  tm_shape(df_map %>% filter(if_second_order!='yes')) +
+  tm_symbols(size = 0.1,
+             col = "if_second_order",
+             palette = RColorBrewer::brewer.pal(3, 'Dark2')[1:2],
+             # palette = c('red', ''),
+             # style = "fixed",
+             # breaks = c(45, 60, 75, 90),
+             border.lwd = NA,
+             alpha = 0.5)+
+  tm_shape(df_map %>% filter(if_second_order=='yes')) +
+  tm_symbols(size = 0.1,
+             col = "if_second_order",
+             palette = RColorBrewer::brewer.pal(3, 'Dark2')[2],
+             # palette = c('red', ''),
+             # style = "fixed",
+             # breaks = c(45, 60, 75, 90),
+             border.lwd = NA,
+             alpha = 0.5)
+```
+
+#### mapy idealnie skorelowane z gęstością populacji - raczej do wyrzucenia
 
 Number of customers 
 
-wprost wynika z gęstości populacji (korelacja 0.93), raczej do wyrzucenia 
+wprost wynika z gęstości populacji (korelacja 0.93)
 
 ```{r cache=T}
 tm_shape(brazil_map) +
@@ -422,7 +479,7 @@ st_coordinates(df_map) %>%
   custom_theme
 ```
 
-prawie nic nie widać, raczej do wyrzucenia (??)
+prawie nic nie widać
 
 Total transactions value
 
@@ -433,44 +490,44 @@ tm_shape(brazil_map) +
   tm_polygons(col = "sum_payment_value",border.alpha = 0)
 ```
 
-Tak jak z ilością customerów, duża korelacja po prostu z gęstością zaludnienia, raczej do wyrzucenia 
+Tak jak z ilością customerów, duża korelacja po prostu z gęstością zaludnienia
 
-#### Product categories
+#### Statistics in a table
 
-In the table .., summary statistics about product categories are presented. The most popular category, "bed, bath and tables" accounts for 12% of all items bought in the shop. The table is ordered by the percentage of the customers that in first purchase bought particular category, and later decided to buy in the shop for the second time. The difference in the percentages is clearly visible. For "the best" category, it is 13.8%, while fot the worst one - only 0.029. This is a very promising result, and a signal that the dummy variables indicating product category can serve as important features in the modeling phase. 
+```{r cache=T, caption='aaa'}
+summarise_numeric_custom <- function(x){
+  
+  list(
+    "min" = min(x, na.rm = TRUE),
+    "Q1" = quantile(x, 0.25, na.rm = TRUE),
+    "median" = quantile(x, 0.5, na.rm = TRUE),
+    "mean" = mean(x, na.rm = TRUE),
+    "Q3" = quantile(x, 0.75, na.rm = TRUE),
+    "max" = max(x, na.rm = TRUE)
+  ) %>% 
+    as_tibble() %>%
+    mutate_all(round,2)
+}
 
-```{r}
-to_model_train %>%
-  select_at(vars(starts_with('prod_cat'), if_second_order)) %>%
-  group_by(if_second_order) %>%
-  summarise_if(is.numeric, mean) %>%
-  filter(if_second_order =='yes') %>%
-  pivot_longer(2:16) %>%
-  select(-if_second_order) %>%
-  mutate(category = str_replace(name, 'prod_cat_', '')) %>%
-  rename(percent_second_order = value) %>%
-  select(category, percent_second_order) -> product_categories_temp2
+df %>%
+  select_if(is.numeric) %>%
+  map_df(~summarise_numeric_custom(.)) -> stats_table
 
-to_model_train %>%
-  select_at(vars(starts_with('prod_cat'), if_second_order)) %>%
-  # nie wiem dlaczego ale niektóre prod categories nie byłY 0,1
-  mutate_if(is.numeric, function(x) ifelse(!(x %in% c(0,1)), 1, x)) %>% 
-  summarise_if(is.numeric, sum) %>%
-  pivot_longer(1:15) %>%
-  mutate(category = str_replace(name, 'prod_cat_', '')) %>%
-  rename(no_items = value) %>%
-  mutate(percentage = no_items/sum(no_items)) %>%
-  select(category, no_items, percentage) -> product_categories_temp1
+stats_table$Variable = df %>%select_if(is.numeric) %>% names
+stats_table <- stats_table %>% select(Variable, everything())
+# stats_table %>%
+#   flextable::flextable() %>%
+#   flextable::set_caption("mtcars data")#, autonum = autonum)
 
-product_categories_temp1 %>%
-  left_join(product_categories_temp2) %>%
-  arrange(-percent_second_order) %>%
-  mutate_if(is.numeric, round,3) %>%
+stats_table %>%
   flextable::flextable() %>%
-  flextable::set_caption("Product categories") %>%
+  flextable::set_caption("Basic statistics") %>%
   flextable::font(fontname = 'Times New Roman', part = 'all') %>%
   flextable::fontsize(size = 12) %>%
   flextable::autofit()
 
 ```
+
+TODO: opisać? Czy do appendixa??
+
 

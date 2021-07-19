@@ -1,22 +1,19 @@
-tm_shape(brazil_map) +
-  tm_polygons(col = "white") +
-  tm_shape(df[which(lengths(st_within(df, brazil_map)) != 0), ]%>%rename(`Prediction quantile`=a)) +
-  tm_symbols(size = 0.4,
-             col = "yhat",
-             palette = RColorBrewer::brewer.pal(9, 'Greens'),
-             # style = "fixed",
-             # breaks = c(45, 60, 75, 90),
-             border.lwd = NA,
-             n = 10,
-             alpha = 0.8) +
-  tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
-  tm_symbols(size = 0.4,
-             col = "red",
-             # style = "fixed",
-             # breaks = c(45, 60, 75, 90),
-             border.lwd = NA,
-             alpha = 0.8) +
-  tm_text(text='city', just='top')
+product_categories_temp1 %>%
+  left_join(product_categories_temp2) %>%
+  arrange(-percent_second_order) %>%
+  mutate_if(is.numeric, round,3) %>%
+  mutate_at(vars(starts_with('perc')), ~sprintf('%.1f%%', .x*100)) %>%
+  rename(
+    `Product category` = category,
+    `No. items` = no_items,
+    `Percentage` = percentage,
+    `Percentage of\n second order` = percent_second_order
+  ) %>%
+  flextable::flextable() %>%
+  flextable::set_caption("Product categories") %>%
+  flextable::font(fontname = 'Times New Roman', part = 'all') %>%
+  flextable::fontsize(size = 12) %>%
+  flextable::autofit()
 
 
 ### DUMP ----

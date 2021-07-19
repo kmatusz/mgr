@@ -70,6 +70,22 @@ orders_master %>%
   group_by(no_orders) %>%
   summarise(avg_profit=mean(profit, na.rm = T))
 
+
+orders_master %>%
+  # filter(order_no <5) %>%
+  mutate(order_no = ifelse(order_no<5, order_no, 50))%>%
+  group_by(order_no) %>%
+  summarise(
+    no_orders = n(),
+    mean_payment = mean(payment_value, na.rm=T)) %>%
+  mutate(
+    percent = ifelse(order_no == 50, NA, no_orders/lag(no_orders))
+  ) %>%
+  mutate(order_no = ifelse(order_no != 50, order_no, '5 or more')) -> dependent_var_stats
+
+save(dependent_var_stats, file = 'data/05_dependent_var_stats.Rdata')
+  
+
 #' This is quite obvious, but customers who have bought more times also are more profitable. 
 #' This means that customer retention is potentially very rewarding for the company.
 #' We can check the behaviour of customers that bought at least one time, to see if it is possible to
