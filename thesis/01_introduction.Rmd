@@ -14,6 +14,44 @@ bibliography: resources/bib.bibtex
 knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4, fig.height = 2)
 ```
 
+Skrawki zdań:
+
+Customer loyalty is an important thing for every business
+Studies have shown that it is very profitable
+In CRM, prediction of churn before it happens is a very active field of research
+Multiple studies have been conducted to help businesses retain customers..
+Most of them were done in the industries operating in contractual industries where the churn rate is not that big, for example telecom or banking.
+
+In this study I am interested in predicting customer loyalty of an e-commerce retail shop operating on the Brazilian market. 
+
+
+
+However, most of them were based on contractual settings, where most of the customers stay with the company. A very different challenge is making the customer stay in the situation of non-contractual settings. Moreover, in the case of previous studies mmost of the customers stayed with the company, meaning that the rate of the people staying with the company was high.
+
+In my study I analyze such a non-contractual business, namely an e-commerce retail site operating in Brazil. 
+
+This study 
+
+A challenge that to the best of authors knowledge was not addressed in the previous studies is a very low rate of the customers that actually stay with the company. In this case almost 97% of the customers don't come back to the company. 
+Also, this study is a first approach to predict customer loyalty not using the whole customer's history, but only the first transaction. 
+Because of that, usage of non-conventional data sources is needed. 
+That is why, in this study besides transaction data about the customer, I also analyze customer's geodemographic envoronment obtained from national census, as well as information from customer's textual reviews, extracted using topic modeling (it is also a first try)
+
+From technical point of view:
+
+- I have used 2 machine learining techniques, XGBoost and LR
+- Besides that I have made extensive use of XAI techniques, to answer hypotheses about the influence of variables on the target in the case of XGBoost modeling, which is an unexplainable, black-box model. 
+- Usage of VI techinique to assess hypothesis about the influence of particular sets of variables on the target. 
+- I have also used Partial Dependence Profile to assess the hypotheses about the direction of the influence of particular variables from the feature set. 
+
+
+
+
+
+
+
+
+
 TODO: zamienić konspekt na tekst
 
 Konspekt, co opisać:
@@ -28,37 +66,6 @@ Contributions:
 - Use geodemographic variables - in previous studies the results were ambiguous whether they improve prediction
 - First that extensive usage of XAI tools to explain model's predictions in churn - previous works only variable importance or more basic algorithms like LR
 - First time predicting the customer attitude just after first transaction - this can serve as an important competitive edge (TODO:opisać to bardziej)
-
-Skrawki zdań:
-
-- Customer loyalty is an important thing for every business
-- Studies have shown that it is very profitable
-- Multiple studies have been conducted to help businesses retain customers..
-- However, most of them were based on contractual settings, where most of the customers stay with the company. A very different challenge is making the customer stay in the situation of non-contractual settings.
-- In my study I analyze such non-contractual business, namely an e-commerce retail site operating in Brazil. 
-- A challenge that to the best of authors knowledge was not addressed in the previous studies is a very low rate of the customers that actually stay with the company. In this case almost 97% of the customers don't come back to the company. 
-- Also, this study is a first approach to predict customer loyalty not using the whole customer's history, but only the first transaction. 
-- Because of that, usage of non-conventional data sources is needed. 
-- That is why, in this study besides transaction data about the customer, I also analyze customer's geodemographic envoronment obtained from national census, as well as information from customer's textual reviews, extracted using topic modeling. 
-
-From technical point of view:
-
-- I have used 2 machine learining techniques, XGBoost and LR
-- Besides that I have made extensive use of XAI techniques, to answer hypotheses about the influence of variables on the target in the case of XGBoost modeling, which is an unexplainable, black-box model. 
-- Usage of VI techinique to assess hypothesis about the influence of particular sets of variables on the target. 
-- I have also used Partial Dependence Profile to assess the hypotheses about the direction of the influence of particular variables from the feature set. 
-
-
-
-TODO: bardziej opisać Results of this study can halp in CRM efforts by assessing which types of data about the customer is the most valuable to obtain and have good quality of. 
-
-
-
-
-
-
-
-
 
 
 

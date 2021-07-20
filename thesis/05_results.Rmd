@@ -17,67 +17,6 @@ bibliography: resources/bib.bibtex
 
 <!-- TODO: *W części 05 trzeba do każdej analizy dać dwa typy opisów: metodologiczne (co wyszło, co nie wyszło etc) i marketingowe (co to znaczy dla CRM).* -->
 
-## Hypotheses to check:
-
-- Main hypothesis - machine learning modeling can be helpful in ranking customers by their propensity to churn
-- I have tested 2 hypotheses. (1) The amount of money spent on the first purchase positively influences the customer probability of buying for the second time. (2) categories bought by the customer can influence the customer's probability to stay with the company.
-- A hypothesis worth checking is if a tendency to churn is dependent on whether the customer is living in a densely populated area.
-- A hypothesis I would like to check is if the social structure of the customer’s environment can serve as a valuable predictor of churn tendency.
-- My hypothesis is that both the numeric review, as well as topic of the textual review can be useful predictors of customer loyalty.
-
-Jakie analizy:
-
-- AUC comparison in table, bootstrapping AUC (if ML is able to discriminate non-churners, if model choice is justified)
-- Lift curve (how good is ML model able to discriminate non-churners (better interpretation))
-- Variable importances (if variables have predictive power)
-- cateris paribus (what is the direction and strength of influence of variables on prediction)
-- break down of prediction (???)
-
-
-### Questions answered
-
-2 parts of results, pre-modeling and after-modeling
-
-Pre-modeling:
-
-- Topic extraction from the reviews
-  - CRM: use in daily dashboards - monitoring of new reviews, monitoring of sentiment based on the topic, customer segmentation, direct marketing (send message based on the review topic)
-  - Methods: attention-based extraction shown superior to classic LDA approach in this domain
-- DBSCAN on lon/lat, PCA on demographic
-  - methodological: potential impact on model performance, shown by previous literature to be useful, reduction of dimensionality succesful (demographic+PCA better than demographic, lot of variance explained)
-  - CRM: nie ma zbyt zastosowania
-  - TODO przenieść dbscan i pca do methods description? bo bardzo krótkie i niewiele wnoszące rezultaty
-
-After-modeling
-
-- OK Model performance- AUC values for all models
-  - methodological:
-  - which ML model suits the task better (XGB)
-  - which variables give the best score
-  - CRM:
-  - Most important: the model has predictive power
-  - which parts of the dataset should be observed after putting model to production (drift analysis)
-- OK Model performance- Bootstrap, K-S test, density plots
-  - Methodological: Another tool for the best model search (complementing AUC on test set)
-  - no importance for CRM
-- Model performance- Lift curve, lift analysis
-  - Methodological: a way to show how the model performs in a way that is understandable by non-technical adopters, a way of quantifying a potential revenue from using the model
-  - OK CRM: a way to enhance targeting strategies (which customers should be more/less targeted based on apriori probability of buying second time), a more meaningful baseline to assessing A/B testing strategies (probability to buy from the model vs. share of customers that bought)
-  - Customer Lifetime Value for new customers - probability to buy second time from the model \* average buy second time
-  - OK Model performs better for almost all the cohorts of probabilities
-  - OK segmentation+targeting - a way to reduce customer aquisition cost
-  - OK Segmenation based on probability to buy second time
-- XAI on model level (VI plots, cateris paribus plots)
-- XAI on customer level (break-down plots)
-
-- CRM:
-  - a way to verify if the intuition and know-how present in the marketing department is compliant with the one that the model used to do predictions
-  - in the case of complaints about model prediction a way to assess why the model did particular decision
-  - increase of trust in the model from non-technical part of the company, better comunication between business and IT
-- Methodology - że może poprawiać przewidywania modelu, że można testować hipotezy (TODO jak już wymyślę hipotezy do przetestowania)
-
-
-
 
 ```{r include=FALSE}
 knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4, fig.height = 2.5, cache = T)
@@ -530,47 +469,50 @@ output_lifts %>%
 On the plot .., a lift curve is presented. On the x-axis, the fraction of the *top* customers judging by probability to buy for the second time is presented. On the y axis, a lift value for this quantile is shown. 
 The shape of the plot resembles the one of the function 1/x. Values of lift are very big for the smallest percentage of the best customers to target, and they are getting smaller very quickly. This means that the more customers the company would like to target based on the model prediction, the less marginal effects it would get from the usage of the model. For example, for the top 1% of the customers, the model can predict retention 18.7 times better than the random targeting approach. For the top 5%, it is still very effective, being 4.2 times better. However, the improvement for half of the customers is only 0.3. Although this value is less impressive, it is still an improvement over random targeting. 
 
-## Model explanations
+## Model's working explanations
 
 <!-- Despite superior performance in lots of machine learning tasks, the biggest drawback of Extreme Gradient Boosting models is its black-box nature, meaning lack of interpretability of predictions and parameters. This problem can be mitigated by usage of Explainable AI tools. One of such tools is ceteris-paribus analysis. The idea is to set all variables except the variable(s) of interest as constants, and create a new set of observations by manipulating only one or to variables. Such analysis can give a similar information to the values of coefficients in Logistic Regression models.  -->
 
-#### Introduction
+<!-- #### Introduction -->
 
 In this study, I have analyzed Logistic Regression and XGBoost algorithms for the task of churn prediction. Logistic Regression is an interpretable model by design - one can simply look at the model coefficients and infer about strength and direction of a particular feature influenced on the final prediction. However, as shown in the previous sections it is inferior to XGBoost with regards to predictions quality. XGB is a *black-box model*, meaning that its structure is too complex to be directly inspected. To be able to test hypotheses about importances and direction of influence for model prediction, XAI tools have to be used.
 
 In this study, I have used 2 techniques of XAI, namely Variable Importance (VI) and Partial Dependence Profile (PDP). The first one can answer the question "which variables (or categories of variables) influence the predictions the most?", while the second - "What is the direction and strength of this influence?" 
 
-#### Influence of features groups on customer churn (Variable importances)
+### Influence of features groups on customer churn
 
-In this study, I have used a Permutation Feature importance method. At first, the performance score (in this case AUC) is computed on the whole dataset. Then, each of the variables is randomly permuted one-by-one, and predictions are made using such a "blinded" variable. Later, the drop in model performance for each of the blinded features serves as its importance. TODO: cytowanie
+In this study for the feature importance assessment, I have used a Permutation method [@dalex]. At first, the performance score (in this case AUC) is computed on the whole dataset. Then, each of the variables is randomly permuted one-by-one, and predictions are made using such a "blinded" variable. Later, the drop in model performance for each of the blinded features serves as its importance.
 
-I have examined variable importances for two of the XGB models from this study - one for the best set of variables (with included product categories), and another - with all variables included. The first one served ... (TODO: po co go opisywać w ogóle? Poza inspekcją modelu).
+I have examined variable importances for two of the XGB models from this study - one for the best set of variables (with included product categories), and another - with all variables included. The reason to check variable importances also for the model with all features is that it can answer the questions about the significance of the particular sets of variables.
 
-The latter one can help to check, which of the sets of variables from all of the tested ones were significant for model predictions.
+<!-- ##### Best model with unbinned and binned product categories -->
 
-##### Best model with unbinned and binned product categories
+To the left of the figure \@ref(fig:varimp-categories) the unbinned variables importances from the XGB model for the best variables (with included product categories) are presented.
+The most important one is the value of the payment. Also, high importance scores are obtained by vanilla geolocation variables and the transportation cost for the value. 
+The review score of the purchase was not a very important variable.
 
 ```{r varimp-categories, fig.width = 7, fig.height=5,  fig.cap="Variable importance plots for the model with included product categories. Left subplot shows single variables, while right one - binned product categories and geolocation features."}
-# FUNS
+
 range01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
 plot_varimp <- function(df){
   df %>% 
     ggplot(aes(x = reorder(var2,Overall), y = Overall, label = round(Overall,2))) +
-    geom_point(stat='identity', fill="black", size=7) +
+    geom_point(stat='identity', fill="black", size=3) +
     geom_segment(aes(y = 0,
                      x = var2,
                      yend = Overall,
                      xend = var2),
                  color = "black") +
-    geom_text(color="white", size=3) +
+    # geom_text(color="white", size=3) +
     # ylim(-2.5, 2.5) +
     coord_flip() +
     theme_minimal() +
     labs(
       x = 'Variable',
       y = 'Importance'
-    )
+    ) +
+    scale_y_continuous(minor_breaks = NULL)
 }
 
 var_imp_cat <- varImp(models_list$product_categories$model, scale=F)
@@ -595,20 +537,24 @@ var_imp_cat$importance %>%
 
 pl_varimp_binned <- plot_varimp(temp_df_imp_cat)
 
-gridExtra::grid.arrange(pl_varimp_raw, pl_varimp_binned, ncol=2)
+gridExtra::grid.arrange(pl_varimp_raw, pl_varimp_binned, ncol=2, widths=c(1.4,1))
+
 ```
 
-On the left of figure \@ref(fig:varimp-categories) the unbinned variables importances from the XGB model for the best variables (with included product categories) are presented. The values on the plot are scaled - meaning that the variable with the score of 100 had the biggest influence, while 0 - the smallest.
-The most important one is the value of the payment. Also, high importance scores are obtained by vanilla geolocation variables and the transportation cost for the value. 
-The review score of the purchase was not a very important variable.
+All of the dummies indicating product categories are in the latter part of the ranking. One could wonder, why despite these features are relatively unimportant variables, they lead to a 2.5% gain in AUC compared to the model without them.
+This is because conceptually all of the dummies indicating product categories encode one information, these variables' importances should be treated jointly. The same can be argued about geographic coordinates. To account for this, I have simply summarised variables' importances to bin them into 2 variables sets "geolocation" and "prod_categories". This information is presented in the right subfigure. 
+After this operation, it can be seen that product categories gained in relative importance - now they are the 4th variable. Also, the geolocation variables set became more important than payment value on its own.
 
-All of the dummies indicating product categories were in the latter part of the ranking. One could wonder, why despite these features are relatively unimportant variables, they lead to a 2.5% gain in AUC compared to the model without them.
-This is because of the fact that conceptually all of the dummies indicating product categories encode one information, these variables' importances should be treated jointly. The same can be argued about geographic coordinates. To account for this, I have simply summarised variables' importances to bin them into 2 variables sets "geolocation" and "prod_categories". This information is presented in the right subfigure. 
-After this operation, it can be seen that product categories gained in relative importance - now they are the 4th variable. Also, geolocation variables set became more important than payment value on its own.
+<!-- ##### Model with all variables -->
 
-TODO: Doszlifować wykres, teraz brzydko się najeżdżają etykiety kategorii
+In the figure \@ref(fig:varimp-all) variables' categories importances for the model with all variables are presented. I have grouped the variables into 3 categories:
 
-##### Model with all variables
+- variables describing the first transaction of the customer - payment value, product categories, etc.
+- variables describing perception - namely 1-5 review and dummies for a topic of the textual review
+- "geo" variables - with 3 subgroups:
+  - variables describing demographics of the region that the customer is in 
+  - raw location - simply longitude/latitude coordinates
+  - density - variable indicating whether the customer is in a densely populated area.
 
 ```{r varimp-all, fig.cap = "Variable importance plots for the model with all variables."}
 
@@ -637,18 +583,9 @@ plot_varimp(temp_df_imp)
 
 ```
 
-In the figure \@ref(fig:varimp-all) variables' categories importances for the model with all variables are presented. I have grouped the variables into 3 categories:
+The best set of variables is the one containing behavioral features. The next 2 sets, namely geodemographic and spatial location have a similar influence. The lowest impact on the model predictions have the perception variables and the density population indicator.
 
-- variables describing the first transaction of the customer - payment value, product categories, etc.
-- variables describing perception - namely 1-5 review and dummies for a topic of the textual review
-- geographic variables - with 3 subgroups:
-  - variables describing demographics of the region that the customer is in 
-  - raw location - simply lon/lat coordinates
-  - density - variable indicating whether the customer is in a densely populated area.
-  
-The best set of variables is the one containing behavioral features. The next 2 sets of variables, namely geodemographic and spatial location have a similar influence. The lowest impact on the model predictions have perception variables and density population indicator.
-
-From these values, one can validate the hypotheses stated earlier. Customer's propensity to churn **depends on**:
+From these values, one can validate the hypotheses stated earlier. **Customer's propensity to churn depends on**:
 
 - Payment value for the first order, number of items bought, transport cost of the package
 - Categories of the products bought 
@@ -657,15 +594,15 @@ From these values, one can validate the hypotheses stated earlier. Customer's pr
 
 At the same time, customer's propensity to churn is not (or is only very mildly) influenced by the following factors:
 
-- population density in the area
-- 1-5 review of the purchase
-- topic of the textual review
+- population density in the customer's area
+- 1-5-star review of the purchase
+- topic of the customer's textual review
 
 In the following section, I have tried to answer the questions about the direction of the influence of predictors of customer churn.
 
-#### Direction and strength of features influence on customer churn (Partial Dependence Plots)
+### Direction and strength of features influence on customer churn
 
-Partial Dependence Profile is based on the Cateris Paribus technique. This technique is meant to perform a "what if" analysis for one observation x and one feature f. For this observation, the variable of interest is changed and the model predicts the response for each of these changes. Partial Dependence Profile is simply averaged value of such Cateris Paribus analysis for each of the observations from the dataset. 
+Partial Dependence Profile is based on the Cateris Paribus technique. This technique is meant to perform a "what if" analysis for one observation and one feature. For this observation, the variable of interest is changed and the model predicts the response for each of these changes. Partial Dependence Profile is simply averaged value of such Cateris Paribus analysis for each of the observations from the dataset. 
 
 ```{r cache=T}
 explain <- DALEX::explain(model = models_list$product_categories$model,  
@@ -696,9 +633,11 @@ predict_profile(explainer = explain,
 ```
 
 
-##### Payment value
+<!-- ##### Payment value -->
 
-```{r }
+In the figure \@ref(fig:pdp-payment) Partial Dependence Profile for payment value is presented. The black line is the profile itself. To facilitate drawing conclusions from the PDP plot for payment value I have included a smoothing line (blue). Also, I have added vertical lines indicating quantiles of this variable's values in the dataset (red).
+
+```{r pdp-payment, fig.cap='PDP plot for payment value of the purchase'}
 
 model_profile(explainer = explain, variables = "payment_value") %>% .$agr_profiles -> profile_payment_value
 
@@ -709,7 +648,7 @@ to_model_test$payment_value %>%
 profile_payment_value %>%
   ggplot(aes(x = `_x_`, y = `_yhat_`)) +
   geom_line(size = 0.7) +
-  scale_x_continuous(n.breaks=10,limits = c(0,500)) + 
+  scale_x_continuous(n.breaks=10,limits = c(0,500), minor_breaks = NULL) +
   geom_smooth(aes(y = `_yhat_`), alpha=0, color = RColorBrewer::brewer.pal(9, 'Set1')[2]) +
   theme_minimal() +
   labs(
@@ -724,15 +663,15 @@ profile_payment_value %>%
 
 ```
 
-To facilitate drawing conclusions from the PDP plot for payment value I have included a smoothing line using *loess* technique. Also, I have added vertical red ?? lines indicating quantiles of this variable's values in the dataset.
-
-Model response for payment value is non-monotonous.  From an analysis of smoothed model response, one can say that it is increasing to the point of around 100. This value is a median payment value in the whole dataset. After this threshold, the probability to buy for the second time is falling slowly. 
+Model response for payment value is non-monotonous. From an analysis of smoothed model response, one can say that it is increasing to the point of around 100. This means that on average, until the payment value of 100, the bigger the payment value, the model is predicting a bigger probability of placing a second order by the customer. After this threshold of 100, the probability to buy for the second time is falling slowly. 
 
 <!-- TODO: dlaczego takie wyniki, czy potwierdza tezę -->
 
-##### No. items
+<!-- ##### No. items -->
 
-```{r }
+On the figure \@ref(fig:pdp-items) similar PDP plot but for the number of items is presented. The relationship between the number of items bought in the first purchase and the probability of the second purchase is negative. One has to remember that in 80% of the orders there is only one product, while in 10% - 2 items. At the same time, the drop in the model's response between 1 and 2 items is not very abrupt, meaning that this relationship is hard to use in modeling.
+
+```{r pdp-items, fig.cap="PDP plot for number of items in the customer's purchase"}
 
 model_profile(explainer = explain, variables = "no_items") %>% .$agr_profiles -> profile_no_items
 
@@ -747,17 +686,15 @@ profile_no_items %>%
        x = 'Number of items',
        y = 'Model response'
        ) +
-  scale_x_continuous(breaks=1:20,minor_breaks = NULL) +
+  scale_x_continuous(breaks=seq(1,6,1),minor_breaks = NULL, limits=c(NA, 6)) +
   scale_y_continuous(breaks = seq(0, 0.18, 0.02),minor_breaks = NULL,limits = c(0, NA))
 
 
 ```
 
-The relationship between the number of items bought in the first purchase and the probability of the second purchase is in general negative. However, the model response stays roughly the same for 1 and 2 items. The most abrupt drop in model response is visible from 2 to 6 items - the model response drops 4-fold. Later the response is relatively stable.
-
 For CRM, information about such a relationship can lead to the following trade-off. The more the customer buys in the first purchase, the bigger are the chances that they will not make a second purchase. This can have implications in cross-selling campaigns. The company can try to maximize the revenue from the first transaction by making the customer buy more, but then there is a bigger possibility that the customer will not make the second purchase. 
 
-<!-- In previous studies, the number of items bought per purchase for the customer was not analyzed. -->
+<!-- ##### Location -->
 
 ```{r }
 # Predictions for geo data
@@ -777,8 +714,6 @@ profile_geo %>%
 
 profile_geo$yhat <- predict(models_list$all_with_pca$model, profile_geo,type='prob')[,2]
 ```
-
-##### Location
 
 ```{r cache=F}
 library(sf)
@@ -819,7 +754,9 @@ st_crs(brasil_cities_coords) <- st_crs(brazil_map)
 
 ```
 
-```{r fig.width = 5, fig.height = 3}
+In the case of geolocation data, I have created a 2-d partial dependence profile and visualized it on the figure \@ref(fig:pdp-location). It can be seen that the predictions are the highest in two distinct large spots - one having its center close to Brasilia (new capital of the country), and the other one on the same latitude, but closer to the western country border. 
+
+```{r pdp-location, fig.width = 5, fig.height = 3, fig.cap = "PDP plot for customer's location"}
 
 tm_shape(brazil_map) +
   tm_polygons(col = "white") +
@@ -839,15 +776,15 @@ tm_shape(brazil_map) +
 
 ```
 
-In the case of geolocation data, I have created 2-d partial dependence estimate and visualized it on the figure ... . To facilitate the analysis I have marked the 10 most populated Brazilian cities. It can be seen that the predictions are the highest in two distinct large spots - one having its center close to Brasilia (new capital of the country), and the other one same latitude, but closer to the western country border. 
+The predictions form a visible pattern in stripes. As was noticed by @behrens2018spatial, it comes from the limitation of the model underlying the XGBoost method, that is decision trees. The vanilla decision tree algorithm works by partitioning the feature space on a discrete basis, and a typical output of that model on 2-d space is in the form of visible rectangles. And as XGBoost is consisting of stacked decision trees, the resulting partition pattern is a bit more complex, but still, decision-tree-typical artifacts are visible. 
 
-It can be seen that the predictions form a very visible pattern in stripes. As was noticed by @behrens2018spatial, it comes from the limitation of the model underlying the XGBoost method, that is decision trees. The vanilla decision tree algorithm works by partitioning the feature space on a discrete basis, and typical output of that model on 2-d space are visible rectangles. And as XGBoost is simply stacked decision trees, the resulting partition pattern is a bit more complex, but still, decision-tree-typical artifacts are visible. 
+ <!-- They are mostly located along the coast, except for Brasilia (new capital of the country) and Manaus (the biggest city in the Amazonia region). -->
 
- <!-- They are mostly located along the coast, with the exception of Brasilia (new capital of the country) and Manaus (the biggest city in the Amazonia region). -->
+<!-- ##### Review score  -->
 
-##### Review score 
+One the plot \@ref(fig:pdp-review) PDP for review score is presented. Analysis of model responses in case of this variable should be treated with caution, as variable importance assessment showed it to be relatively non-important. However, I have still tried to analyze PDP plots, to check the expectation of this relationship being positive. 
 
-```{r}
+```{r pdp-review, fig.cap="PDP plot for 1-5 review score"}
 
 set.seed(13)
 model_profile(explainer = explain, variables = "review_score") %>% .$agr_profiles -> profile_review_score
@@ -868,11 +805,11 @@ profile_review_score %>%
 
 ```
 
-Analysis of model responses in the case of review score should be treated with caution, as the analysis of variable importance shown it to be a relatively non-important variable. However, I have still tried to analyze PDP plots, to check the expectation of this relationship being positive. One the plot .. such PDP is presented. The model response is relatively flat in reaction to changes in review score. For reviews 1 and 2 the response is not changing at all - meaning that it doesn't matter *how bad* the review is. Rather, that unsatisfied customers will not buy again in general. From 2 to 5 the model response expectedly monotonically increases. 
+The model response is relatively flat in reaction to changes in review score. For reviews 1 and 2, the response is not changing at all - meaning that it doesn't matter "how bad" the review is. Rather, that unsatisfied customers will not buy again in general. From 2 to 5 the model response expectedly monotonically increases. 
 
-From the analysis of both the variable's importance plot and the PDP plot, one can conclude that customer satisfaction positively influences customer's propensity to buy again. However, the strength of this relationship is very week compared to other variables present in the model.
+From the analysis of both the variable's importance plot and the PDP plot, one can conclude that customer satisfaction positively influences customer's propensity to buy again. However, the strength of this relationship is very weak compared to other variables present in the model.
 
-<!-- However, an unexpected behaviour can be noticed when the tested review changes from 1 to 2 - the model response drops. This means that not the customers with the most negative reviews have the biggest probability to buy for the second time but rather the ones with "moderately-negative". -->
+<!-- However, unexpected behavior can be noticed when the tested review changes from 1 to 2 - the model response drops. This means that not the customers with the most negative reviews have the biggest probability to buy for the second time but rather the ones with "moderately negative". -->
 
 
 ## Śmieci/do appendixa
@@ -993,6 +930,67 @@ preds[c(models_list$product_categories$vars_used, 'prob')] %>%
 In the case of the prediction for the best customer, almost all variables influence the prediction positively. The only variable doing otherwise is payment value. The influence is however minor compared to the other variables. This negative influence can be analyzed in connection with ceteris-paribus plot for that variable analyzed before. On the plot ... it can be seen that the model response has a small drop for the values around 500. 
 
 The rest of the variables influence the score positively. The biggest gain is from the value of the transport, however number of items equal to 6 has also a large influence. 
+
+
+### Hypotheses to check
+
+- Main hypothesis - machine learning modeling can be helpful in ranking customers by their propensity to churn
+- I have tested 2 hypotheses. (1) The amount of money spent on the first purchase positively influences the customer probability of buying for the second time. (2) categories bought by the customer can influence the customer's probability to stay with the company.
+- A hypothesis worth checking is if a tendency to churn is dependent on whether the customer is living in a densely populated area.
+- A hypothesis I would like to check is if the social structure of the customer’s environment can serve as a valuable predictor of churn tendency.
+- My hypothesis is that both the numeric review, as well as topic of the textual review can be useful predictors of customer loyalty.
+
+Jakie analizy:
+
+- AUC comparison in table, bootstrapping AUC (if ML is able to discriminate non-churners, if model choice is justified)
+- Lift curve (how good is ML model able to discriminate non-churners (better interpretation))
+- Variable importances (if variables have predictive power)
+- cateris paribus (what is the direction and strength of influence of variables on prediction)
+- break down of prediction (???)
+
+
+### Questions answered
+
+2 parts of results, pre-modeling and after-modeling
+
+Pre-modeling:
+
+- Topic extraction from the reviews
+  - CRM: use in daily dashboards - monitoring of new reviews, monitoring of sentiment based on the topic, customer segmentation, direct marketing (send message based on the review topic)
+  - Methods: attention-based extraction shown superior to classic LDA approach in this domain
+- DBSCAN on lon/lat, PCA on demographic
+  - methodological: potential impact on model performance, shown by previous literature to be useful, reduction of dimensionality succesful (demographic+PCA better than demographic, lot of variance explained)
+  - CRM: nie ma zbyt zastosowania
+  - TODO przenieść dbscan i pca do methods description? bo bardzo krótkie i niewiele wnoszące rezultaty
+
+After-modeling
+
+- OK Model performance- AUC values for all models
+  - methodological:
+  - which ML model suits the task better (XGB)
+  - which variables give the best score
+  - CRM:
+  - Most important: the model has predictive power
+  - which parts of the dataset should be observed after putting model to production (drift analysis)
+- OK Model performance- Bootstrap, K-S test, density plots
+  - Methodological: Another tool for the best model search (complementing AUC on test set)
+  - no importance for CRM
+- Model performance- Lift curve, lift analysis
+  - Methodological: a way to show how the model performs in a way that is understandable by non-technical adopters, a way of quantifying a potential revenue from using the model
+  - OK CRM: a way to enhance targeting strategies (which customers should be more/less targeted based on apriori probability of buying second time), a more meaningful baseline to assessing A/B testing strategies (probability to buy from the model vs. share of customers that bought)
+  - Customer Lifetime Value for new customers - probability to buy second time from the model \* average buy second time
+  - OK Model performs better for almost all the cohorts of probabilities
+  - OK segmentation+targeting - a way to reduce customer aquisition cost
+  - OK Segmenation based on probability to buy second time
+- XAI on model level (VI plots, cateris paribus plots)
+- XAI on customer level (break-down plots)
+
+- CRM:
+  - a way to verify if the intuition and know-how present in the marketing department is compliant with the one that the model used to do predictions
+  - in the case of complaints about model prediction a way to assess why the model did particular decision
+  - increase of trust in the model from non-technical part of the company, better comunication between business and IT
+- Methodology - że może poprawiać przewidywania modelu, że można testować hipotezy (TODO jak już wymyślę hipotezy do przetestowania)
+
 
 
 
