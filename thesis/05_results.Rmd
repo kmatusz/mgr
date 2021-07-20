@@ -189,11 +189,9 @@ To the final dataset, I have added only one variable indicating whether the poin
 
 ### PCA for demographic data
 
-Cumulative variance explained by each of the consecutive loadings is presented on the plot .. . I have decided to leave the 10 most informative PCA eigenvectors. These account for 97.3% of the explained variance. 
+Cumulative variance explained by each of the consecutive loadings is presented on the plot \@ref(fig:pca-components). I have decided to leave the 10 most informative PCA eigenvectors. These account for 97.3% of the explained variance. 
 
-TODO: Zostawić wykres czy wywalić??
-
-```{r fig.width = 3, fig.height = 2}
+```{r pca-components, fig.width = 3, fig.height = 2, fig.cap='Explained cumulative variance by each of the PCA loadings'}
 load(file=here('run_all_models_cache/pca_to_plot.Rdata'))
 
 ggplot(pca_to_plot, aes(x=PC, y=value)) +
@@ -207,10 +205,7 @@ ggplot(pca_to_plot, aes(x=PC, y=value)) +
 
 ## Performance analysis
 
-### Introduction (TODO)
-
-
-#### AUC performance tables (XGB, LR)
+<!-- #### AUC performance tables (XGB, LR) -->
 
 ```{r }
 # Create auc-roc tables
@@ -229,7 +224,7 @@ models_list %>%
   pivot_longer(cols=everything(),values_to = 'AUC_train') -> auc_train_table
 ```
 
-
+Table .. shows the performance of the XGB models using various sets of variables. The best AUC score on the test set is obtained by the model containing basic features combined with dummies indicating product categories that the customer has bought during the first purchase. AUC is greater than 0.5, which means that the model has predictive power better than random guessing. 
 
 ```{r }
 auc_test_table %>%
@@ -238,15 +233,19 @@ auc_test_table %>%
   mutate(AUC_perc_performance_drop = (AUC_test-max(AUC_test))/max(AUC_test)) %>%
   mutate_at(vars(AUC_test, AUC_train), function(x) sprintf('%.4f', x)) %>%
   mutate_at(vars(AUC_perc_performance_drop), function(x) sprintf('%.2f%%', x*100)) %>%
-  flextable::flextable() %>%
+  rename(
+    `Model` = name,
+    `AUC test` = AUC_test,
+    `AUC train` = AUC_train,
+    `Performance drop vs. \nthe best model` = AUC_perc_performance_drop
+  ) %>%
+flextable::flextable() %>%
   flextable::set_caption("AUC values for XGBoost model") %>%
   flextable_format
 
 ```
 
-Table .. shows the performance of the XGB models using various sets of variables. The best AUC score on the test set is obtained by the model containing basic features combined with dummies indicating product categories that the customer has bought during the first purchase. AUC is greater than 0.5, which means that the model has predictive power better than random guessing. 
-
-The second-best model is the one containing all variables, with demographic variables transformed with PCA. It is worth noticing that this model also contains the features containing product categories information, so similar performance is not a surprise. The percentage drop in AUC is very small (0.6%). The model with only basic information is worse for about 2.5%. 
+The second-best model is the one containing all variables, with demographic variables transformed with PCA. It is worth noticing that this model also contains the features containing product categories information, so similar performance is not a surprise. The percentage drop in AUC is very small (0.6%). The model with only basic information is about 2.5% worse. 
 
 The score of the subset of features selected by the Boruta algorithm using AUC on the test set is 0.646 - less than the model including all variables. This means that using the Boruta algorithm did not bring additional predictive power to the model. At the same time, this means that the variables indicating reviews topics seem to be relevant for the model performance. 
 
@@ -269,30 +268,31 @@ load(file=here('run_all_models_cache/auc_table_for_lr.Rdata'))
 auc_table_for_lr %>%
   mutate_at(vars(AUC_test, AUC_train), function(x) sprintf('%.4f', x)) %>%
   mutate_at(vars(AUC_perc_performance_drop), function(x) sprintf('%.2f%%', x*100)) %>%
+  rename(
+    `Model` = name,
+    `AUC test` = AUC_test,
+    `AUC train` = AUC_train,
+    `Performance drop vs. \nthe best model` = AUC_perc_performance_drop
+  ) %>%
   flextable::flextable() %>%
   flextable_format
 ```
 
-AUC values for the test set oscillating below 0.6 mean that the model is very poorly fitted to the data. For the worst model containing only the agglomeration feature, it is at the value of 0.546. It is that close to the level of random classifier (0.5), that one could wonder if this model has any predictive power at all.
+AUC values for the test set oscillating below 0.6 mean that the model is very poorly fitted to the data. For the worst model containing only the agglomeration feature, it is at the value of 0.546. It is that close to the level of random classifier (0.5), that one could even argue that this model does not have any predictive power.
 
 An interesting remark is that judging my AUC values, both LR and XGBoost select the same 2 models as the best ones - namely the one with product categories and with all variables. From the fact that 2 such different models arrived at the same conclusion in terms of which variables should be included, this means that these variables simply provide the biggest predictive power, regardless of the model used.
 
 Comparison of performance for *agglomeration* set of features is particularly interesting. In the XGBoost model, this feature is rated as the 3rd best one (after excluding Boruta set to compare meaningfully with LR table). In the LR case, it is scored as the worst one. One possible explanation is that it's because of the inherent ability of XGBoost to create interactions between variables, while these interactions should be included in the LR model manually. 
 
-
 From the perspective of CRM, the most important result of the modeling procedure is that the created model has predictive power in the task of churn prediction. This means that using the model's predictions the marketing department can understand which of the customers are most likely to place the second order and can be encouraged further. And on the other hand, which customers have a very low probability to buy, and thus the company can restrain from losing money on targeting them.
 
-From the comparison of Logistic Regression and Extreme Gradient Boosting results, the latter one was shown to be superior over the other. Logistic Regression interpretability is an important feature that XGB lacks. 
-Knowing what are the factors that make the customer more likely to stay is important not only for increasing trust about model predictions. Also, such information can serve as an important source of knowledge that can be passed to non-technical marketing workers in the company and potentially help them in their daily work.
+<!-- #### Bootstraping AUC values -->
 
+The AUC scores in the above tables are only point estimates. From such information, one cannot tell whether the performance would still be the same for a slightly different test set. This is especially crucial in the case of this study, as the differences between all the XGBoost models are not that big.
 
-#### Bootstraping AUC values
+A standard way to compare the models' performance in a more robust way is using a bootstrap technique. I have sampled with replacement observations from the test set and calculated the AUC measure. Specifically, I have done 100 re-sample rounds, and the models chosen were the best one (product categories + basic information), second-best (all variables), and the one with only basic information as a benchmark. The figure \@ref(fig:bootstrap-xgb) shows density estimates of these 3 empirical AUC score distributions. 
 
-The AUC test value in the above table is shown for the whole test set. However, these point estimates cannot tell whether the performance would still be the same for a slightly different test set. This is especially crucial in the case of the 2 best models - as the difference in AUC values is so small that it is not clear if it is reproducible, or just obtained by random chance. 
-
-A standard way to compare the models' performance is using a bootstrap technique to obtain different test sets. I have sampled with replacement observations from the test set and calculated the AUC measure for the models of choice. Specifically, I have done 100 re-sample rounds, and the models chosen were the best one (product categories + basic information), second-best (all variables), and the one with only basic information. The picture .. shows density estimates of these 3 empirical AUC score distributions. 
-
-```{r cache=T, fig.width = 5, fig.height = 3}
+```{r bootstrap-xgb, cache=T, fig.width = 5, fig.height = 3, fig.cap="Boostrap AUC estimates for 3 XGBoost models"}
 bootstrap_auc_best = bootstrap_auc(models_list$product_categories$model, to_model_test,no_resamples = 100)
 bootstrap_auc_2nd_best = bootstrap_auc(models_list$all_with_pca$model, to_model_test,no_resamples = 100)
 bootstrap_auc_basic = bootstrap_auc(models_list$basic_info$model, to_model_test,no_resamples = 100)
@@ -310,7 +310,7 @@ rbind(
 
 ```
 
-The curve for the model with basic features is standing out of the others. However, the difference between 1st best and 2nd best models is not as clear - it looks like the better model has slightly better AUC, but this should be investigated more thoroughly. That is why I have used a Kolmorogov-Smirnov test to check if the empirical distributions can come from the same probability distribution. I have run the test twice using 2 alternative hypotheses. First one with `H1: auc_best =/= auc_2nd_best`, and the second one: `H1: auc_best > auc_2nd_best`.
+The curve for the model with basic features is standing out of the others. However, the difference between 1st-best and 2nd-best models is not as clear - it looks like the better model has slightly better density curve shape, but this should be investigated more thoroughly. That is why I have used a Kolmorogov-Smirnov test to check if the empirical distributions can come from the same probability distribution. I have run the test twice using 2 alternative hypotheses. First one with H1: auc_best =/= auc_2nd_best, and the second one: H1: auc_best > auc_2nd_best.
 
 ```{r}
 ks_1 <- ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best)
@@ -320,13 +320,13 @@ ks_2 <- ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best,alternative = 'less')
 # ks_2
 ```
 
-The p-value for the first hypothesis is `r round(ks_1$p.value,4)` This means that with the level of significance 0.05, 0.01 the performance of the models is distinguishable. At the same time, p-value with 'greater' hypothesis is `r round(ks_2$p.value,4)`. This means that at the levels of significance 0.05, 0.01 one can say that the performance of the first model (only product categories) is better than that of the second one (all variables).
+The p-value for the first hypothesis is 0.0014. This means that with the level of significance 0.05, 0.01 the performance of the models is distinguishable. At the same time, p-value with 'greater' hypothesis is 0.0007. This means that at the levels of significance 0.05, 0.01 one can say that the performance of the first model (only product categories) is better than that of the second one (all variables).
 
-Another reason to choose the model for usage in the production setting is Occam's razor heuristic. The model with product categories has 21 variables, while the one with all variables included - 47. If there is no important reason why the more complex approach should be used, the simpler is usually better. In this case, using a simpler approach has the following advantages for the usage in the CRM context:
+Another reason to choose the "smaller" model for usage in the production setting is Occam's razor heuristic. The model with product categories has 21 variables, while the one with all variables included - 47. If there is no important reason why the more complex approach should be used, the simpler is usually better. In this case, using a simpler model has the following advantages for the usage in the CRM context:
 
 - Faster inference about the new customers - especially in an online prediction setting when the predictions have to be done on the fly
-- The predictions are easier to interpret. Not only the amount of factors taken into account is lower, but also the predictions are made only on the basis of the features that can be directly obtained from the purchases data. On the contrary - variables containing topic information or demographic features are somehow biased and uncertain. In the case of the review topic data, it is because of the model imperfections, and in the case of demographic data because of too big generalization
-- Easier model retraining and serving the final model in the IT infrastructure of the company.
+- The predictions are easier to interpret
+- Easier model training (and retraining, if the model's performance will drop with time)
 
 
 ```{r}
@@ -344,7 +344,7 @@ Another reason to choose the model for usage in the production setting is Occam'
 
 ### Lift analysis - introduction
 
-TODO: to że prawdopodobieństwa z modelu i prawdopodobieństwa empiryczne z posortowanego rankingu klientów się rozjeżdżają wynika z tego że model jest nieskalibrowany - przewidywane prawdopodobieństwa nie są prawdopodobieństwami [link](https://towardsdatascience.com/pythons-predict-proba-doesn-t-actually-predict-probabilities-and-how-to-fix-it-f582c21d63fc). Nie wiem jak to opisać (i czy opisać) ??
+<!-- TODO: to że prawdopodobieństwa z modelu i prawdopodobieństwa empiryczne z posortowanego rankingu klientów się rozjeżdżają wynika z tego że model jest nieskalibrowany - przewidywane prawdopodobieństwa nie są prawdopodobieństwami [link](https://towardsdatascience.com/pythons-predict-proba-doesn-t-actually-predict-probabilities-and-how-to-fix-it-f582c21d63fc). Nie wiem jak to opisać (i czy opisać) ?? -->
 
 An ultimate goal of customer churn prediction is gaining information, which customers are most likely to buy for the second time. From these insights, the CRM experts can make an informed decision which customers are the most likely to respond positively to targeting efforts. 
 

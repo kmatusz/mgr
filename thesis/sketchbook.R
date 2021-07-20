@@ -1,49 +1,18 @@
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-
-plot_varimp <- function(df){
-  df %>% 
-    ggplot(aes(x = reorder(var2,Overall), y = Overall, label = round(Overall,2))) +
-    geom_point(stat='identity', fill="black", size=3) +
-    geom_segment(aes(y = 0,
-                     x = var2,
-                     yend = Overall,
-                     xend = var2),
-                 color = "black") +
-    # geom_text(color="white", size=3) +
-    # ylim(-2.5, 2.5) +
-    coord_flip() +
-    theme_minimal() +
-    labs(
-      x = 'Variable',
-      y = 'Importance'
-    ) +
-    scale_x_cont
-}
-
-var_imp_cat <- varImp(models_list$product_categories$model, scale=F)
-
-
-# Not binned at all
-var_imp_cat$importance %>%
-  as_tibble(rownames = 'var2') %>%
-  # mutate(Overall = range01(Overall)*100) %>%
-  plot_varimp() -> pl_varimp_raw
-
-# binned by category and geolocation
-
-var_imp_cat$importance %>%
-  as_tibble(rownames = 'var') %>%
-  mutate(var2 = ifelse(str_starts(var, 'prod_cat_'), 'prod_categories', var)) %>%
-  mutate(var2 = ifelse(str_starts(var, 'geolocation'), 'geolocation', var2)) %>%
-  group_by(var2) %>%
-  summarise(Overall = sum(Overall)) %>%
-  # mutate(Overall = range01(Overall)*100) %>%
-  as.data.frame() -> temp_df_imp_cat
-
-pl_varimp_binned <- plot_varimp(temp_df_imp_cat)
-
-gridExtra::grid.arrange(pl_varimp_raw, pl_varimp_binned, ncol=2, widths=c(1.4,1))
-
+auc_test_table %>%
+  left_join(auc_train_table) %>%
+  arrange(-AUC_test) %>%
+  mutate(AUC_perc_performance_drop = (AUC_test-max(AUC_test))/max(AUC_test)) %>%
+  mutate_at(vars(AUC_test, AUC_train), function(x) sprintf('%.4f', x)) %>%
+  mutate_at(vars(AUC_perc_performance_drop), function(x) sprintf('%.2f%%', x*100)) %>%
+  rename(
+    `Variable` = name,
+    `AUC score - test set` = AUC_test,
+    `AUC score - train set` = AUC_train,
+    `Performance drop vs. the best model` = AUC_perc_performance_drop
+  ) %>%
+flextable::flextable() %>%
+  flextable::set_caption("AUC values for XGBoost model") %>%
+  flextable_format
 ### DUMP ----
 
 # jak zrobić grid
