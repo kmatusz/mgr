@@ -17,12 +17,12 @@ knitr::opts_chunk$set(echo=params$echo)
 <!-- TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.* -->
 
 
-## Introduction
+<!-- ## Introduction -->
 
 The methodology used in this study can be divided into 3 broad categories:
 
-- Machine Learning methods - choice of model, cross-validation, upsampling, etc.;
-- Preprocessing applied to the variables present in the dataset;
+- Machine Learning Modeling methods - choice of model, cross-validation, upsampling, etc.
+- Preprocessing applied to the variables present in the dataset
 - Methods used for variable selection.
 
 In the following sections I have described these categories in greater detail.
@@ -35,7 +35,7 @@ Regarding cross-validation, I have used a simple train-test split of the dataset
 
 One important problem with this dataset is its very high target classes imbalance. Only 3% of the customers have decided to buy for the second time. To handle this issue I have used upsampling of the minority class on the training dataset to obtain equal class proportions. Also, the choice of an appropriate metric to optimize is very important in an imbalanced dataset, as some metrics (like accuracy) are very biased in these cases. That is why I have decided to optimize the Area-Under-Curve metric, as it weights the performance of the minority and majority classes equally.
 
-## Variables preprocessing
+## Features preprocessing
 
 In this study I have separated 3 groups of variables analyzed:
 
@@ -54,62 +54,63 @@ Behavioral predictors can be defined as the variables quantifying previous actio
 
 The widest range of behavioral variables up in churn prediction setting up to date was used by @buckinx2005customer. Besides 7 variables meant for encompassing frequency and monetary value, they also included variables indicating total spending divided by categories of the products available in an e-commerce shop. They found that all 3 categories of variables are statistically significant and bring improvement to the model's predictions. In particular, they found that bigger customer spending leads to the customer's desire to keep being a company's customer. Besides that, the categories that the customer has been buying in the previous purchases also have been shown to influence the customer's decision to stay. This is in line with findings from the previous studies [@athanassopoulos2000customer; @mozer2000predicting]. One possible explanation of churning based on categories bought suggested by @mozer2000predicting is that the satisfaction of purchasing a particular category is low - no matter if because of the high price or the low quality of the product bought.
 
-In this study, from the category of behavioral variables, I have included information about the monetary value of the first purchase, delivery cost, number of items bought and categories of items that the customer bought. The specification of the behavioral variables used is slightly different from previous studies. Namely, I have excluded Recency and Frequency from the set of predictors. The reason is that in this study I am interested in predicting customer loyalty just after the first purchase. Because of that, these variables require some time to pass since the purchase can't be calculated or used.
+In this study, from the category of behavioral variables, I have included information about the monetary value of the first purchase, delivery cost, number of items bought and categories of items that the customer bought. The specification of the behavioral variables used is slightly different from previous studies. Namely, I have excluded Recency and Frequency from the set of predictors. The reason is that in this study I am interested in predicting customer loyalty just after the first purchase. Because of that, these variables require some time to pass since the purchase and can't be calculated or used.
 
-In the case of the company analyzed in this study, the products sold belong to 74 distinct categories. At the same time, the top 15 categories account for 80% of all purchases. Because of potential problems with generalization and also slower model training, I have decided to bin the least popular ones as a new category "other". Then, I have used the one-hot-encoding approach to create a numeric representation, with the "other" category set as a base level. ^[Because in one order there can be multiple product categories, it is not guaranteed that there will be one "1" value per each row as in the classical one-hot-encoding method.]
+In the case of the company analyzed in this study, the products sold belong to 74 distinct categories. At the same time, the top 15 categories account for 80% of all purchases. Because of potential problems with generalization and also slower model training, I have decided to bin the least popular ones as a new category "other". Then, I have used the one-hot-encoding approach to create a numeric representation, with the "other" category set as a base level. ^[Because in one order there can be multiple product categories, it is not guaranteed that there will be only one "1" entry per each row as in the classical one-hot-encoding method.]
 
-To assess the validity of previous studies' findings regarding the behavioral variables in an e-commerce retail context, I have tested 2 hypotheses. (1) The amount of money spent on the first purchase positively influences the customer's probability of buying for the second time. (2) categories bought by the customer can influence the customer's probability to stay with the company.
+To assess the validity of previous studies' findings regarding the behavioral variables in an e-commerce retail context, I have tested 2 hypotheses. (1) **The amount of money spent on the first purchase positively influences the customer's probability of buying for the second time.** (2) **Categories of products bought by the customer can influence the customer's probability to stay with the company.**
 
 ### Location features
 
-#### Ways of including spatial dimension to the churn prediction
+<!-- #### Ways of including spatial dimension to the churn prediction -->
 
-@lee2013neighborhood argues that customer location and its neighborhood is an important factor to consider in CRM analyses even in e-commerce settings.
+@lee2013neighborhood argues that customer location and its neighborhood is an important factor to consider in CRM analyses, even in e-commerce settings.
 
-There are multiple ways to include spatial dimension in modeling. In this study, I have analyzed 3 broad approaches, that were used in previous studies:
+There are multiple ways to include spatial dimension in modeling. In this study, I have analyzed 3 broad approaches that were used in previous studies:
 
-- directly including location variables (geographical coordinates, zip code, region dummies, etc.)
+- directly including location variables (geographical coordinates, zip code, region indicator dummies, etc.)
 - analyzing neighborhood that the customer resides in (demographical statistics about the region)
 - classifying customers by living in an urban or rural area
 
 #### Direct inclusion of spatial variables
 
-To the best of the author's knowledge, no studies on churn prediction conducted before included raw geographic coordinates in the model formulation. Rather, usually dummy variables indicating the administrative regions were used. There is no consensus on whether such data can improve the predictions. @verbeke2012new argued that "the number of times a customer called the help desk will most probably be a better predictor of churn behavior than the zip code". On the other hand, @buckinx2005customer showed that such dummies were significant in the case of the Neural Network model, but not in Random Forest. Also, @long2019new found that these dummies are significant. In this case, a different spatial extent was analyzed - the regions variables indicated countries rather than postcodes.
+To the best of the author's knowledge, no studies on churn prediction conducted before included raw geographic coordinates in the model formulation. Rather, usually dummy variables indicating the administrative regions were used. There is no consensus on whether such data can improve the predictions. @verbeke2012new argued that "the number of times a customer called the help desk will most probably be a better predictor of churn behavior than the zip code". On the other hand, @buckinx2005customer showed that such dummies were significant in the case of the Neural Network model, but not in Random Forest. Also, @long2019new found that these dummies are significant. However in that case, a different spatial extent was analyzed - the region variables indicated countries rather than postcodes.
 
 @de2019impact used geolocation data in the context of churn prediction for an insurance company. They took a different approach to operationalizing customer location. Instead of including dummies indicating the customer's region, they calculated the distance between the customer and the closest insurance agent. Such variable was significant.
 
-In this study, I have simply included longitude/latitude data about each customer directly to the model formulation. This is to assess if the propensity to churn can be explained by customer location.
+In this study, I have simply included longitude/latitude data about each customer directly to the model formulation. This is to assess **if the propensity to churn can be explained by customer location**.
+
+#### Geodemographics
+
+Geodemographics is the "analysis of people by where they live" [@harris2005geodemographics]. In this paradigm, it is assumed that people living in the same area share similar characteristics, like their social status, income, etc.
+
+As pointed by @singleton2014past, geodemographic features were mostly used in the studies regarding public sector areas, mainly public health and law enforcement. Publicly available research in the usage of geodemographics in the context of marketing, or specifically churn prediction is almost non-existent. This has its reasons in the confidential nature of research done in individual companies [@webber2004targeting]. The only publicly available study was conducted by @zhao2005customer. They found that geodemographic features were significant in the churn prediction model.
+
+A hypothesis I would like to check is **if the social structure of the customer's environment can serve as a valuable predictor of churn tendency.**
+
+In total, I have included 35 demographic features for the microregion from which the customer is - age structure, percentage of the population in an urban area, income structure, number of immigrants. These features were obtained from the Brazilian statistical office SIDRA^[Joining the data coming from SIDRA and OLIST sources proved to be challenging. The details of such spatial join are presented in Appendix A.]. 
+
+Geodemographic dimension in this study is relatively high dimensional. At the same time, one would expect that the information can be somehow compressed because lots of the variables represent very similar concepts (for example there are 20 variables encoding only age structure). 
+Because of that, I have decided to process this part of the dataset using Principal Components Analysis. This can potentially bring some improvements in the process of Machine Learning modeling, as training the model on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results in some cases [@howley2005effect; @dutkiewicz2021heisenberglimited].
+
+One decision regarding PCA transformation is whether to use a standard version or the one with rotated loadings [@corner2009choosing]. The trade-off between these two methods is that the rotated loadings version allows for an interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in the case of this study because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
 
 #### Rural vs. urban customer location
 
 Generally, there is a consensus among researchers that there is a difference in customer behaviors between rural and urban areas [@sun2004consumption]. In particular, a couple of studies in the FMCG sector have found that rural customers tend to be more loyal to the previously chosen company [@jha2003understanding; @sharma2021impact]. The potential reason for such finding provided by the authors is a smaller choice of other options in the rural shops compared to urban ones. However, up to date, there were no studies that were meant to assess the differences between customer loyalty in urban and rural areas but aimed at the e-commerce sector. The findings from the FMCG sector do not have to translate directly, as in an online setting the customers are generally not limited by the availability of the brand in their area. 
 
-A hypothesis worth checking is if the tendency to churn is dependent on whether the customer is living in a densely populated area.
+A hypothesis worth checking is **if the tendency to churn is dependent on whether the customer is living in a densely populated area.**
 
-There are 2 possible ways to conclude if a particular customer is living in an urban or rural area. One is simply checking if the customer's coordinates are inside the city's administrative boundaries. Such an approach does not guarantee that this customer is really living in a densely populated area - because of the fact that administrative boundaries do not have to reflect actual boundaries, for example, because of fast suburbanization spilling to previously village areas.
+There are 2 possible ways to conclude if a particular customer is living in an urban or rural area. One is simply checking if the customer's coordinates are inside the city's administrative boundaries. Such an approach does not guarantee that this customer is really living in a densely populated area - because of the fact that administrative boundaries do not have to reflect actual boundaries (for example, because of fast suburbanization spilling to previously village areas).
 
-Another way is inferring the population density in the area from the data. This way, one gets more reality-reflecting densely populated areas classifications. As was shown before in the dataset review, the number of customers per microregion highly correlates with population density in this area. Because of that, it can be argued that also in a smaller scale of analysis than microregions such correlation will be also evident. This leads to a conclusion that the company's customers' locations can be used as a proxy for population density, so it can be used for classifying densely and sparsely populated areas. 
+Another way is inferring the population density in the area from empirical data. This way, one gets more reality-reflecting densely populated areas classifications. As was shown before in the dataset review, the number of customers per microregion highly correlates with population density in this area. Because of that, it can be argued that also in a smaller scale of analysis than microregions such correlation will be also evident. This leads to a conclusion that the company's customers' locations can be used as a proxy for population density, so it can be used for classifying densely and sparsely populated areas. 
 
-In this study, I have used the Density-Based Spatial Clustering with Noise (DBSCAN) algorithm for the task of rural vs. urban areas classification. This clustering algorithm besides assignment to a particular cluster can also detect noise points. Because of that, the assignments have a natural interpretation. When the point belongs to any cluster it means that the customer is living in a densely populated area, while the points decoded by DBSCAN as noise are the customers living in more isolated places.
+In this study, I have used the Density-Based Spatial Clustering with Noise (DBSCAN) algorithm for the task of rural vs. urban areas classification. This clustering algorithm besides assignment to a particular cluster can also detect noise points. Because of that, the assignments have a natural interpretation. When the point belongs to any cluster it means that this customer is living in a densely populated area, while the points decoded by DBSCAN as noise are the customers living in more isolated places.
 
 DBSCAN has 2 parameters to be decided before running the algorithm. These are the minimal number of points lying close to each other that are needed to constitute a cluster (*k*), and maximal distance, at which one considers the points to lay close to each other (*epsilon*).
-A typical rule-of-thumb for deciding k and epsilon parameters is to first set k, and then plot k-nearest-neighbors distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, epsilon is actually a physical distance between two locations. That is why based on expert knowledge from the company one can set what should be more reasonable criteria for constituting clusters. 
+A typical rule-of-thumb for deciding k and epsilon parameters is to first set k, and then plot k-nearest-neighbors distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, epsilon is actually a physical distance between two locations. That is why one can set what should be more reasonable criteria for constituting clusters. 
 
-In my work, I have decided somehow arbitrarily that the minimal number of customers in the cluster is 100, and the maximum distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. However, this kind of decision in a real company setting can (and should be) consulted with the company's domain experts in marketing. 
-
-#### Geodemographics approach
-
-Geodemographics is the "analysis of people by where they live" [@harris2005geodemographics]. In this paradigm, it is assumed that people living in the same area share similar characteristics, like their social status, income, etc. Such type of data was used extensively in previous studies. However, as pointed by @singleton2014past, its usage was mostly in public sector areas, mainly public health and law enforcement. Publicly available research in the usage of geodemographics in the context of marketing, or specifically churn prediction is almost non-existent. This has its reasons in the confidential nature of research done in individual companies [@webber2004targeting]. The only publicly available study was conducted by @zhao2005customer. They found that geodemographic features were significant in the churn prediction model.
-
-A hypothesis I would like to check is if the social structure of the customer's environment can serve as a valuable predictor of churn tendency.
-
-In total, I have included 35 demographic features for the microregion from which the customer is - age structure, percentage of the population in an urban area, income structure, number of immigrants. These features were obtained from the Brazilian statistical office SIDRA. Joining the data coming from SIDRA and OLIST sources proved to be challenging. The details of such spatial join are presented in Appendix A. 
-
-Geodemographic features in this study are relatively high dimensional (35 variables). At the same time, one would expect that the information can be somehow compressed because lots of the variables represent very similar concepts (for example there are 20 variables encoding only age structure). 
-
-Because of that, I have decided to process this part of the dataset using Principal Components Analysis. This can potentially bring some improvements in the process of Machine Learning modeling, as training the model on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results in some cases [@howley2005effect; @dutkiewicz2021heisenberglimited].
-
-One decision regarding PCA transformation is whether to use a standard version or the one with rotated loadings [@corner2009choosing]. The trade-off between these two methods is that the rotated loadings version allows for an interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in the case of this study because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
+In my work, I have decided that the minimal number of customers in the cluster is 100, and the maximum distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. 
 
 ### Perception features
 
@@ -129,7 +130,7 @@ Although text mining for customer reviews in general is an active field of resea
 
 @lucini2020text specifies 2 natural language processing areas that can be used to extract insights from customer reviews, namely topic modeling and sentiment analysis. The first one is meant to answer the question "what the review is about?", while the second - "what is the perception contained in this review?". A combination of these two dimensions can help answer the question, which areas of customer experience are rated positively, and which need improvement.
 
-In the case of this study, I have focused only on extracting the topic from the review. The reason is that information about whether the experience of the customer was positive is already contained in a numeric review. My hypothesis is that both the numeric review, as well as topic of the textual review can be useful predictors of customer loyalty.
+In the case of this study, I have focused only on extracting the topic from the review. The reason is that information about whether the experience of the customer was positive is already contained in a numeric review. **My hypothesis is that both the numeric review, as well as topic of the textual review can be useful predictors of customer loyalty.**
 
 <!-- @zeroual2018data -->
 <!-- @athanassopoulos2000customer  -->
@@ -175,7 +176,7 @@ For LDA and Gibbs Sampling, only **converting lemmatized reviews into vector for
 
 Very different preprocessing was required in the case of Attention-Based Aspect Extraction. The neural network architecture proposed by the authors requires simply lemmatized reviews in a textual format as the output. Then, one of the layers of the network is meant to embed the currently preprocessed word. These embeddings are not learned during the network training, they should be trained beforehand instead. The authors of the paper propose the Word2vec technique [@mikolov2013efficient] for learning embeddings. Following their guidelines I have used this method, setting the dimensionality of the vector space to 200. I have also applied the word window of 10. After applying word2vec on this dataset, I have obtained the matrix with m rows and 200 columns, where m stands for the number of words in the dataset, and 200 is the dimensionality of the vector space chosen as a hyperparameter. 
 
-Concerning topic models training, I have searched for optimal hyperparameters for all 3 models based on grid search. For LDA, I have tested a varying number of topics that the model has to learn (3, 5, 10, and 15). For GSDMM, 2 parameters influence topics coherency in each "cluster". I have run the algorithm for all 16 combinations of both parameters chosen from the values 0.01, 0.1, 0.5, and 0.9. For Attention-Based Aspect Extraction, I have manipulated the number of topics to learn, from the values 10, 15. Unfortunately, this last model takes a very long time to run (around 3 hours per one set of hyperparameters), I have limited the number of hyperparameters checked compared to the LDA model. 
+Concerning topic models training, I have searched for optimal hyperparameters for all 3 models based on grid search. For LDA, I have tested a varying number of topics that the model has to learn (3, 5, 10, and 15). For GSDMM, 2 parameters influence topics coherency in each "cluster". I have run the algorithm for all 16 combinations of both parameters chosen from the values 0.01, 0.1, 0.5, and 0.9. For Attention-Based Aspect Extraction, I have manipulated the number of topics to learn, from the values 10, 15. Unfortunately, as this last model takes a very long time to run (around 3 hours per one set of hyperparameters), I have limited the number of hyperparameters checked compared to the LDA model. 
 
 The evaluation of topic extraction is a hard task, as no model-agnostic metrics that can be compared between different models exist. The only reasonable method is human inspection. That is why after running every model I have verified the obtained topic for coherency (whether reviews inside one topic are similar) and distinctiveness (whether there are visible differences between modeled topics).
 
@@ -246,15 +247,15 @@ An approach used by @churnthesis for an assesment of the new feature previously 
 - agglomeration + basic features
 - product categories + basic features
 - review topic + basic features
-- all variables - (with geodemographic features transformed with PCA) ^[I have not run the model containing all variables with demographic features without PCA preprocessing. There are 2 reasons for that - one is that number of variables in this set is very big, which poses performance reasons - model training simply would take a very long time. Assuming that the PCA set of features would give a better score can be also supported by the fact that the model with only included PCA demographic variables is performing better than the full set of variables.]  
+- all variables - (with geodemographic features transformed with PCA) ^[I have not run the model containing all variables with demographic features without PCA preprocessing. There are 2 reasons for that - one is that number of variables in this set is very big, which poses performance reasons - model training simply would take a very long time. The other is that the model with only included PCA demographic variables performed better than the full set of variables.]  
 
 ### Automatic feature selection - Boruta algorithm
 
-To remove the human judgment about which predictors should be used, I have also used a Boruta algorithm for feature selection [@kursa2010feature]. It is widely popular among machine learning practitioners [@kumar2017empirical]. The algorithm belongs to the category of wrapper feature selection algorithms, and a Random Forest algorithm is usually used as an underlying algorithm. It works as follows. At first, all features from the original dataset are randomly permuted. This way, one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and the Random Forest model is trained. 
+To test if the approach with including whole sets of features to the training set is optimal one, I have also tested one method of automatic feature selection, namely a Boruta algorithm [@kursa2010feature]. It is widely popular among machine learning practitioners [@kumar2017empirical]. The algorithm belongs to the category of wrapper feature selection algorithms, and a Random Forest algorithm is usually used as an machine learning method. It works as follows. At first, all features from the original dataset are randomly permuted. This way, one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and the Random Forest model is trained. 
 
-Random Forest model has a built-in feature importance measure, which is usually Mean Decrease Impurity. After running the model, for each of the original features, MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of the shadow features, the variable gets a "hit". 
+This model has a built-in feature importance measure, which is usually Mean Decrease Impurity. After running the model, for each of the original features, MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of the shadow features, the variable gets a "hit". 
 
-The above procedure is repeated for a preassigned number of iterations. Finally, important features that should make it to the final model are the ones that obtain fewer hits than preassigned n. 
+The above procedure is repeated for a preassigned number of iterations. Finally, important features that should make it to the final model are the ones that obtain fewer hits than preassigned value. 
 
 After gaining knowledge about the variables that should make it to the model, I have trained the XGBoost classifier using these features. The rest of the fitting procedure (cross-validation, up-sampling, hyper-parameters, etc.) stayed the same as in the rest of the approaches.  
 

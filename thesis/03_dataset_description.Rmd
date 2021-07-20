@@ -21,7 +21,7 @@ knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4,
 
 ## Data sources
 
-In this study, I have used data from 2 sources. The main one is e-commerce store transactions data. Olist company is operating in Brazil, and the dataset was made available online for public use^[https://www.kaggle.com/olistbr/brazilian-ecommerce ; access 14.03.2020]. The other source is census data obtained from the Brazilian Statistical Office^[https://sidra.ibge.gov.br/tabela/3548 access 26.09.2020].
+In this study, I have used data from 2 sources. The main one is e-commerce store transactions data. Olist company is operating in Brazil, and the dataset was made available online for public use^[https://www.kaggle.com/olistbr/brazilian-ecommerce ; access 14.03.2020]. This dataset was enhanced by census data obtained from the Brazilian Statistical Office^[https://sidra.ibge.gov.br/tabela/3548 access 26.09.2020].
 
 ### Transaction dataset
 
@@ -30,16 +30,16 @@ The Olist company dataset contains information about 100 thousand orders made on
 - payment value - the value of the order in Brazilian Reals 
 - transportation value
 - number of items the customer bought in a particular order
-- review of the order - after the finished order the customer can provide the review of the order in 2 forms - 1-5 score or textual review. In the dataset codebook, the authors stated that not all of the customers in real life put any review, but this dataset was sampled in such a way that the records without 1-5 review were excluded. On the contrary, the textual review is filled only in ~50%. The data about 1-5 review can be included in the models as-is. The textual review requires however more advanced preprocessing, which is described in the *methods* section of this study.
+- review of the order - after the finished order the customer can provide the review of the order in 2 forms - 1-5 score or textual review. In the dataset codebook, the authors stated that not all of the customers in real life put any review, but this dataset was sampled in such a way that the records without 1-5 review were excluded. On the contrary, the textual review is filled only in ~50%. The data about 1-5 review can be included in the models as-is. The textual review requires however more advanced preprocessing, which is described in the chapter *Methods description* of this study.
 - location of the customer - the main table containing customer information contains the 5-digit ZIP code of the customer's home. The company provided also a mapping table, in which each ZIP code is assigned to multiple latitude/longitude coordinates. Probably this was done because of anonymization reasons - so that one cannot connect the customer from the dataset with the exact house location. To obtain an exact one-to-one customer-geolocation mapping, to each zip code I have assigned the most central geolocation from the mapping table. To obtain the most central point, I have used the Clustering Around Medoids algorithm with only one cluster and ran the algorithm separately for each ZIP code. 
-- products bought - the dataset contains information about how many items there were in the package, as well as the product category of each item - in the form of raw text. In total there were 74 categories, but the top 15 accounted for 80% of all the purchases. To limit the number of variables for the modeling process, I have decided to change the label of all the least popular categories to "others".
+- products bought - the dataset contains information about how many items there were in the package, as well as the product category of each item - in the form of raw text. In total there were 74 categories, but the top 15 accounted for 80% of all the purchases. To limit the number of variables used in the modeling process, I have decided to change the label of all the least popular categories to "others".
 
 The main goal of this study is to try to predict just after the first transaction if the customer is likely to buy for the second time. 
 **In the dataset there were 96180 transactions (96.6%) from the customers that never previously bought in this shop. **
 
 ### Geodemographic dataset
 
-The dataset about the population statistics was obtained from Instituto Brasileiro de Geografia e Estatística web service called SIDRA. In this study, I have used the data obtained from the 2010 general census. The dataset is available in aggregation to microregions (a Brazilian administrative unit, it has a similar level of aggregation to NUTS 3 European classification). 558 microregions were available. In particular, I have chosen the following 36 variables from the dataset:
+The dataset about the demographic statistics was obtained from Instituto Brasileiro de Geografia e Estatística web service called SIDRA. In this study, I have used the data obtained from the 2010 general census. The dataset is available in aggregation to microregions (a Brazilian administrative unit, it has a similar level of aggregation to NUTS 3 European classification). 558 microregions were available. In particular, I have chosen the following 36 variables from the dataset:
 
 - total population of the microregion - 1 variable
 - age structure - a percentage of people in a particular age bin (with the width of the bins equal to 5 years) - 20 variables
@@ -47,7 +47,7 @@ The dataset about the population statistics was obtained from Instituto Brasilei
 - percentage of immigrants compared to total microregion population - 1 variable
 - earnings structure - share of the people that earn between x0\*minimum_wage and x1\*minimum_wage - 11 variables
 
-TODO: Czy dodać też mapki/wykresy z tymi zmiennymi? To trochę trudne bo jest ich sporo które oznaczają jedną informację.
+<!-- TODO: Czy dodać też mapki/wykresy z tymi zmiennymi? To trochę trudne bo jest ich sporo które oznaczają jedną informację. -->
 
 
 ## Quantitative analysis

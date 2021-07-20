@@ -2,9 +2,9 @@
 title: "Literature review"
 # output: word_document
 # output: html_document
-output: 
+output:
   bookdown::word_document2:
-    reference_docx: resources/styles_template.docx
+    reference_docx: resources/02_literature_review.docx
     number_sections: true
 
 bibliography: resources/bib.bibtex
@@ -52,9 +52,9 @@ One problem that arises in the non-contractual setting is the definition of chur
 <!-- #### The difference between one-shot and multiple purchases shopping (TODO??) -->
 <!-- - do tej pory nie widziałem takiej pracy która o tym mówiła -->
 
-### Customer churn prediction
+<!-- ### Customer churn prediction -->
 
-#### Introduction 
+### Customer churn prediction
 
 <!-- #### Why churn prediction makes sense -->
 
@@ -72,7 +72,7 @@ The churn prediction task can be decomposed into 2 main important aspects that o
 
 <!-- #### Review of previous churn studies for models used -->
 
-#### Machine Learning models for churn prediction
+### Machine Learning models for churn prediction
 
 In previous churn prediction studies multiple machine learning algorithms for prediction were tested out (for an overview see @verbeke2011building). The two most widely used techniques are Logistic Regression (LR) and Decision Trees. 
 An important feature of both of them is that they are relatively simple, and because of that the way they make predictions can be assessed by a qualified expert [@paruelo1997prediction].
@@ -81,48 +81,29 @@ However, these two methods often give sub-optimal results compared to more advan
 Recently, the XGBoost algorithm [@chen2015xgboost] has been gaining popularity in multiple prediction tasks.
 XGBoost's main strengths are the ability to infer non-linear relationships from the data, and relative speed, which allows the researcher to try out multiple hyperparameters and decide on the best ones [@chen2015xgboost]. Because of that, it is considered a go-to standard for machine learning challenges, and very often solutions based on it achieve the best results in various competitions and benchmarks  [@xgblist]. In the context of churn prediction, XGBoost was used by @gregory2018predicting. It achieved superior performance compared to other techniques, specifically Logistic Regression and Random Forests.
 
-#### Variables used in previous churn prediction studies
+### Variables used in previous churn prediction studies
 
-Previous churn prediction studies used a variety of variables to include in the model formulation. @BUCKINX2005252 divided them into 3 broad categories - behavioral, demographic, and perception. 
+Previous churn prediction studies used a variety of variables to include in the model formulation. @buckinx2005customer divided them into 3 broad categories - behavioral, demographic, and perception. 
 
-##### Behavioral features
+<!-- ##### Behavioral features -->
 
 The first category of variables tries to describe how the customer has interacted with the company before. Typical features belonging to this category are recency, frequency, and monetary value, which constitute the basis of the RFM customer segmentation framework. These features are used in multiple studies [@churnthesis; @bhattacharya1998customers], and typically accompany more complex variables that are the main focus of particular studies.
 Besides these basic features, some studies focus on other areas of customer behavior.
-For instance, dummies indicating particular products that the customer has bought in previous purchases were shown to be a useful predictor for churn prediction [@BUCKINX2005252; @athanassopoulos2000customer].
+For instance, dummies indicating particular products that the customer has bought in previous purchases were shown to be a useful predictor for churn prediction [@buckinx2005customer; @athanassopoulos2000customer].
 
 Some of the variables studied previously are available only in some of the domains. For example, one possibility of analyzing customer behavior in the context of e-commerce shopping is analyzing the customer behavior while interacting with the company's website. @koehn2020predicting analyzed such click-stream sequential data using Recurrent Neural Networks. They found that such information can serve as a good predictor of customer churn. Similar studies were performed by @8627369 and @yu2011extended, however, the clickstream data was aggregated and preprocessed manually, instead of using a sequential modeling approach.
 
-##### Demographics features
+<!-- ##### Demographics features -->
 
 The second category of features used in churn prediction constitutes of demographic variables about the customer, such as age, gender or address. Such variables were shown to be good predictors of customer churn in multiple studies (for an overview see @verbeke2011building). However, the availability of such predictors to use in modeling is very often limited for multiple reasons. In non-contractual settings, customers don't have to always provide such data to the company. Moreover, usage of such personal data can be in some cases considered unethical, and lead to predictions biased against particular age or gender. 
 
 Another way to include demographics data in the churn prediction model was shown by @zhao2005customer. They successfully used the census data obtained from the statistical office for particular regions that the customer is residing in.
 
-##### Perception features
+<!-- ##### Perception features -->
 
-The last category of variables used for churn prediction specified by @BUCKINX2005252 is customer perception about the company. According to @kracklauer2001mutual, customer satisfaction is the most important factor driving customer retention. However, although such features could have potentially high predictive power, they are usually hard to observe and quantify meaningfully. The most widely used approach is asking the customers for direct feedback using questionnaires or providing a way to post a review on the purchase. This kind of feedback can be obtained in different forms, one of them being textual reviews. A couple of previous studies were aimed at extracting meaningful features from such reviews using different text mining methods. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique. In both studies, the results using such methods were superior compared to the models without including such information.
+The last category of variables used for churn prediction specified by @buckinx2005customer is customer perception about the company. According to @kracklauer2001mutual, customer satisfaction is the most important factor driving customer retention. However, although such features could have potentially high predictive power, they are usually hard to observe and quantify meaningfully. The most widely used approach is asking the customers for direct feedback using questionnaires or providing a way to post a review on the purchase. This kind of feedback can be obtained in different forms, one of them being textual reviews. A couple of previous studies were aimed at extracting meaningful features from such reviews using different text mining methods. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique. In both studies, the results using such methods were superior compared to the models without including such information.
 
 ## Explainable Artificial Intelligence
-
-TODO: Na tą chwilę tylko konspekt - rozwinąć. Jest świetna książka z mnóstwem przykładów i cytowań do wykorzystania na temat XAI: https://ema.drwhy.ai/introduction.html 
-
-- Explainability-performance trade-off
-- What is XAI
-- Benefits of explainability
-- Review of methods
-  - dataset level
-  - instance level
-- XAI in marketing
-  - 2 papery które znalazłem:
-  - https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q  - wyzwania dla marketingu przy stosowaniu AI - nie tylko o XAI
-  - https://link.springer.com/article/10.1007/s11747-019-00710-5  -  Głównie opisane zalety korzystania z XAI w modelach do marketingu
-  
-<!-- ### Ogólny opis  -->
-
-<!-- Despite superior performance in lots of machine learning tasks, the biggest drawback of Extreme Gradient Boosting models is its black-box nature, meaning lack of interpretability of predictions and parameters. This problem can be mitigated by the usage of Explainable AI tools. One of such tools is ceteris-paribus analysis. The idea is to set all variables except the variable(s) of interest as constants and create a new set of observations by manipulating only one variable. Such analysis can give similar information to the values of coefficients in Logistic Regression models.  -->
-
-<!-- (TODO: opisać trochę więcej) -->
   
 ### Introduction
   
@@ -167,6 +148,16 @@ To the best of the author's knowledge, the only study touching the subject of XA
 - understanding, what are acceptable requirements regarding explainability compared to accuracy in different marketing tasks;
 - making AI trustworthy - to understand how the eagerness to use AI system's predictions grows in the company when various explainability tools are made available to the end-users;
 - How model explanations should be presented to various groups of system's users. For example, a Machine Learning expert is interested in very detailed and complex explanations, while the company's customer may simply want a 1 sentence summary of what was taken into account while making predictions;
+
+
+<!-- TODO: Na tą chwilę tylko konspekt - rozwinąć. Jest świetna książka z mnóstwem przykładów i cytowań do wykorzystania na temat XAI: https://ema.drwhy.ai/introduction.html  -->
+
+<!-- - XAI in marketing -->
+<!--   - 2 papery które znalazłem: -->
+<!--   - https://www.sciencedirect.com/science/article/pii/S1094996820300888?casa_token=Odeol3YA4U4AAAAA:NCkaJ-yDb53CB6JWnezV-MZpcI6kHb2D_XpTapz7DDih72a6U3N3Kcxn28IIiUqrmOnSnOhf5Q  - wyzwania dla marketingu przy stosowaniu AI - nie tylko o XAI -->
+<!--   - https://link.springer.com/article/10.1007/s11747-019-00710-5  -  Głównie opisane zalety korzystania z XAI w modelach do marketingu -->
+  
+
 
 
 <!-- https://www.kdnuggets.com/2018/10/enterprise-explainable-ai.html -->
