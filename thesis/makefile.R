@@ -5,7 +5,7 @@ include_code <- FALSE
 
 rmarkdown::render("thesis/00_thesis.Rmd",
                   output_dir = 'thesis/versions/', 
-                  output_file = '20_07_v0_thesis.docx', 
+                  output_file = '26_07_v2_thesis.docx', 
                   params = list(echo=include_code))
 
 # HTML

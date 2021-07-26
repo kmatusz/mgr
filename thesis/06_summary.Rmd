@@ -18,12 +18,12 @@ knitr::opts_chunk$set(echo=params$echo)
 
 
 Main goal of this study was to propose a model for predicting customer loyalty in an e-commerce retail business. I have used 2 popular Machine Learning techniques, namely XGBoost and Logistic Regression.
-The dataset used in this study contains a wide range of variables, including transaction data, customer location, geodemographic context and customer perception about the previous purchase.
+The dataset used in this study contains a wide range of variables, including transaction data, customer location, geodemographic context, and customer perception about the previous purchase.
 To assess the importance of these features for the predictions I have applied a Permutation-based Variable Importance technique.
-The results reported show that transaction, location and geodemographic data are the most relevant predictors. On the contrary, customer       perception proxied by the numeric review and the topic of the text review were shown to be not important.
-XGBoost techniqe showed its superiority over Logistic Regression judging by the Area-Under-Curve metric.
+The results reported show that transaction, location, and geodemographic data are the most relevant predictors. On the contrary, customer       perception proxied by the numeric review and the topic of the text review were shown to be not important.
+XGBoost technique showed its superiority over Logistic Regression judging by the Area-Under-Curve metric.
 
-The results of this study can help companies in improving the profitability of their customer retention efforts. Because of the fact that the predictions can be made just after the first purchase, the targeting measures can be applied quickly as one does not have to gather the information about the customer for a long time.
+The results of this study can help companies in improving the profitability of their customer retention efforts. Because the predictions can be made just after the first purchase, the targeting measures can be applied quickly as one does not have to gather the information about the customer for a long time.
 
 
 

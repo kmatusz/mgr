@@ -288,7 +288,7 @@ The AUC scores in the above tables are only point estimates. From such informati
 
 A standard way to compare the models' performance in a more robust way is using a bootstrap technique. I have sampled with replacement observations from the test set and calculated the AUC measure. Specifically, I have done 100 re-sample rounds, and the models chosen were the best one (product categories + basic information), second-best (all variables), and the one with only basic information as a benchmark. The figure \@ref(fig:bootstrap-xgb) shows density estimates of these 3 empirical AUC score distributions. 
 
-```{r bootstrap-xgb, cache=T, fig.width = 5, fig.height = 3, fig.cap="Boostrap AUC estimates for 3 XGBoost models."}
+```{r bootstrap-xgb, cache=T, fig.width = 5, fig.height = 3, fig.cap="Bootstrap AUC estimates for 3 XGBoost models."}
 bootstrap_auc_best = bootstrap_auc(models_list$product_categories$model, to_model_test,no_resamples = 100)
 bootstrap_auc_2nd_best = bootstrap_auc(models_list$all_with_pca$model, to_model_test,no_resamples = 100)
 bootstrap_auc_basic = bootstrap_auc(models_list$basic_info$model, to_model_test,no_resamples = 100)
@@ -322,7 +322,7 @@ Another reason to choose the "smaller" model for usage in the production setting
 
 - Faster inference about the new customers - especially in an online prediction setting when the predictions have to be done on the fly
 - The predictions are easier to interpret
-- Easier model training (and retraining, if the model's performance will drop with time)
+- Easier model training (and retraining if the model's performance will drop with time)
 
 
 ```{r}
@@ -401,7 +401,7 @@ for (quant in seq(0.99, 0.01, -0.01)){
 # save(output_lifts, file = here('data/output_lifts.Rdata'))
 ```
 
-The shape of the plot resembles the one of the function 1/x. Values of lift are very big for the smallest percentage of the best customers to target, and they are getting smaller very quickly. This means that the more customers the company would like to target based on the model prediction, the less marginal effects it would get from the usage of the model. For example, for the top 1% of the customers, the model can predict retention 18.7 times better than the random targeting approach. For the top 5%, it is still very effective, being 4.2 times better. If one would like to taget half oth the customers, the improvement over random targeting is 0.3 (130%). Although this value is less impressive than for smaller percentages, it is still an improvement over random targeting. 
+The shape of the plot resembles the one of the function 1/x. Values of lift are very big for the smallest percentage of the best customers to target, and they are getting smaller very quickly. This means that the more customers the company would like to target based on the model prediction, the less marginal effects it would get from the usage of the model. For example, for the top 1% of the customers, the model can predict retention 18.7 times better than the random targeting approach. For the top 5%, it is still very effective, being 4.2 times better. If one would like to target half of the customers, the improvement over random targeting is 0.3 (130%). Although this value is less impressive than for smaller percentages, it is still an improvement over random targeting. 
 
 ```{r lift-curve, fig.width = 6, fig.height = 4, fig.cap='Lift curve.'}
 
@@ -534,9 +534,9 @@ gridExtra::grid.arrange(pl_varimp_raw, pl_varimp_binned, ncol=2, widths=c(1.4,1)
 
 Most of the dummies indicating product categories are in the latter part of the ranking. One could wonder, why despite these features are relatively unimportant variables, they lead to a 2.5% gain in AUC compared to the model without them.
 
-This is because conceptually all of the dummies indicating product categories encode one information, these variables' importances should be treated jointly. The same can be argued about geographic coordinates. To account for this, I have used a feature importance for these variables sets ("geolocation" and "prod_categories") instead of individual feature importance. This information is presented in the right subfigure. 
+This is because conceptually all dummies indicating product categories encode one information, these variables' importances should be treated jointly. The same can be argued about geographic coordinates. To account for this, I have used a feature importance for these variables sets ("geolocation" and "prod_categories") instead of individual feature importance. This information is presented in the right subfigure. 
 
-After this operation, it can be seen that product categories gained in relative importance - now they are the 4th variable. Also, the geolocation variables set became more important than payment value and transportation cost.
+After this operation, product categories gained in relative importance - now they are the 4th variable. Also, the geolocation variables set became more important than payment value and transportation cost.
 
 <!-- ##### Model with all variables -->
 
@@ -598,7 +598,7 @@ In the following section, I have tried to answer the questions about the directi
 
 ### Direction and strength of features influence on customer churn {-}
 
-Partial Dependence Profile is based on the Cateris Paribus technique. This technique is meant to perform a "what if" analysis for one observation and one feature. For this observation, the variable of interest is changed and the model predicts the response for each of these changes. Partial Dependence Profile is simply averaged value of such Cateris Paribus analysis for each of the observations from the dataset. 
+Partial Dependence Profile is based on the Cateris Paribus technique. This technique is meant to perform a "what if" analysis for one observation and one feature. For this observation, the variable of interest is changed, and the model predicts the response for each of these changes. Partial Dependence Profile is simply averaged value of such Cateris Paribus analysis for each of the observations from the dataset. 
 
 ```{r cache=T}
 explain <- DALEX::explain(model = models_list$product_categories$model,  

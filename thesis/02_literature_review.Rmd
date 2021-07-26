@@ -63,13 +63,13 @@ One problem that arises in the non-contractual setting is the definition of chur
 
 <!-- #### Why churn prediction makes sense -->
 
-If the company can successfully predict, which customers are most likely to leave, it can target them with a retention-focused campaign. Contrary to targeting all of the customers with such a campaign, focusing on the customers that are most likely to leave leads to a reduction of the cost of the campaign. 
+If the company can successfully predict, which customers are most likely to leave, it can target them with a retention-focused campaign. Contrary to targeting all the customers with such a campaign, focusing on the customers that are most likely to leave leads to a reduction of the cost of the campaign. 
 
 <!-- #### Why classification vs. ranking -->
 
 Churn prediction fits well with the framework of classification, as the variable that one would like to predict is binary (churn-no churn). However, not only such binary prediction is valuable for later retention campaign efforts. As noted by @1255389, equally important is that the machine learning model can predict the likelihood of the customer leaving. After such prediction, the customers can be ranked from the most to the least likely to churn. 
 
-This has two benefits. First, the company can decide what percentage of the customers to target in the retention campaign and is not bound by how many customers the model will predict as potential churners. Second, the company can decide how strong the targeting should be based on the likelihood to leave. For example, based on cost-benefit analysis of various targeting approaches, one could decide that for the top 10% of the most "risky" customers the company should offer big discounts for the next purchase, while for the top 30% - only send an encouraging email. 
+This has two benefits. First, the company can decide what percentage of the customers to target in the retention campaign and is not bound by how many customers the model will predict as potential churners. Second, the company can decide how strong the targeting should be based on the likelihood to leave. For example, based on cost-benefit analysis of various targeting approaches, one could decide that for the top 10% of the "riskiest" customers the company should offer big discounts for the next purchase, while for the top 30% - only send an encouraging email. 
 
 <!-- #### Challenges to be addressed -->
 
@@ -100,9 +100,9 @@ For instance, dummies indicating particular products that the customer has bough
 
 <!-- ##### Demographics features -->
 
-The second category of features used in churn prediction constitutes of demographic variables about the customer, such as age, gender or address. Such variables were shown to be good predictors of customer churn in multiple studies (for an overview see @verbeke2011building). However, the availability of such predictors to use in modeling is very often limited for multiple reasons. In non-contractual settings, customers don't have to always provide such data to the company. Moreover, usage of such personal data can be in some cases considered unethical, and lead to predictions biased against particular age or gender. 
+The second category of features used in churn prediction constitutes of demographic variables about the customer, such as age, gender, or address. Such variables were shown to be good predictors of customer churn in multiple studies (for an overview see @verbeke2011building). However, the availability of such predictors to use in modeling is very often limited for multiple reasons. In non-contractual settings, customers don't have to always provide such data to the company. Moreover, usage of such personal data can be in some cases considered unethical, and lead to predictions biased against particular age or gender. 
 
-Another way to include demographics data in the churn prediction model was shown by @zhao2005customer. They successfully used the census data obtained from the statistical office for particular regions that the customer is residing in.
+Another way to include demographics data in the churn prediction model was shown by @zhao2005customer. They successfully used the census data obtained from the statistical office for regions that the customer is residing in.
 
 <!-- ##### Perception features -->
 
@@ -152,7 +152,7 @@ To the best of the author's knowledge, the only study touching the subject of XA
 
 - understanding, what are acceptable requirements regarding explainability compared to accuracy in different marketing tasks
 - making AI trustworthy - to understand how the eagerness to use AI system's predictions grows in the company when various explainability tools are made available to the end-users
-- How model explanations should be presented to various groups of system's users. For example, a Machine Learning expert is interested in very detailed and complex explanations, while the company's customer may simply want a 1 sentence summary of what was taken into account while making predictions
+- How model explanations should be presented to various groups of system's users. For example, a Machine Learning expert is interested in very detailed and complex explanations, while the company's customer may simply want a 1 sentence summary of what was considered while making predictions
 
 <!-- TODO: Na tą chwilę tylko konspekt - rozwinąć. Jest świetna książka z mnóstwem przykładów i cytowań do wykorzystania na temat XAI: https://ema.drwhy.ai/introduction.html  -->
 

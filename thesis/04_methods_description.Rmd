@@ -32,7 +32,7 @@ In this study, I have compared Logistic Regression and XGBoost models. The reaso
 
 Regarding cross-validation, I have used a simple train-test split of the dataset, with 70% of the observations belonging to the training dataset. On the training dataset, I have searched for optimal hyperparameters using 2-fold cross-validation on the training dataset. I have defined search space simply as a grid of all possible combinations of the hyperparameters. 
 
-One important problem with this dataset is its very high target classes imbalance. Only 3% of the customers have decided to buy for the second time. To handle this issue I have used upsampling of the minority class on the training dataset to obtain equal class proportions. Also, the choice of an appropriate metric to optimize is very important in an imbalanced dataset, as some metrics (like accuracy) are very biased in these cases. That is why I have decided to optimize the Area-Under-Curve metric, as it weights the performance of the minority and majority classes equally.
+One important problem with this dataset is its very high target classes imbalance. Only 3% of the customers have decided to buy for the second time. To handle this issue, I have used upsampling of the minority class on the training dataset to obtain equal class proportions. Also, the choice of an appropriate metric to optimize is very important in an imbalanced dataset, as some metrics (like accuracy) are very biased in these cases. That is why I have decided to optimize the Area-Under-Curve metric, as it weights the performance of the minority and majority classes equally.
 
 ## Features preprocessing
 
@@ -42,7 +42,7 @@ In this study I have separated 3 groups of variables analyzed:
 - location features
 - perception features.
 
-On the diagram below a summary of preprocessing applied to all the parts of the dataset is presented. All the tables on the left-hand side are coming directly from Olist (4 tables) and Statistical Office sources (1 table - demographic data). The purple table is the primary one, the features from this table were combined with all the remaining sets of variables. The final tables after preprocessing each of the parts of the dataset are shown in gray. In the modeling phase, I have used a simple join of the basic table, and the remaining ones, separately from each other (e.g. basic information + order items, basic information + DBSCAN cluster, etc.).
+On the diagram below a summary of preprocessing applied to all the parts of the dataset is presented. All the tables on the left-hand side are coming directly from Olist (4 tables) and Statistical Office sources (1 table - demographic data). The purple table is the primary one, the features from this table were combined with all the remaining sets of variables. The final tables after preprocessing each of the parts of the dataset are shown in gray. In the modeling phase, I have used a simple join of the basic table, and the remaining ones, separately from each other (basic information + order items, basic information + DBSCAN cluster, etc.).
 
 ![](resources/data_processing_diagram.png)
 
@@ -55,7 +55,7 @@ The widest range of behavioral variables up in churn prediction setting up to da
 
 In this study, from the category of behavioral variables, I have included information about the monetary value of the first purchase, delivery cost, number of items bought and categories of items that the customer bought. The specification of the behavioral variables used is slightly different from previous studies. Namely, I have excluded Recency and Frequency from the set of predictors. The reason is that in this study I am interested in predicting customer loyalty just after the first purchase. Because of that, these variables require some time to pass since the purchase and can't be calculated or used.
 
-In the case of the company analyzed in this study, the products sold belong to 74 distinct categories. At the same time, the top 15 categories account for 80% of all purchases. Because of potential problems with generalization and also slower model training, I have decided to bin the least popular ones as a new category "other". Then, I have used the one-hot-encoding approach to create a numeric representation, with the "other" category set as a base level. ^[Because in one order there can be multiple product categories, it is not guaranteed that there will be only one "1" entry per each row as in the classical one-hot-encoding method.]
+In the case of the company analyzed in this study, the products sold belong to 74 distinct categories. At the same time, the top 15 categories account for 80% of all purchases. Because of potential problems with generalization and slower model training, I have decided to bin the least popular ones as a new category "other". Then, I have used the one-hot-encoding approach to create a numeric representation, with the "other" category set as a base level. ^[Because in one order there can be multiple product categories, it is not guaranteed that there will be only one "1" entry per each row as in the classical one-hot-encoding method.]
 
 To assess the validity of previous studies' findings regarding the behavioral variables in an e-commerce retail context, I have tested 2 hypotheses. (1) **The amount of money spent on the first purchase positively influences the customer's probability of buying for the second time.** (2) **Categories of products bought by the customer can influence the customer's probability to stay with the company.**
 
@@ -63,7 +63,7 @@ To assess the validity of previous studies' findings regarding the behavioral va
 
 <!-- #### Ways of including spatial dimension to the churn prediction -->
 
-@lee2013neighborhood argues that customer location and its neighborhood is an important factor to consider in CRM analyses, even in e-commerce settings.
+@lee2013neighborhood argue that customer location and its neighborhood is an important factor to consider in CRM analyses, even in e-commerce settings.
 
 There are multiple ways to include spatial dimension in modeling. In this study, I have analyzed 3 broad approaches that were used in previous studies:
 
@@ -73,7 +73,7 @@ There are multiple ways to include spatial dimension in modeling. In this study,
 
 #### Direct inclusion of spatial variables {-}
 
-To the best of the author's knowledge, no studies on churn prediction conducted before included raw geographic coordinates in the model formulation. Rather, usually dummy variables indicating the administrative regions were used. There is no consensus on whether such data can improve the predictions. @verbeke2012new argued that "the number of times a customer called the help desk will most probably be a better predictor of churn behavior than the zip code". On the other hand, @buckinx2005customer showed that such dummies were significant in the case of the Neural Network model, but not in Random Forest. Also, @long2019new found that these dummies are significant. However in that case, a different spatial extent was analyzed - the region variables indicated countries rather than postcodes.
+To the best of the author's knowledge, no studies on churn prediction conducted before included raw geographic coordinates in the model formulation. Rather, usually dummy variables indicating the administrative regions were used. There is no consensus on whether such data can improve the predictions. @verbeke2012new argued that "the number of times a customer called the help desk will most probably be a better predictor of churn behavior than the zip code". On the other hand, @buckinx2005customer showed that such dummies were significant in the case of the Neural Network model, but not in Random Forest. Also, @long2019new found that these dummies are significant. However, in that case, a different spatial extent was analyzed - the region variables indicated countries rather than postcodes.
 
 @de2019impact used geolocation data in the context of churn prediction for an insurance company. They took a different approach to operationalizing customer location. Instead of including dummies indicating the customer's region, they calculated the distance between the customer and the closest insurance agent. Such variable was significant.
 
@@ -90,9 +90,11 @@ A hypothesis I would like to check is **if the social structure of the customer'
 In total, I have included 35 demographic features for the microregion from which the customer is - age structure, percentage of the population in an urban area, income structure, number of immigrants. These features were obtained from the Brazilian statistical office^[Joining the data coming from this source and main transaction dataset proved to be challenging. The details of such spatial join are presented in Appendix A.]. 
 
 Geodemographic dimension in this study is relatively high dimensional. At the same time, one would expect that the information can be somehow compressed because lots of the variables represent very similar concepts (for example there are 20 variables encoding only age structure). 
-Because of that, I have decided to process this part of the dataset using Principal Components Analysis. This can potentially bring some improvements in the process of Machine Learning modeling, as training the model on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results in some cases [@howley2005effect; @dutkiewicz2021heisenberglimited].
+Because of that, I have decided to process this part of the dataset using Principal Components Analysis. This can potentially bring some improvements in the process of Machine Learning modeling, as training the model on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results in some cases [@howley2005effect].
 
-One decision regarding PCA transformation is whether to use a standard version or the one with rotated loadings [@corner2009choosing]. The trade-off between these two methods is that the rotated loadings version allows for an interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in the case of this study because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
+<!-- ; @dutkiewicz2021heisenberglimited]. -->
+
+One decision regarding PCA transformation is whether to use a standard version or the one with rotated loadings [@corner2009choosing]. The trade-off between these two methods is that the rotated loadings version allows for an interpretation of the loadings but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in the case of this study because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
 
 #### Rural vs. urban customer location {-}
 
@@ -107,7 +109,7 @@ Another way is inferring the population density in the area from empirical data.
 In this study, I have used the Density-Based Spatial Clustering with Noise (DBSCAN) algorithm for the task of rural vs. urban areas classification. This clustering algorithm besides assignment to a particular cluster can also detect noise points. Because of that, the assignments have a natural interpretation. When the point belongs to any cluster it means that this customer is living in a densely populated area, while the points decoded by DBSCAN as noise are the customers living in more isolated places.
 
 DBSCAN has 2 parameters to be decided before running the algorithm. These are the minimal number of points lying close to each other that are needed to constitute a cluster (*k*), and maximal distance, at which one considers the points to lay close to each other (*epsilon*).
-A typical rule-of-thumb for deciding k and epsilon parameters is to first set k, and then plot k-nearest-neighbors distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, epsilon is actually a physical distance between two locations. That is why one can set what should be more reasonable criteria for constituting clusters. 
+A typical rule-of-thumb for deciding k and epsilon parameters is to first set k, and then plot k-nearest-neighbors' distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, epsilon is actually a physical distance between two locations. That is why one can set what should be more reasonable criteria for constituting clusters. 
 
 In my work, I have decided that the minimal number of customers in the cluster is 100, and the maximum distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. 
 
@@ -141,7 +143,7 @@ In the case of this study, I have focused only on extracting the topic from the 
 
 Undoubtedly the most popular model for inferring the topic of a text is Latent Dirichlet Allocation [@blei2003latent]. The method is based on assumption that each document is a mixture of a small number of topics. At the same time, each topic can be characterized by a distribution of words frequency.
 
-@hong2010empirical argues that short texts (as in the case of customer reviews) comprise of a very small amount of topics, usually only one. Because of that, LDA should not be used in such settings as its assumptions are violated. This claim is supported by an empirical study of short texts from Tweeter, in which LDA has failed to find informative topics.
+@hong2010empirical argue that short texts (as in the case of customer reviews) comprise of a very small amount of topics, usually only one. Because of that, LDA should not be used in such settings as its assumptions are violated. This claim is supported by an empirical study of short texts from Tweeter, in which LDA has failed to find informative topics.
 
 <!-- ##### Movie group process -->
 
@@ -151,7 +153,7 @@ The drawbacks of LDA in the setting of short texts were addressed by @10.1145/26
 
 More modern approaches to topic modeling were also developed recently. A milestone in the whole NLP field was inventing an efficient way to embed words in a vector space while preserving their meaning, namely word2vec [@mikolov2013efficient]. On a basis of this method, @he2017aspect presented an Attention-based Aspect Extraction^[Words "Aspect" and "Topic" are often used interchangeably in the NLP literature] model. At first, words embedding using the Word2Vec model is created. After that, for each text in the corpus, attention weight for each word is computed using a neural network with an attention layer. Then, an embedding of the whole sentence is created by computing an average for all words embedding. The words are weighted by their attention weights. The last step of the procedure is creating an encoder-decoder model for learning sentence aspect embedding. The reconstruction of the sentence is the linear combination of aspect embeddings, and aspect embeddings are learned by mapping sentence embedding to a lower-dimensional space.
 
-Other studies using the embedding technique were conducted by @tulkens-van-cranenburgh-2020-embarrassingly and @ijcai2019-712. In both of the studies, the algorithms presented outperformed the LDA method in the task of short text topic modeling.
+Other studies using the embedding technique were conducted by @tulkens-van-cranenburgh-2020-embarrassingly and @ijcai2019-712. In both studies, the algorithms presented outperformed the LDA method in the task of short text topic modeling.
 
 <!-- @tulkens-van-cranenburgh-2020-embarrassingly, who proposed a new type of Attention mechanism, meant especially for the aspect recognition task. It's an advantage over the one presented by [@he2017aspect] is that instead of a complex neural network, a way simpler approach based on Radial Basis Function kernel is used. Another work presenting a new attention mechanism is by @ijcai2019-712 - they use a use a Encoder-Decoder framework with a *Semene Attention* mechanism. (skrócić do 1 zdania) -->
 
@@ -173,7 +175,7 @@ Later steps of the preprocessing were different for each of the algorithms.
 
 For LDA and Gibbs Sampling, only **converting lemmatized reviews into vector format** was needed. In the case of LDA, the count-vectorizing approach was applied, with removing of words that appeared in less than 0.1% of reviews. In the case of Gibbs Sampling, the same preprocessing is done internally by the training function from the package. In both of these cases after vectorization, one should obtain a matrix with n rows and k columns, where n is the number of observations in the original dataset, while k - the size of the vocabulary. 
 
-Very different preprocessing was required in the case of Attention-Based Aspect Extraction. The neural network architecture proposed by the authors requires simply lemmatized reviews in a textual format as the output. Then, one of the layers of the network is meant to embed the currently preprocessed word. These embeddings are not learned during the network training, they should be trained beforehand instead. The authors of the paper propose the Word2vec technique [@mikolov2013efficient] for learning embeddings. Following their guidelines I have used this method, setting the dimensionality of the vector space to 200. I have also applied the word window of 10. After applying word2vec on this dataset, I have obtained the matrix with m rows and 200 columns, where m stands for the number of words in the dataset, and 200 is the dimensionality of the vector space chosen as a hyperparameter. 
+Very different preprocessing was required in the case of Attention-Based Aspect Extraction. The neural network architecture proposed by the authors requires simply lemmatized reviews in a textual format as the output. Then, one of the layers of the network is meant to embed the currently preprocessed word. These embeddings are not learned during the network training, they should be trained beforehand instead. The authors of the paper propose the Word2vec technique [@mikolov2013efficient] for learning embeddings. Following their guidelines, I have used this method, setting the dimensionality of the vector space to 200. I have also applied the word window of 10. After applying word2vec on this dataset, I have obtained the matrix with m rows and 200 columns, where m stands for the number of words in the dataset, and 200 is the dimensionality of the vector space chosen as a hyperparameter. 
 
 Concerning topic models training, I have searched for optimal hyperparameters for all 3 models based on grid search. For LDA, I have tested a varying number of topics that the model has to learn (3, 5, 10, and 15). For GSDMM, 2 parameters influence topics coherency in each "cluster". I have run the algorithm for all 16 combinations of both parameters chosen from the values 0.01, 0.1, 0.5, and 0.9. For Attention-Based Aspect Extraction, I have manipulated the number of topics to learn, from the values 10, 15. Unfortunately, as this last model takes a very long time to run (around 3 hours per one set of hyperparameters), I have limited the number of hyperparameters checked compared to the LDA model. 
 
@@ -227,7 +229,7 @@ The evaluation of topic extraction is a hard task, as no model-agnostic metrics 
 
 ## Variables selection methods
 
-To summarise, from variable preprocessing I have obtained these 6 sets of features:
+To summarize, from variable preprocessing I have obtained these 6 sets of features:
 
 - basic information - the value of the purchase, geolocation in raw format lat/lng, the value of the package, number of items in the package, review score (6 variables)
 - geodemographic features for the region from which the customer is - age structure, percentage of the population in an urban area, income structure, number of immigrants (35 variables)
@@ -248,7 +250,7 @@ An approach used by @churnthesis for an assessment of the new feature previously
 
 ### Automatic feature selection - Boruta algorithm {-}
 
-To test if the approach with including whole sets of features to the training set is an optimal one, I have also tested one method of automatic feature selection, namely a Boruta algorithm [@kursa2010feature]. It is widely popular among machine learning practitioners [@kumar2017empirical]. The algorithm belongs to the category of wrapper feature selection algorithms, and a Random Forest algorithm is usually used as an machine learning method. It works as follows. At first, all features from the original dataset are randomly permuted. This way, one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and the Random Forest model is trained. 
+To test if the approach with including whole sets of features to the training set is an optimal one, I have also tested one method of automatic feature selection, namely a Boruta algorithm [@kursa2010feature]. It is widely popular among machine learning practitioners [@kumar2017empirical]. The algorithm belongs to the category of wrapper feature selection algorithms, and a Random Forest algorithm is usually used as a machine learning method. It works as follows. At first, all features from the original dataset are randomly permuted. This way, one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and the Random Forest model is trained. 
 
 This model has a built-in feature importance measure, which is usually Mean Decrease Impurity (MDI). After running the model, for each of the original features, MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of the shadow features, the variable gets a "hit". 
 

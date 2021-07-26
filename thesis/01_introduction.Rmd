@@ -21,7 +21,7 @@ In Customer Relationship Management (CRM) field, churn prediction is a very acti
 Most of the previous studies were conducted in the industries operating in contractual setting, where the churn rate is not that big, for example telecom or banking.
 
 This study is aimed at predicting loyalty of the customers of an e-commerce retail shop operating on the Brazilian market. 
-A challenge that to the best of the author's knowledge was not addressed in the previous studies is churn prediction in a industry, in which a very low rate of the customers stay with the company. In the case of this study almost 97% of the customers don't decide to make a second purchase. 
+A challenge that to the best of the author's knowledge was not addressed in the previous studies is churn prediction in an industry, in which a very low rate of the customers stay with the company. In the case of this study almost 97% of the customers don't decide to make a second purchase. 
 Also, this study is a first approach to predict customer loyalty not using a rich customer's history, but only the first transaction. 
 Because of that, usage of non-conventional data sources was needed. 
 That is why, in this study besides transaction data about the customer, I also analyze customer's geodemographic environment obtained from census data, as well as information from customer's perception about the purchase in form of textual reviews. 
