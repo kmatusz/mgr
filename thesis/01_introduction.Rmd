@@ -1,5 +1,5 @@
 ---
-title: "Dataset description"
+title: "Introduction"
 # output: html_document
 output: 
   bookdown::word_document2:
@@ -14,74 +14,34 @@ bibliography: resources/bib.bibtex
 knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4, fig.height = 2)
 ```
 
-Skrawki zdań:
-
-Customer loyalty is an important thing for every business
-Studies have shown that it is very profitable
-In CRM, prediction of churn before it happens is a very active field of research
-Multiple studies have been conducted to help businesses retain customers..
-Most of them were done in the industries operating in contractual industries where the churn rate is not that big, for example telecom or banking.
-
-In this study I am interested in predicting customer loyalty of an e-commerce retail shop operating on the Brazilian market. 
 
 
+Maintaining high customer loyalty is a challenge that most of the businesses face. Multiple studies have shown that retaining customers is more profitable than acquiring new ones.
+In Customer Relationship Management (CRM) field, churn prediction is a very active area of research.
+Most of the previous studies were conducted in the industries operating in contractual setting, where the churn rate is not that big, for example telecom or banking.
 
-However, most of them were based on contractual settings, where most of the customers stay with the company. A very different challenge is making the customer stay in the situation of non-contractual settings. Moreover, in the case of previous studies mmost of the customers stayed with the company, meaning that the rate of the people staying with the company was high.
+This study is aimed at predicting loyalty of the customers of an e-commerce retail shop operating on the Brazilian market. 
+A challenge that to the best of the author's knowledge was not addressed in the previous studies is churn prediction in a industry, in which a very low rate of the customers stay with the company. In the case of this study almost 97% of the customers don't decide to make a second purchase. 
+Also, this study is a first approach to predict customer loyalty not using a rich customer's history, but only the first transaction. 
+Because of that, usage of non-conventional data sources was needed. 
+That is why, in this study besides transaction data about the customer, I also analyze customer's geodemographic environment obtained from census data, as well as information from customer's perception about the purchase in form of textual reviews. 
 
-In my study I analyze such a non-contractual business, namely an e-commerce retail site operating in Brazil. 
-
-This study 
-
-A challenge that to the best of authors knowledge was not addressed in the previous studies is a very low rate of the customers that actually stay with the company. In this case almost 97% of the customers don't come back to the company. 
-Also, this study is a first approach to predict customer loyalty not using the whole customer's history, but only the first transaction. 
-Because of that, usage of non-conventional data sources is needed. 
-That is why, in this study besides transaction data about the customer, I also analyze customer's geodemographic envoronment obtained from national census, as well as information from customer's textual reviews, extracted using topic modeling (it is also a first try)
-
-From technical point of view:
-
-- I have used 2 machine learining techniques, XGBoost and LR
-- Besides that I have made extensive use of XAI techniques, to answer hypotheses about the influence of variables on the target in the case of XGBoost modeling, which is an unexplainable, black-box model. 
-- Usage of VI techinique to assess hypothesis about the influence of particular sets of variables on the target. 
-- I have also used Partial Dependence Profile to assess the hypotheses about the direction of the influence of particular variables from the feature set. 
+From a technical point of view, I have used a Machine Learning approach. I have tested out 2 classification algorithms, namely XGBoost and Logistic Regression. To obtain a meaningful information from the text reviews, I have used topic modeling technique. 
+To be able to answer hypotheses about the influence of variables on the target in the case of XGBoost modeling, which is an unexplainable, black-box model, I have made extensive use of XAI techniques. To assess the importance of particular sets of features I have used Permutation Variable Importance, while for assessing the strength and direction of the influence - Partial Dependence Profile technique.
 
 
+<!-- Konspekt, co opisać: -->
 
+<!-- - Intro do problemu - co to churn, zalety predykcji -->
+<!-- - Main hypothesis - machine learning modeling can be helpful in ranking customers by their propensity to churn -->
 
+<!-- Contributions: -->
 
-
-
-
-
-TODO: zamienić konspekt na tekst
-
-Konspekt, co opisać:
-
-- Intro do problemu - co to churn, zalety predykcji
-- Main hypothesis - machine learning modeling can be helpful in ranking customers by their propensity to churn
-
-Contributions:
-
-- Use a wide range of predictors from different categories
-- Use topic modeling to extract info from text review - first usage in churn prediction ever
-- Use geodemographic variables - in previous studies the results were ambiguous whether they improve prediction
-- First that extensive usage of XAI tools to explain model's predictions in churn - previous works only variable importance or more basic algorithms like LR
-- First time predicting the customer attitude just after first transaction - this can serve as an important competitive edge (TODO:opisać to bardziej)
-
-
-
-
-Z licencjatu:
-
-- churn is important for businesses
-- szybki przegląd literatury
-- contributions
-- analiza rynku
-- opis metod krótki
-
-
-
-
-
+<!-- - Use a wide range of predictors from different categories -->
+<!-- - Use topic modeling to extract info from text review - first usage in churn prediction ever -->
+<!-- - Use geodemographic variables - in previous studies the results were ambiguous whether they improve prediction -->
+<!-- - First that extensive usage of XAI tools to explain model's predictions in churn - previous works only variable importance or more basic algorithms like LR -->
+<!-- - First time predicting the customer attitude just after first transaction - this can serve as an important competitive edge (TODO:opisać to bardziej) -->
 
 
 

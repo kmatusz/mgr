@@ -1,0 +1,24 @@
+---
+title: "abstract"
+# output: html_document
+output: 
+  bookdown::word_document2:
+    reference_docx: resources/styles_template.docx
+    number_sections: true
+params:
+  echo: False
+bibliography: resources/bib.bibtex
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(message = F, warning = F, echo=params$echo, fig.width = 4, fig.height = 2)
+```
+
+
+## Abstract
+
+This study is an attempt to propose a model for customer churn prediction in the case of an e-commerce retail store operating in Brazil. Among the sets of features included in the models were transaction, location, geodemographic and perception variables. The results show that transaction features from the previous purchase are the main factor driving the customers' loyalty. 
+
+## Keywords
+
+churn analysis, customer relationship management, topic modeling, geodemographics

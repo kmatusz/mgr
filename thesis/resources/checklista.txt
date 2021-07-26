@@ -1,0 +1,13 @@
+zrobić spis treści
+
+strona tytułowa
+Usunąć numerki przy rozdziałach
+poprzesuwać tabele tak żeby były na 1 strone
+
+
+zmienić styl podpisów wykresów, może na górę jak się da
+table with selected quantiles do appendixa
+numerowanie stron dodać
+usunąć sekcje ze śmieci
+dopisać numerowanie do tabeli
+zczytać

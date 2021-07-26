@@ -1,18 +1,81 @@
-auc_test_table %>%
-  left_join(auc_train_table) %>%
-  arrange(-AUC_test) %>%
-  mutate(AUC_perc_performance_drop = (AUC_test-max(AUC_test))/max(AUC_test)) %>%
-  mutate_at(vars(AUC_test, AUC_train), function(x) sprintf('%.4f', x)) %>%
-  mutate_at(vars(AUC_perc_performance_drop), function(x) sprintf('%.2f%%', x*100)) %>%
-  rename(
-    `Variable` = name,
-    `AUC score - test set` = AUC_test,
-    `AUC score - train set` = AUC_train,
-    `Performance drop vs. the best model` = AUC_perc_performance_drop
-  ) %>%
-flextable::flextable() %>%
-  flextable::set_caption("AUC values for XGBoost model") %>%
-  flextable_format
+
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
+plot_varimp <- function(df){
+  df %>% 
+    ggplot(aes(x = reorder(var2,Overall), y = Overall, label = round(Overall,2))) +
+    geom_point(stat='identity', fill="black", size=3) +
+    geom_segment(aes(y = 0,
+                     x = var2,
+                     yend = Overall,
+                     xend = var2),
+                 color = "black") +
+    # geom_text(color="white", size=3) +
+    # ylim(-2.5, 2.5) +
+    coord_flip() +
+    theme_minimal() +
+    labs(
+      x = 'Variable',
+      y = 'Importance'
+    ) +
+    scale_y_continuous(minor_breaks = NULL)
+}
+
+# binned by category and geolocation
+tibble(a = models_list$product_categories$model$coefnames) %>%
+  mutate(a2 = ifelse(str_starts(a, 'prod_cat_'), 'prod_categories', a)) %>%
+  mutate(a2 = ifelse(str_starts(a, 'geolocation'), 'geolocation', a2)) %>%
+  group_by(a2) %>%
+  nest() -> tmp_binned
+
+features_groups_all_binned <- map(tmp_binned$data, function(x) x$a) %>% setNames(tmp_binned$a2)
+
+permutation_var_imp_cat_binned <- calc_varimp_groups(models_list$product_categories$model, to_model_test, features_groups_all_binned) %>% rename(var2 = feature_group, Overall = score)
+permutation_var_imp_cat <- var_imp_cat_p
+save('data/permutation_var_imp_cat')
+
+permutation_var_imp_cat_binned %>%
+  plot_varimp() -> pl_varimp_binned
+
+gridExtra::grid.arrange(pl_varimp_raw, pl_varimp_binned, ncol=2, widths=c(1.4,1))
+
+#### big bin
+
+tibble(a = models_list$all_with_pca$model$coefnames) %>%
+  mutate(var2 = case_when(
+    str_starts(a, 'spatial_') ~ 'geo - demographic',
+    str_starts(a, 'geolocation_') ~ 'geo - raw location',
+    str_starts(a, 'agglomeration') ~ 'geo - density',
+    str_starts(a, 'topic_') ~ 'perception',
+    str_starts(a, 'review_') ~ 'perception',
+    str_starts(a, 'prod_cat_') ~ 'behavioural (first transaction)',
+    a %in% c('payment_value', 'sum_freight', 'no_items', 'prod_categories') ~ 'behavioural (first transaction)',
+    TRUE ~ a
+  )) %>%
+  group_by(var2) %>%
+  nest() -> tmp_binned
+
+features_groups_all_binned <- map(tmp_binned$data, function(x) x$a) %>% setNames(tmp_binned$var2)
+
+
+permutation_var_imp_all_binned <- calc_varimp_groups(models_list$all_with_pca$model, to_model_test, features_groups_all_binned) %>% rename(Overall = score, var2 = feature_group)
+
+save(permutation_var_imp_all_binned, file = here('data/permutation_var_imp_all_binned.Rdata'))
+# load(file = here('data/permutation_var_imp_all_binned.Rdata'))
+
+
+permutation_var_imp_all_binned %>%
+  rename(var2 = feature_group) %>%
+  plot_varimp()
+
+
+
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
+
+plot_varimp(temp_df_imp)
+
+
 ### DUMP ----
 
 # jak zrobić grid

@@ -16,8 +16,7 @@ knitr::opts_chunk$set(echo=params$echo)
 
 <!-- TODO: *W części 04 też przyda się flow chart co będzie robione, na jakich danych i na jakie pytania odpowie.* -->
 
-
-<!-- ## Introduction -->
+## Introduction {-}
 
 The methodology used in this study can be divided into 3 broad categories:
 
@@ -43,12 +42,12 @@ In this study I have separated 3 groups of variables analyzed:
 - location features
 - perception features.
 
-On diagram .. a summary of preprocessing applied to all the parts of the dataset is presented. All the tables on the left-hand side are coming directly from Olist (4 tables) and SIDRA sources (1 table - demographic data). The purple table is the primary one, the features from this table were combined with all the remaining sets of variables. The final tables after preprocessing each of the parts of the dataset are shown in gray. In the modeling phase, I have used a simple join of the basic table, and the remaining ones, separately from each other (e.g. basic information + order items, basic information + DBSCAN cluster, etc.).
+On the diagram below a summary of preprocessing applied to all the parts of the dataset is presented. All the tables on the left-hand side are coming directly from Olist (4 tables) and Statistical Office sources (1 table - demographic data). The purple table is the primary one, the features from this table were combined with all the remaining sets of variables. The final tables after preprocessing each of the parts of the dataset are shown in gray. In the modeling phase, I have used a simple join of the basic table, and the remaining ones, separately from each other (e.g. basic information + order items, basic information + DBSCAN cluster, etc.).
 
 ![](resources/data_processing_diagram.png)
 
 
-### Behavioural features
+### Behavioral features
 
 Behavioral predictors can be defined as the variables quantifying previous actions of the customer. In most cases, this narrows down to the data about previous transactions and previous interactions with the company. Behavioral information about customer's interactions with the company was shown to be an important predictor in churn prediction (for an overview see @schmittlein1994customer). 
 
@@ -60,7 +59,7 @@ In the case of the company analyzed in this study, the products sold belong to 7
 
 To assess the validity of previous studies' findings regarding the behavioral variables in an e-commerce retail context, I have tested 2 hypotheses. (1) **The amount of money spent on the first purchase positively influences the customer's probability of buying for the second time.** (2) **Categories of products bought by the customer can influence the customer's probability to stay with the company.**
 
-### Location features
+### Location features 
 
 <!-- #### Ways of including spatial dimension to the churn prediction -->
 
@@ -72,7 +71,7 @@ There are multiple ways to include spatial dimension in modeling. In this study,
 - analyzing neighborhood that the customer resides in (demographical statistics about the region)
 - classifying customers by living in an urban or rural area
 
-#### Direct inclusion of spatial variables
+#### Direct inclusion of spatial variables {-}
 
 To the best of the author's knowledge, no studies on churn prediction conducted before included raw geographic coordinates in the model formulation. Rather, usually dummy variables indicating the administrative regions were used. There is no consensus on whether such data can improve the predictions. @verbeke2012new argued that "the number of times a customer called the help desk will most probably be a better predictor of churn behavior than the zip code". On the other hand, @buckinx2005customer showed that such dummies were significant in the case of the Neural Network model, but not in Random Forest. Also, @long2019new found that these dummies are significant. However in that case, a different spatial extent was analyzed - the region variables indicated countries rather than postcodes.
 
@@ -80,7 +79,7 @@ To the best of the author's knowledge, no studies on churn prediction conducted 
 
 In this study, I have simply included longitude/latitude data about each customer directly to the model formulation. This is to assess **if the propensity to churn can be explained by customer location**.
 
-#### Geodemographics
+#### Geodemographics {-}
 
 Geodemographics is the "analysis of people by where they live" [@harris2005geodemographics]. In this paradigm, it is assumed that people living in the same area share similar characteristics, like their social status, income, etc.
 
@@ -88,14 +87,14 @@ As pointed by @singleton2014past, geodemographic features were mostly used in th
 
 A hypothesis I would like to check is **if the social structure of the customer's environment can serve as a valuable predictor of churn tendency.**
 
-In total, I have included 35 demographic features for the microregion from which the customer is - age structure, percentage of the population in an urban area, income structure, number of immigrants. These features were obtained from the Brazilian statistical office SIDRA^[Joining the data coming from SIDRA and OLIST sources proved to be challenging. The details of such spatial join are presented in Appendix A.]. 
+In total, I have included 35 demographic features for the microregion from which the customer is - age structure, percentage of the population in an urban area, income structure, number of immigrants. These features were obtained from the Brazilian statistical office^[Joining the data coming from this source and main transaction dataset proved to be challenging. The details of such spatial join are presented in Appendix A.]. 
 
 Geodemographic dimension in this study is relatively high dimensional. At the same time, one would expect that the information can be somehow compressed because lots of the variables represent very similar concepts (for example there are 20 variables encoding only age structure). 
 Because of that, I have decided to process this part of the dataset using Principal Components Analysis. This can potentially bring some improvements in the process of Machine Learning modeling, as training the model on a smaller, compressed dataset is more resource-efficient and at the same time was shown to improve the modeling results in some cases [@howley2005effect; @dutkiewicz2021heisenberglimited].
 
 One decision regarding PCA transformation is whether to use a standard version or the one with rotated loadings [@corner2009choosing]. The trade-off between these two methods is that the rotated loadings version allows for an interpretation of the loadings, but is less optimal in a sense that the variance along each loading is not maximized. I have decided that a standard one would be more suitable in the case of this study because the explainability of the input variables to the model is not as important as correctly representing the features in lower-dimensional space and thus preserving as much valuable information as possible for the modeling phase.
 
-#### Rural vs. urban customer location
+#### Rural vs. urban customer location {-}
 
 Generally, there is a consensus among researchers that there is a difference in customer behaviors between rural and urban areas [@sun2004consumption]. In particular, a couple of studies in the FMCG sector have found that rural customers tend to be more loyal to the previously chosen company [@jha2003understanding; @sharma2021impact]. The potential reason for such finding provided by the authors is a smaller choice of other options in the rural shops compared to urban ones. However, up to date, there were no studies that were meant to assess the differences between customer loyalty in urban and rural areas but aimed at the e-commerce sector. The findings from the FMCG sector do not have to translate directly, as in an online setting the customers are generally not limited by the availability of the brand in their area. 
 
@@ -123,7 +122,7 @@ In e-commerce settings, an industry-standard is to provide a way for the custome
 
 In the case of the dataset analyzed in this study, there are 2 proxies of customer perception available. One is a customer review on a scale from 1 to 5. The other is a textual review of the purchase. Using numeric review in the modeling is straightforward and doesn't require further explanation. In the next sections, I have described the preprocessing of textual reviews in greater detail.
 
-#### Ways of analyzing textual reviews
+#### Ways of analyzing textual reviews {-}
 
 As stated before, text reviews can potentially serve as a rich source of information about customer satisfaction.
 Although text mining for customer reviews in general is an active field of research, usage of such information in the context of churn prediction is way less covered. To the best of the author's knowledge, only 2 studies used the data from textual reviews for churn prediction. @DECAIGNY20201563 have used text embedding approach, while @9325646 - simple tf-idf technique. 
@@ -136,7 +135,7 @@ In the case of this study, I have focused only on extracting the topic from the 
 <!-- @athanassopoulos2000customer  -->
 <!-- https://www.jmir.org/2021/1/e22184/ - topic modeling + RNN -->
 
-#### Previous research in topic modeling
+#### Previous research in topic modeling {-}
 
 <!-- ##### LDA, dlaczego słabe -->
 
@@ -156,7 +155,7 @@ Other studies using the embedding technique were conducted by @tulkens-van-crane
 
 <!-- @tulkens-van-cranenburgh-2020-embarrassingly, who proposed a new type of Attention mechanism, meant especially for the aspect recognition task. It's an advantage over the one presented by [@he2017aspect] is that instead of a complex neural network, a way simpler approach based on Radial Basis Function kernel is used. Another work presenting a new attention mechanism is by @ijcai2019-712 - they use a use a Encoder-Decoder framework with a *Semene Attention* mechanism. (skrócić do 1 zdania) -->
 
-#### Text reviews preprocessing in this study
+#### Text reviews preprocessing in this study {-}
 
 In this study, I have tried and evaluated 3 algorithms for topic modeling:
 
@@ -228,8 +227,6 @@ The evaluation of topic extraction is a hard task, as no model-agnostic metrics 
 
 ## Variables selection methods
 
-### Sets of conceptual features (?? lepszy tytuł)
-
 To summarise, from variable preprocessing I have obtained these 6 sets of features:
 
 - basic information - the value of the purchase, geolocation in raw format lat/lng, the value of the package, number of items in the package, review score (6 variables)
@@ -239,7 +236,7 @@ To summarise, from variable preprocessing I have obtained these 6 sets of featur
 - product categories that the customer has bought in the purchase (15 dummy variables)
 - main topic that the customer has mentioned in the review (15 dummy variables).
 
-An approach used by @churnthesis for an assesment of the new feature previously untested in the churn prediction was to compare 2 models, one containing only basic RFM features, and the other RFM features and also this new feature. I have used a similar approach. Namely, first I have included basic features that didn't require any preprocessing. This model served as a baseline. Then, for each of the sets of features that I have computed, I have estimated a model containing these features + basic features. Lastly, I have created one model containing all the variables. This resulted in the following 7 feature sets tested:
+An approach used by @churnthesis for an assessment of the new feature previously untested in the churn prediction was to compare 2 models, one containing only basic RFM features, and the other RFM features and also this new feature. I have used a similar approach. Namely, first I have included basic features that didn't require any preprocessing. This model served as a baseline. Then, for each of the sets of features that I have computed, I have estimated a model containing these features + basic features. Lastly, I have created one model containing all the variables. This resulted in the following 7 feature sets tested:
 
 - basic features
 - geodemographic + basic features
@@ -249,17 +246,17 @@ An approach used by @churnthesis for an assesment of the new feature previously 
 - review topic + basic features
 - all variables - (with geodemographic features transformed with PCA) ^[I have not run the model containing all variables with demographic features without PCA preprocessing. There are 2 reasons for that - one is that number of variables in this set is very big, which poses performance reasons - model training simply would take a very long time. The other is that the model with only included PCA demographic variables performed better than the full set of variables.]  
 
-### Automatic feature selection - Boruta algorithm
+### Automatic feature selection - Boruta algorithm {-}
 
-To test if the approach with including whole sets of features to the training set is optimal one, I have also tested one method of automatic feature selection, namely a Boruta algorithm [@kursa2010feature]. It is widely popular among machine learning practitioners [@kumar2017empirical]. The algorithm belongs to the category of wrapper feature selection algorithms, and a Random Forest algorithm is usually used as an machine learning method. It works as follows. At first, all features from the original dataset are randomly permuted. This way, one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and the Random Forest model is trained. 
+To test if the approach with including whole sets of features to the training set is an optimal one, I have also tested one method of automatic feature selection, namely a Boruta algorithm [@kursa2010feature]. It is widely popular among machine learning practitioners [@kumar2017empirical]. The algorithm belongs to the category of wrapper feature selection algorithms, and a Random Forest algorithm is usually used as an machine learning method. It works as follows. At first, all features from the original dataset are randomly permuted. This way, one obtains a dataset with close-to-zero predictive power. Then, the resulting features are added to the original dataset and the Random Forest model is trained. 
 
-This model has a built-in feature importance measure, which is usually Mean Decrease Impurity. After running the model, for each of the original features, MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of the shadow features, the variable gets a "hit". 
+This model has a built-in feature importance measure, which is usually Mean Decrease Impurity (MDI). After running the model, for each of the original features, MDI is compared against all MDI scores for shadow features. If for any original variable the score is less than the one from any of the shadow features, the variable gets a "hit". 
 
 The above procedure is repeated for a preassigned number of iterations. Finally, important features that should make it to the final model are the ones that obtain fewer hits than preassigned value. 
 
 After gaining knowledge about the variables that should make it to the model, I have trained the XGBoost classifier using these features. The rest of the fitting procedure (cross-validation, up-sampling, hyper-parameters, etc.) stayed the same as in the rest of the approaches.  
 
-One should have in mind that the Boruta algorithm is very time-consuming. The minimal number of runs recommended by the method authors is 100, and one run consists of fitting a Random Forest model to the whole dataset with doubled number of features (because of added shadow features). In the case of this analysis, model computation took about 12 hours on a medium-class modern laptop. Although other wrapper algorithms also require an iterative fitting of the model, they usually start with fitting the model to one variable, in the next iteration to 2, and so on up to k features. On the other hand, the Boruta algorithm in each iteration fits the model to 2*k features (original and shadow features).
+One should have in mind that the Boruta algorithm is very time-consuming. The minimal number of runs recommended by the method authors is 100, and one run consists of fitting a Random Forest model to the whole dataset with doubled number of features (because of added shadow features). In the case of this analysis, model computation took about 12 hours on a modern laptop. Although other wrapper algorithms also require an iterative fitting of the model, they usually start with fitting the model to one variable, in the next iteration to 2, and so on up to k features. On the other hand, the Boruta algorithm in each iteration fits the model to 2*k features (original and shadow features).
 
 <!-- ## Śmieci -->
 

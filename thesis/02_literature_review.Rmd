@@ -4,8 +4,9 @@ title: "Literature review"
 # output: html_document
 output:
   bookdown::word_document2:
-    reference_docx: resources/02_literature_review.docx
+    reference_docx: resources/styles_template.docx
     number_sections: true
+    # toc: true
 
 bibliography: resources/bib.bibtex
 params:
@@ -17,6 +18,10 @@ knitr::opts_chunk$set(echo=params$echo)
 ```
 
 <!-- TODO: *W części 02 z literature review dałabym ilustrację celów, metod i dotychczasowych badań (trochę jak w tym artykule o metodach w CRM), żeby uwypuklić o czym w ogóle mówimy.* -->
+
+## Introduction {-}
+
+In the first section of this chapter a literature review of previous studies regarding customer loyalty churn prediction is presented. The second section describes shortly the field of Explainable Artificial Intelligence, and advantages of usage of such approach in Machine Learning modeling. 
 
 ## Customer churn
 
@@ -54,7 +59,7 @@ One problem that arises in the non-contractual setting is the definition of chur
 
 <!-- ### Customer churn prediction -->
 
-### Customer churn prediction
+### Customer churn prediction {-}
 
 <!-- #### Why churn prediction makes sense -->
 
@@ -72,7 +77,7 @@ The churn prediction task can be decomposed into 2 main important aspects that o
 
 <!-- #### Review of previous churn studies for models used -->
 
-### Machine Learning models for churn prediction
+### Machine Learning models for churn prediction {-}
 
 In previous churn prediction studies multiple machine learning algorithms for prediction were tested out (for an overview see @verbeke2011building). The two most widely used techniques are Logistic Regression (LR) and Decision Trees. 
 An important feature of both of them is that they are relatively simple, and because of that the way they make predictions can be assessed by a qualified expert [@paruelo1997prediction].
@@ -81,7 +86,7 @@ However, these two methods often give sub-optimal results compared to more advan
 Recently, the XGBoost algorithm [@chen2015xgboost] has been gaining popularity in multiple prediction tasks.
 XGBoost's main strengths are the ability to infer non-linear relationships from the data, and relative speed, which allows the researcher to try out multiple hyperparameters and decide on the best ones [@chen2015xgboost]. Because of that, it is considered a go-to standard for machine learning challenges, and very often solutions based on it achieve the best results in various competitions and benchmarks  [@xgblist]. In the context of churn prediction, XGBoost was used by @gregory2018predicting. It achieved superior performance compared to other techniques, specifically Logistic Regression and Random Forests.
 
-### Variables used in previous churn prediction studies
+### Variables used in previous churn prediction studies {-}
 
 Previous churn prediction studies used a variety of variables to include in the model formulation. @buckinx2005customer divided them into 3 broad categories - behavioral, demographic, and perception. 
 
@@ -91,7 +96,7 @@ The first category of variables tries to describe how the customer has interacte
 Besides these basic features, some studies focus on other areas of customer behavior.
 For instance, dummies indicating particular products that the customer has bought in previous purchases were shown to be a useful predictor for churn prediction [@buckinx2005customer; @athanassopoulos2000customer].
 
-Some of the variables studied previously are available only in some of the domains. For example, one possibility of analyzing customer behavior in the context of e-commerce shopping is analyzing the customer behavior while interacting with the company's website. @koehn2020predicting analyzed such click-stream sequential data using Recurrent Neural Networks. They found that such information can serve as a good predictor of customer churn. Similar studies were performed by @8627369 and @yu2011extended, however, the clickstream data was aggregated and preprocessed manually, instead of using a sequential modeling approach.
+<!-- Some of the variables studied previously are available only in some of the domains. For example, one possibility of analyzing customer behavior in the context of e-commerce shopping is analyzing the customer behavior while interacting with the company's website. @koehn2020predicting analyzed such click-stream sequential data using Recurrent Neural Networks. They found that such information can serve as a good predictor of customer churn. Similar studies were performed by @8627369 and @yu2011extended, however, the clickstream data was aggregated and preprocessed manually, instead of using a sequential modeling approach. -->
 
 <!-- ##### Demographics features -->
 
@@ -105,7 +110,7 @@ The last category of variables used for churn prediction specified by @buckinx20
 
 ## Explainable Artificial Intelligence
   
-### Introduction
+### Introduction {-}
   
 <!-- #### Explainability-performance trade off -->
 
@@ -121,34 +126,33 @@ Explainable Artificial Intelligence (XAI) is a set of tools aimed at explaining 
 - robustness - whether the algorithm can provide correct predictions when the parameters change
 - trust - whether the final users of the algorithm trust the model's predictions
 
-Machine learning practitioners when deciding on the methodology to apply have to assess which of the requirements are important in a particular task. For example, in CRM settings the trust in the model's predictions is way less important than in medical areas, but still can be of crucial for a wide adoption of modeling across the company. On the other hand, sometimes the explainability is important only for the person developing the model, to understand its limitations and be able to improve upon it. 
+Machine learning practitioners when deciding on the methodology to apply have to assess which of the requirements are important in a particular task. For example, in CRM settings the trust in the model's predictions is way less important than in medical areas, but still can be crucial for a wide adoption of modeling across the company. On the other hand, sometimes the explainability is important only for the person developing the model, to understand its limitations and be able to improve upon it. 
 
-The tools of XAI can help in addressing the aforementioned issues, without losing the usual performance gain from black-box models.
-
-
-### Review of XAI methods
-
-XAI methods can be broadly divided into 2 categories - model-level and instance-level. The methods from the first category help in understanding the model's behavior in general, for all istances. While the second can help understanding model's reasoning about the particular observation. 
-
-For an overview of existing XAI methods, see @biecek2021explanatory.
-
-- general prediction
-- which variables contribute to the prediction(s) and in what way
-- how one particular variable influence the prediction(s)
-- how well is the model fitting?
+The tools of XAI can help in addressing the aforementioned issues, without losing the usual performance gain from black-box models. For an extensive overview of existing XAI methods, see @biecek2021explanatory.
 
 
+<!-- ### Review of XAI methods -->
 
-### XAI in marketing
+<!-- XAI methods can be broadly divided into 2 categories - model-level and instance-level. The methods from the first category help in understanding the model's behavior in general, for all instances. While the second can help understanding model's reasoning about the particular observation.  -->
 
-Research on Explainable Artificial Intelligence in Marketing domain is not very developed. (Nie znalazłem ani jednego papera !! ??)
+<!-- For an overview of existing XAI methods, see @biecek2021explanatory. -->
 
+<!-- - general prediction -->
+<!-- - which variables contribute to the prediction(s) and in what way -->
+<!-- - how one particular variable influence the prediction(s) -->
+<!-- - how well is the model fitting? -->
+
+
+
+### XAI in marketing {-}
+
+Research on Explainable Artificial Intelligence in Marketing domain is not very developed. 
 To the best of the author's knowledge, the only study touching the subject of XAI in the context of marketing is by @rai2020explainable. In their commentary, they specify potential areas for future research in this field:
+<!-- (Nie znalazłem ani jednego papera !! ??) -->
 
-- understanding, what are acceptable requirements regarding explainability compared to accuracy in different marketing tasks;
-- making AI trustworthy - to understand how the eagerness to use AI system's predictions grows in the company when various explainability tools are made available to the end-users;
-- How model explanations should be presented to various groups of system's users. For example, a Machine Learning expert is interested in very detailed and complex explanations, while the company's customer may simply want a 1 sentence summary of what was taken into account while making predictions;
-
+- understanding, what are acceptable requirements regarding explainability compared to accuracy in different marketing tasks
+- making AI trustworthy - to understand how the eagerness to use AI system's predictions grows in the company when various explainability tools are made available to the end-users
+- How model explanations should be presented to various groups of system's users. For example, a Machine Learning expert is interested in very detailed and complex explanations, while the company's customer may simply want a 1 sentence summary of what was taken into account while making predictions
 
 <!-- TODO: Na tą chwilę tylko konspekt - rozwinąć. Jest świetna książka z mnóstwem przykładów i cytowań do wykorzystania na temat XAI: https://ema.drwhy.ai/introduction.html  -->
 
