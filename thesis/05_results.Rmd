@@ -136,7 +136,7 @@ files_cache <- list.files(here('run_all_models_cache/'))
 files_names_models <- files_cache[str_starts(files_cache, 'saved_model')]
 files_names_models <- files_names_models[!str_starts(files_names_models, 'saved_model_lr')]
 files_names_models <- files_names_models[!str_starts(files_names_models, 'saved_model_boruta_all_with_pca')]
-# files_names_models
+# files_names_models <- files_names_models[c(1,7)]
 
 
 load(here('run_all_models_cache/to_model_train.Rdata'))
@@ -256,7 +256,17 @@ I have also created a table 4 containing similar information, but this time for 
 #   arrange(-AUC_test) %>%
 #   mutate(AUC_perc_performance_drop = (AUC_test-max(AUC_test))/max(AUC_test)) -> auc_table_for_lr
 #   
-# save(auc_table_for_lr, file='run_all_models_cache/auc_table_for_lr.Rdata')
+# manual_lr <- tribble(~"name", ~"AUC_test", ~"AUC_train", ~"AUC_perc_performance_drop",
+#                      'lr_topics', 0.563852, 0.5594643, 0,
+#                      'lr_boruta', 0.58005028, 0.591204, 0
+# )
+# 
+# auc_table_for_lr %>%
+#   bind_rows(manual_lr) %>%
+#   arrange(-AUC_test) %>%
+#   mutate(AUC_perc_performance_drop = (AUC_test-max(AUC_test))/max(AUC_test)) -> auc_table_for_lr
+# 
+# save(auc_table_for_lr, file=here('run_all_models_cache/auc_table_for_lr.Rdata'))
 
 load(file=here('run_all_models_cache/auc_table_for_lr.Rdata'))
 
@@ -306,7 +316,7 @@ rbind(
 
 ```
 
-The curve for the model with basic features is standing out of the others. However, the difference between 1st-best and 2nd-best models is not as clear - it looks like the better model has slightly better density curve shape, but this should be investigated more thoroughly. That is why I have used a Kolmorogov-Smirnov test to check if the empirical distributions can come from the same probability distribution. I have run the test twice using 2 alternative hypotheses. First one with H1: auc_best =/= auc_2nd_best, and the second one: H1: auc_best > auc_2nd_best.
+The curve for the model with basic features is standing out of the others. However, the difference between 1st-best and 2nd-best models is not as clear - it looks like the better model has slightly better density curve shape, but this should be investigated more thoroughly. That is why I have used a Kolmorogov-Smirnov test^[Kolmorogov-Smirnov (K-S) test is a non-parametric test to assess whether two empirical samples come from the same distribution. K-S statistic is calculated based on the largest distance between empirical distribution functions of both samples. Then, this statistic is compared against Kolmorogov distribution. Null hypothesis in this test is that two samples come from the same underlying distribution.] to check if the empirical distributions can come from the same probability distribution. I have run the test twice using 2 alternative hypotheses. First one with H1: auc_best =/= auc_2nd_best, and the second one: H1: auc_best > auc_2nd_best.
 
 ```{r}
 ks_1 <- ks.test(bootstrap_auc_best, bootstrap_auc_2nd_best)

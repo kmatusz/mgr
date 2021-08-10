@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo=params$echo)
 
 <!-- TODO: *W części 02 z literature review dałabym ilustrację celów, metod i dotychczasowych badań (trochę jak w tym artykule o metodach w CRM), żeby uwypuklić o czym w ogóle mówimy.* -->
 
-## Introduction {-}
+<!-- ## Introduction {-} -->
 
 In the first section of this chapter a literature review of previous studies regarding customer loyalty churn prediction is presented. The second section describes shortly the field of Explainable Artificial Intelligence, and advantages of usage of such approach in Machine Learning modeling. 
 
@@ -84,7 +84,7 @@ An important feature of both of them is that they are relatively simple, and bec
 However, these two methods often give sub-optimal results compared to more advanced and recent approaches like Neural Networks or Random Forests [@murthy1998automatic; @churnthesis]. Moreover, this was shown not only in the case of churn prediction setting but also in more general benchmarks that used multiple datasets and comparison metrics [@caruana2006empirical].
 
 Recently, the XGBoost algorithm [@chen2015xgboost] has been gaining popularity in multiple prediction tasks.
-XGBoost's main strengths are the ability to infer non-linear relationships from the data, and relative speed, which allows the researcher to try out multiple hyperparameters and decide on the best ones [@chen2015xgboost]. Because of that, it is considered a go-to standard for machine learning challenges, and very often solutions based on it achieve the best results in various competitions and benchmarks  [@xgblist]. In the context of churn prediction, XGBoost was used by @gregory2018predicting. It achieved superior performance compared to other techniques, specifically Logistic Regression and Random Forests.
+XGBoost's main strengths are the ability to infer non-linear relationships from the data, and relative speed, which allows the researcher to try out multiple hyperparameters and decide on the best ones [@chen2015xgboost]. Because of that, it is considered a go-to standard for machine learning challenges, and very often solutions based on it achieve the best results in various competitions and benchmarks  [@nielsen2016tree]. In the context of churn prediction, XGBoost was used by @gregory2018predicting. It achieved superior performance compared to other techniques, specifically Logistic Regression and Random Forests.
 
 ### Variables used in previous churn prediction studies {-}
 

@@ -42,11 +42,11 @@ Modelowanie odpływu klientów w biznesie e-commerce
 
 \pagebreak
 
-:::{custom-style="chapters"}
-chapter I
-:::
+<!-- :::{custom-style="chapters"} -->
+<!-- chapter I -->
+<!-- ::: -->
 
-# Introduction
+# Introduction {-}
 ```{r child = '01_introduction.Rmd'}
 ```
 
@@ -55,7 +55,7 @@ chapter I
 \pagebreak
 
 :::{custom-style="chapters"}
-chapter II
+chapter I
 :::
 
 # Literature review
@@ -67,7 +67,7 @@ chapter II
 \pagebreak
 
 :::{custom-style="chapters"}
-chapter III
+chapter II
 :::
 
 # Dataset description
@@ -80,7 +80,7 @@ chapter III
 \pagebreak
 
 :::{custom-style="chapters"}
-chapter IV
+chapter III
 :::
 
 # Methods description
@@ -93,7 +93,7 @@ chapter IV
 \pagebreak
 
 :::{custom-style="chapters"}
-chapter V
+chapter IV
 :::
 
 # Results
@@ -105,11 +105,11 @@ chapter V
 
 \pagebreak
 
-:::{custom-style="chapters"}
-chapter VI
-:::
+<!-- :::{custom-style="chapters"} -->
+<!-- chapter VI -->
+<!-- ::: -->
 
-# Summary
+# Summary {-}
 
 ```{r child = '06_summary.Rmd'}
 ```

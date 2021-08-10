@@ -408,11 +408,11 @@ tmap_mode(mode = c("plot"))
 
 ```{r cache = T}
 # Function to plot the map with the same layout and colors
-plot_map <- function(variable, title){
+plot_map <- function(variable, title, legend_title=' '){
   tm_shape(brazil_map) +
     tm_borders()+
     tm_shape(stats_per_microregion3) +
-    tm_polygons(col = variable,border.alpha = 0) +
+    tm_polygons(col = variable,border.alpha = 0, title=legend_title) +
     tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
     tm_symbols(size = 0.2,
                col = "black",
@@ -422,16 +422,15 @@ plot_map <- function(variable, title){
     tm_layout(title= title, title.size = 0.9)
 }
 
-w1 <- plot_map('no_customers_per_10000_pop', 'No. customers per 10 thousand inhabitants')
-w2 <- plot_map('percent_second_order', 'Percentage of customers that placed second order')
-w3 <- plot_map('mean_review_score', 'Mean review score')
-w4 <- plot_map('mean_payment_value', 'Mean payment value')
+w1 <- plot_map('no_customers_per_10000_pop', 'a)', 'no. customers per 10000')
+w2 <- plot_map('percent_second_order', 'b)', 'Percent second order')
+w3 <- plot_map('mean_review_score', 'c)', 'Mean review score')
+w4 <- plot_map('mean_payment_value', 'd)', 'Mean payment value')
 ```
 
-```{r maps-stats, cache = T, fig.width=9, fig.height=7, fig.cap='Cartograms presenting customers statistics by microregion.'}
+```{r maps-stats, cache = T, fig.width=9, fig.height=7, fig.cap='Cartograms presenting customers statistics by microregion: a) no. customers per 10 thousand inhabitants, b) percentage of customers that placed second order, c) mean review score, d) mean payment value'}
 tmap_arrange(w1, w2, w3, w4, nrow=2)
 ```
-
 
 The top-left map shows the number of customers per 10 thousand inhabitants. It is visible that bigger shares of customers appear in the southern part of the country, concentrated in the triangle between São Paulo, Rio de Janeiro, and Belo Horizonte agglomerations. 
 

@@ -29,6 +29,8 @@ That is why, in this study besides transaction data about the customer, I also a
 From a technical point of view, I have used a Machine Learning approach. I have tested out 2 classification algorithms, namely XGBoost and Logistic Regression. To obtain a meaningful information from the text reviews, I have used topic modeling technique. 
 To be able to answer hypotheses about the influence of variables on the target in the case of XGBoost modeling, which is an unexplainable, black-box model, I have made extensive use of XAI techniques. To assess the importance of particular sets of features I have used Permutation Variable Importance, while for assessing the strength and direction of the influence - Partial Dependence Profile technique.
 
+The dataset used in this study ...
+
 
 <!-- Konspekt, co opisać: -->
 

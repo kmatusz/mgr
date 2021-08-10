@@ -1,3 +1,31 @@
+plot_map <- function(variable, title){
+  print(1)
+  tm_shape(brazil_map) +
+    tm_borders()+
+    tm_shape(stats_per_microregion3) +
+    tm_polygons(col = variable,border.alpha = 0) +
+    tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
+    tm_symbols(size = 0.2,
+               col = "black",
+               border.lwd = NA,
+               alpha = 0.8) +
+    tm_text(text='city', just='top',size = 0.8) +
+    tm_layout(title= title, title.size = 0.9)
+}
+
+w1 <- plot_map('no_customers_per_10000_pop', 'No. customers per 10 thousand inhabitants')
+
+tm_shape(brazil_map) +
+  tm_borders()+
+  tm_shape(stats_per_microregion3) +
+  tm_polygons(col = variable,border.alpha = 0,title=' ') +
+  tm_shape(brasil_cities_coords %>% arrange(-population) %>% head(10)) +
+  tm_symbols(size = 0.2,
+             col = "black",
+             border.lwd = NA,
+             alpha = 0.8) +
+  tm_text(text='city', just='top',size = 0.8) +
+  tm_layout(title= title, title.size = 0.9) 
 
 ### DUMP ----
 

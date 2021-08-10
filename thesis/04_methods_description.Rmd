@@ -165,6 +165,41 @@ In this study, I have tried and evaluated 3 algorithms for topic modeling:
 - Gibbs Sampling algorithm for the Dirichlet Multinomial Mixture [@10.1145/2623330.2623715] - as this method is an improvement over LDA, meant especially for short texts. This is true in this case, as most of the reviews are just a couple of words long.
 - Attention-Based Aspect Extraction [@he2017aspect] - this method is also meant for short texts, and at the same time, it uses the most modern, state-of-the-art NLP techniques. Besides that, in the original paper, the authors worked in a similar domain of internet text reviews. 
 
+The working of each of the methods is described in the following sections.
+
+#### Methods working description
+
+Latent Dirchlet Allocation is a generative statistical model. Its main assumptions are as follows:
+
+-   Consider a text corpus consisting of $D$ documents. Each document D has $N$ words, that belong to the vocabulary $V$. There are $K$ topics.
+-   Each document can be modeled as a mixture of topics. For document $D$, it can be characterized by a distribution of topics $\theta_D$, that is coming from Dirichlet family of probability distributions. Each topic has its distribution of words $\varphi_k$, that is coming from Dirichlet family. Then, a genrative process aimed at obtaining a document D of length of $N$ words $w_{1,...N}$ is as follows:
+-   To generate word at a position $i$ in the document:
+    -   Sample from the distribution of topics $\theta_D$, and obtain assignment of word $w_i$ to one of the topics $k=1,..,K$. This is to obtain information, from which of the topics the word should be sampled.
+    -   Sample from the distribution of words in topic $\varphi_k$, and obtain the word to be inserted at position $i$.
+
+The parameters of $\theta_D$ for each document D, as well as $\varphi_k$ for each of the topics, should be learned using some method of statistical inference. Most of the practical implementations of the algorithm are based on Expectation Maximization method. This iterative approach is aimed at finding the local maximum of Likelihood function.
+
+Second method, Gibbs Sampling algorithm for the Dirichlet Multinomial Mixture, is very similar to LDA approach. However, one important difference in assumptions is present, that is, **each document has words only from one topic**. This assumption is changed, because the authors claim that usually in the case of short texts, only one topic is present. This leads to the following generative process:
+
+To generate a document $D$:
+
+-   Sample from the distribution of topics $\theta_D$, and obtain assignment of the document to one of the topics $k=1,..,K$.
+-   Sample all words from the topic distribution $\varphi_k$
+
+Attention-Based Aspect Extraction takes a very different approach to topic modeling compared to the aformentioned methods. It is not based on a statistical model, but rather on neural network modeling. 
+
+![](resources/attention.png)
+
+The following steps describe the model architecture provided in the fig. .. For each document from the corpus:
+
+1.  Calculate word embeddings $e_{w_1}, e_{w_2}, e_{w_3}$ with dimensionality $d$ for each of the words from the vocabulary based on the whole corpus. From this point, one obtains an assignment of the word $w$ to the feature vector $e_w$ in the feature space $R^d$.
+2.  Obtain document embedding $z_s$. This is done by averaging the embeddings of all the words from the document. Average is weighted by attention weights $a_1, a_2, a_3$ given to each of the words. These weights are to be estimated during the model training, and can be though of as a probability, that the particular word is a right word to focus on to correctly infer the main topic of the document. It is worth noticing that document embeddings share the same feature space as the word embeddings.
+3.  Then, calculate $p_t$ using softmax non-linearity and linear transformation $W$. This vector $p_t$ is of the same dimensionality as the number of aspects to be learned, and can be thought of as a representation of the probability, that the sentence is from the particular aspect. By taking the biggest probability of this vector, one can obtain the assignment to the particular topic.
+4.  Increase the dimensionality of vector $p_t$ to the original dimensionality $d$ by transforming it with aspect matrix $T$. Vector $r_s$ is obtained.
+5.  The training of the model is based on minimising the reconstruction error between the vectors $z_s$ and $r_s$.
+
+The authors claim that this method is able to capture better, more coherent topics than LDA and its improvements. The main specified reason is as follows. In LDA, all of the words are assumed to be independent. Thus, information about the "closeness" of the meanings of words is lost, and has to be learned by assigning similar words to the same topics. This is a hard task that LDA is not optimized to. On the contrary, by using the words embedding approach, the relationships between the words are known apriori by the model and can be built upon. For example, even without knowing the topics present in the corpus, one would expect that the words "cow" and "milk" should indicate the same topic with high probability. 
+
 Various preprocessing steps were needed to apply all 3 aforementioned algorithms:
 
 - **Translation of the reviews from Portuguese to English.** Olist e-commerce store is operating only in Brazil. That is why most of the reviews are written in Portuguese. I have used Google Translate API to change their language to English. This is to facilitate not only understanding the reviews, but also the NLP tools available for the English language are more advanced than for other languages.
