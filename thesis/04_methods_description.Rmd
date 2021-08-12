@@ -108,10 +108,20 @@ Another way is inferring the population density in the area from empirical data.
 
 In this study, I have used the Density-Based Spatial Clustering with Noise (DBSCAN) algorithm for the task of rural vs. urban areas classification. This clustering algorithm besides assignment to a particular cluster can also detect noise points. Because of that, the assignments have a natural interpretation. When the point belongs to any cluster it means that this customer is living in a densely populated area, while the points decoded by DBSCAN as noise are the customers living in more isolated places.
 
-DBSCAN has 2 parameters to be decided before running the algorithm. These are the minimal number of points lying close to each other that are needed to constitute a cluster (*k*), and maximal distance, at which one considers the points to lay close to each other (*epsilon*).
-A typical rule-of-thumb for deciding k and epsilon parameters is to first set k, and then plot k-nearest-neighbors' distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, epsilon is actually a physical distance between two locations. That is why one can set what should be more reasonable criteria for constituting clusters. 
+DBSCAN is a density clustering method. Intuitively, this means that a points belongs to a cluster,when the points are densely located around this point. And other way, the points in which neighbourhood there aren't many points are considered as noise.
 
-In my work, I have decided that the minimal number of customers in the cluster is 100, and the maximum distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to epsilon=0.2. 
+DBSCAN has 2 parameters to be decided before running the algorithm. These are the minimal number of points lying close to each other that are needed to constitute a cluster ($k$), and maximal distance, at which one considers the points to lay close to each other ($\epsilon$).
+
+A detailed working of the algorithm is as follows:
+
+1. Create a list *points_to_visit* with all the points from the dataset
+2. Assign all points to noise (marked as 0)
+3. Select a point *x* randomly from *points_to_visit* and remove it from the list. Check, how many points have distance to it less than $\epsilon$. If this number is mmore than $k$, a new cluster is created that includes all these points. Assign all these points to a list *cluster_points*. For each of the points from this list, repeat recursively step 3, until *cluster_points* does not contain any points.
+4. After the previous cluster was created, select the next random point from *points_to_visit* and repeat step 3, until all points were visited.
+
+A typical rule-of-thumb for deciding $k$ and $\epsilon$ parameters is to first set $k$, and then plot k-nearest-neighbors' distances. Epsilon should be then decided based on *elbow point*, where the line is bending. However, when the features are geographical coordinates, $\epsilon$ is actually a physical distance between two locations. That is why one can set what should be more reasonable criteria for constituting clusters. 
+
+In my work, I have decided that the minimal number of customers in the cluster is 100, and the maximum distance between the customers in one cluster is 50 kilometers. For the location of Brazil on the geoide, this transfers roughly to $\epsilon=0.2$. 
 
 ### Perception features
 
